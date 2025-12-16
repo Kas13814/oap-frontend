@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>قرار مدير الإدارة بشأن تحقيق الغياب</title>
+  <style>
+    :root{
+      --bg:#f6f0e8;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --border:#eadcc9;
+      --chip:#e9f0ff;
+      --chipText:#1d4ed8;
+      --warn:#b91c1c;
+      --green:#16a34a;
+      --dark:#111827;
+      --qaQ:#111827;
+      --qaA:#2563eb;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--dark);}
+    .wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .card{width:min(860px,100%);background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(17,24,39,.08);}
+    .head{padding:18px 22px;border-bottom:1px solid var(--border);background:#fffdf9;text-align:center}
+    .chip{display:inline-block;background:var(--chip);color:var(--chipText);padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}
+    .h1{margin:12px 0 6px 0;font-size:22px;font-weight:900}
+    .sub{color:var(--muted);font-size:13px}
+    .body{padding:18px 22px}
+    .box{background:#fff7ed;border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+    .boxTitle{color:#9a6b2f;font-size:12px;margin-bottom:6px}
+    .row{margin:6px 0}
+    .muted{color:var(--muted)}
+    .btns{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+    .btn{text-decoration:none;border-radius:12px;font-weight:900;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid transparent;cursor:pointer}
+    .btnGreen{background:var(--green);border-color:var(--green);color:#fff}
+    .btnRed{background:#fff;border-color:#fca5a5;color:var(--warn)}
+    .btnDark{background:var(--dark);border-color:var(--dark);color:#fff}
+    .msg{margin-top:12px;text-align:center;font-weight:800}
+    .msgOk{color:var(--green)}
+    .msgErr{color:var(--warn)}
+    .foot{padding:14px 22px;border-top:1px solid var(--border);background:#fffdf9;color:var(--muted);font-size:12px;text-align:center}
+    .qa{margin-top:16px}
+    .qaTitle{font-weight:900;margin-bottom:10px}
+    .qaQ{font-weight:900;color:var(--qaQ);margin:10px 0 6px}
+    .qaA{font-weight:800;color:var(--qaA);margin:0 0 10px}
+    code{font-family:ui-monospace,Menlo,Consolas,monospace}
+  </style>
+
+  <!-- supabase-js v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="chip">OAP • طلب اعتماد</div>
+        <div class="h1">قرار مدير الإدارة بشأن تحقيق الغياب</div>
+        <div class="sub" id="subtitle">نقوم الآن بمعالجة طلبك.</div>
+      </div>
+
+      <div class="body">
+        <div class="box">
+          <div class="boxTitle">بيانات الغياب</div>
+          <div class="row"><span class="muted">الموظف:</span> <b id="empName">—</b> <span class="muted" id="empId">(—)</span></div>
+          <div class="row"><span class="muted">تاريخ الغياب:</span> <b id="absDate">—</b></div>
+          <div class="row"><span class="muted">القسم:</span> <b id="dept">—</b></div>
+        </div>
+
+        <div class="qa" id="qaWrap" style="display:none">
+          <div class="qaTitle">أسئلة التحقيق وإجابات الموظف</div>
+          <div id="qaList"></div>
+        </div>
+
+        <div class="btns" id="buttons" style="display:none"></div>
+
+        <div class="msg" id="msg"></div>
+      </div>
+
+      <div class="foot">هذه رسالة نظامية صادرة من نظام OAP — يرجى عدم الرد على هذا البريد.</div>
+    </div>
+  </div>
+
+<script>
+  // ==========================
+  // ✅ ضع قيم Supabase هنا
+  // ==========================
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const qs = new URLSearchParams(location.search);
+  const action = (qs.get("action") || "").toLowerCase();       // approve | close | escalate
+  const invId  = qs.get("inv_id");
+
+  const el = (id)=>document.getElementById(id);
+
+  function setMsg(text, ok){
+    const m = el("msg");
+    m.textContent = text;
+    m.className = "msg " + (ok ? "msgOk":"msgErr");
+  }
+
+  function formatDateHuman(d){
+    try{
+      const dt = new Date(d);
+      return dt.toLocaleDateString("en-US",{day:"2-digit", month:"long", year:"numeric"});
+    }catch{return d;}
+  }
+
+  function renderQA(text){
+    if(!text || !text.trim()) return;
+    const lines = text.trim().split(/\r?\n+/).map(s=>s.trim()).filter(Boolean);
+    const list = el("qaList");
+    list.innerHTML = "";
+    for(const line of lines){
+      if(/^س\d+:/i.test(line)){
+        const div = document.createElement("div");
+        div.className = "qaQ";
+        div.textContent = line;
+        list.appendChild(div);
+      }else if(/^ج\d+:/i.test(line)){
+        const div = document.createElement("div");
+        div.className = "qaA";
+        div.textContent = line;
+        list.appendChild(div);
+      }else{
+        const div = document.createElement("div");
+        div.style.margin="6px 0";
+        div.style.color="#374151";
+        div.textContent = line;
+        list.appendChild(div);
+      }
+    }
+    el("qaWrap").style.display = "";
+  }
+
+  async function loadInv(){
+    if(!invId){
+      setMsg("رابط غير صالح: inv_id مفقود.", false);
+      return null;
+    }
+    const { data, error } = await sb
+      .from("absence_investigation")
+      .select('id,"Employee ID","Employee Name",absence_date,status,"Department",employee_reply_text')
+      .eq("id", invId)
+      .maybeSingle();
+
+    if(error || !data){
+      setMsg("تعذر تحميل بيانات التحقيق.", false);
+      return null;
+    }
+    return data;
+  }
+
+  async function doApproveOrClose(inv){
+    // هذه الصفحة لا تغيّر أكوادك القديمة للاعتماد/الإغلاق لو كانت تعمل عندك
+    // لذلك سنكتفي بعرض الأزرار فقط، وتنفّذها أنت سابقاً من ملفك الحالي.
+    // ✅ إذا عندك اعتماد/إغلاق شغال بالفعل: اتركه كما هو ولا تستخدم هذه الصفحة لهذا الجزء.
+    setMsg("هذا الملف مخصص لمرحلة (بعد رد الموظف) لزرّي الإغلاق/الرفع.", true);
+  }
+
+  async function doReviewAction(p_action){
+    setMsg("جارٍ تنفيذ الإجراء...", true);
+
+    const { data, error } = await sb.rpc("absinv_review_action", {
+      p_inv_id: invId,
+      p_action
+    });
+
+    if(error){
+      setMsg("تعذر تنفيذ الإجراء. تحقق من صلاحيات الـ RPC/السياسات.", false);
+      return;
+    }
+    if(!data || data.ok !== true){
+      setMsg("تعذر تنفيذ الإجراء: " + (data && data.error ? data.error : "unknown"), false);
+      return;
+    }
+
+    if(p_action === "close"){
+      setMsg("تم إغلاق ملف التحقيق بنجاح ✅", true);
+    }else if(p_action === "escalate"){
+      setMsg("تم رفع الملف للشؤون القانونية/HR وتم جدولة البريد ✅", true);
+    }
+  }
+
+  function renderButtons(inv){
+    const box = el("buttons");
+    box.innerHTML = "";
+    box.style.display = "";
+
+    // بعد رد الموظف: نعرض زرّين فقط
+    const bClose = document.createElement("button");
+    bClose.className = "btn btnRed";
+    bClose.textContent = "✖ إغلاق ملف التحقيق";
+    bClose.onclick = ()=>doReviewAction("close");
+
+    const bEsc = document.createElement("button");
+    bEsc.className = "btn btnDark";
+    bEsc.textContent = "⚖️ رفع ملف التحقيق للشؤون القانونية";
+    bEsc.onclick = ()=>doReviewAction("escalate");
+
+    box.appendChild(bClose);
+    box.appendChild(bEsc);
+  }
+
+  (async function init(){
+    const inv = await loadInv();
+    if(!inv) return;
+
+    el("empName").textContent = inv["Employee Name"] || "—";
+    el("empId").textContent   = "(" + (inv["Employee ID"] ?? "—") + ")";
+    el("absDate").textContent = formatDateHuman(inv.absence_date);
+    el("dept").textContent    = inv["Department"] || "—";
+
+    renderQA(inv.employee_reply_text || "");
+
+    // ✅ هنا النقطة المهمة: نحن نتجاهل approve/close القديمة (مرحلة المدير) حتى لا نخرب شيء.
+    // هذه الصفحة تُستخدم بعد رد الموظف (Review)
+    renderButtons(inv);
+    el("subtitle").textContent = "يرجى الاطلاع على الرد واتخاذ الإجراء المناسب.";
+  })();
+</script>
+</body>
+</html>

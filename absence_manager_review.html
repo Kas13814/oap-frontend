@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OAP • مراجعة رد الموظف واتخاذ الإجراء</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#111827;
+      --muted:#94a3b8;
+      --line:rgba(255,255,255,.10);
+      --chip:#1d4ed8;
+      --ok:#16a34a;
+      --danger:#ef4444;
+      --btn:#2563eb;
+      --btnText:#fff;
+    }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -10%, rgba(37,99,235,.25), transparent 60%),
+                  radial-gradient(800px 500px at 10% 120%, rgba(16,185,129,.16), transparent 60%),
+                  var(--bg);
+      color:#e5e7eb;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .wrap{
+      width:min(980px, 100%);
+    }
+    .card{
+      background: rgba(17,24,39,.88);
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .head{
+      padding:22px 22px 14px;
+      border-bottom:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
+      position:relative;
+    }
+    .chip{
+      position:absolute;
+      top:16px;
+      left:16px;
+      background: rgba(37,99,235,.18);
+      border:1px solid rgba(37,99,235,.35);
+      color:#c7d2fe;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    h1{
+      margin:0;
+      font-size:22px;
+      line-height:1.4;
+      text-align:center;
+    }
+    .sub{
+      margin:8px 0 0;
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .body{
+      padding:20px 22px 22px;
+    }
+    .info{
+      background: rgba(255,255,255,.035);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:16px;
+    }
+    .info .title{
+      color:var(--muted);
+      font-size:13px;
+      margin-bottom:10px;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px 14px;
+      font-size:14px;
+      align-items:start;
+    }
+    .k{ color:var(--muted); }
+    .v{ color:#fff; font-weight:600; }
+    .qa{
+      margin-top:14px;
+      background: rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:16px;
+    }
+    .qa h2{
+      margin:0 0 10px;
+      font-size:15px;
+      color:#e5e7eb;
+    }
+    .qa-item{
+      padding:12px 0;
+      border-top:1px dashed rgba(255,255,255,.12);
+    }
+    .qa-item:first-child{ border-top:none; padding-top:0; }
+    .q{
+      color:#111827;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:700;
+      line-height:1.6;
+    }
+    .a{
+      margin-top:8px;
+      color:#1d4ed8;
+      background:#eff6ff;
+      border:1px solid #bfdbfe;
+      border-radius:12px;
+      padding:10px 12px;
+      line-height:1.8;
+      white-space:pre-wrap;
+    }
+    .actions{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin-top:16px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 16px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(37,99,235,.18);
+      color: var(--btnText);
+      text-decoration:none;
+      cursor:pointer;
+      font-weight:700;
+      font-size:14px;
+      min-width: 220px;
+    }
+    .btn:hover{ filter:brightness(1.08); }
+    .btn.ok{ background: rgba(22,163,74,.22); border-color: rgba(22,163,74,.35); }
+    .btn.danger{ background: rgba(239,68,68,.18); border-color: rgba(239,68,68,.35); min-width: 180px; }
+    .status{
+      margin-top:14px;
+      text-align:center;
+      font-size:13px;
+    }
+    .status.ok{ color:#86efac; }
+    .status.err{ color:#fca5a5; }
+    .foot{
+      border-top:1px solid var(--line);
+      padding:12px 16px;
+      text-align:center;
+      color:var(--muted);
+      font-size:12px;
+    }
+    @media (max-width:720px){
+      .kv{ grid-template-columns: 1fr; }
+      .btn{ width:100%; min-width:auto; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="chip">OAP • رد الموظف</div>
+        <h1>مراجعة رد الموظف على تحقيق الغياب</h1>
+        <div class="sub">يرجى مراجعة الأسئلة والإجابات ثم اختيار الإجراء المناسب.</div>
+      </div>
+
+      <div class="body">
+        <div class="info">
+          <div class="title">بيانات التحقيق</div>
+          <div class="kv">
+            <div class="k">الموظف:</div><div class="v" id="empName">—</div>
+            <div class="k">رقم الموظف:</div><div class="v" id="empId">—</div>
+            <div class="k">تاريخ الغياب:</div><div class="v" id="absDate">—</div>
+            <div class="k">القسم:</div><div class="v" id="dept">—</div>
+          </div>
+        </div>
+
+        <div class="qa">
+          <h2>الأسئلة والإجابات</h2>
+          <div id="qaList"></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn ok" id="btnHr">⚖️ رفع ملف التحقيق للشؤون القانونية</button>
+          <button class="btn danger" id="btnClose">✖ إغلاق ملف التحقيق</button>
+        </div>
+
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="foot">هذه رسالة نظامية صادرة من نظام OAP — يرجى عدم الرد على هذا البريد.</div>
+    </div>
+  </div>
+
+<script>
+/** ==========================
+ *  ✅ ضع بيانات Supabase هنا
+ *  ========================== */
+const SUPABASE_URL = "PUT_SUPABASE_URL_HERE";
+const SUPABASE_ANON_KEY = "PUT_SUPABASE_ANON_KEY_HERE";
+
+/** ========= Helpers ========= */
+const statusEl = document.getElementById("status");
+function setStatus(type, text){
+  statusEl.className = "status " + (type === "ok" ? "ok" : "err");
+  statusEl.textContent = text || "";
+}
+
+function getInvId(){
+  // Prefer hash params (avoids Defender "فحص الارتباط")
+  const hash = (window.location.hash || "").replace(/^#/, "");
+  const hp = new URLSearchParams(hash);
+  const fromHash = hp.get("inv_id");
+  if (fromHash) return fromHash;
+
+  const url = new URL(window.location.href);
+  return url.searchParams.get("inv_id");
+}
+
+function safeText(x){
+  return (x === null || x === undefined || x === "") ? "غير محدد" : String(x);
+}
+
+function renderQA(qas){
+  const box = document.getElementById("qaList");
+  box.innerHTML = "";
+  if (!qas || qas.length === 0){
+    box.innerHTML = "<div style='color:#94a3b8'>لا توجد إجابات محفوظة حتى الآن.</div>";
+    return;
+  }
+  for (const it of qas){
+    const item = document.createElement("div");
+    item.className = "qa-item";
+
+    const q = document.createElement("div");
+    q.className = "q";
+    q.textContent = it.question || "سؤال";
+
+    const a = document.createElement("div");
+    a.className = "a";
+    a.textContent = it.answer || "—";
+
+    item.appendChild(q);
+    item.appendChild(a);
+    box.appendChild(item);
+  }
+}
+
+(async function init(){
+  try{
+    const invId = getInvId();
+    if (!invId){
+      setStatus("err", "رابط غير صالح (inv_id مفقود)");
+      return;
+    }
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Load investigation + latest reply (if any)
+    // Tables:
+    // - absence_investigation (id uuid, "Employee ID", "Employee Name", absence_date, "Department", ...)
+    // - absence_investigation_reply (inv_id uuid, answers_json jsonb, created_at timestamptz, ...)
+    const { data: inv, error: invErr } = await supabase
+      .from("absence_investigation")
+      .select('id,"Employee ID","Employee Name",absence_date,"Department"')
+      .eq("id", invId)
+      .maybeSingle();
+
+    if (invErr || !inv){
+      setStatus("err", "تعذر تحميل بيانات التحقيق.");
+      return;
+    }
+
+    document.getElementById("empName").textContent = safeText(inv["Employee Name"]);
+    document.getElementById("empId").textContent   = safeText(inv["Employee ID"]);
+    document.getElementById("absDate").textContent = inv.absence_date ? new Date(inv.absence_date).toLocaleDateString("en-GB", { day:"2-digit", month:"long", year:"numeric" }) : "غير محدد";
+    document.getElementById("dept").textContent    = safeText(inv["Department"]);
+
+    const { data: rep, error: repErr } = await supabase
+      .from("absence_investigation_reply")
+      .select("answers_json, created_at")
+      .eq("inv_id", invId)
+      .order("created_at", { ascending:false })
+      .limit(1);
+
+    const latest = (!repErr && rep && rep.length) ? rep[0] : null;
+    const qas = latest && latest.answers_json ? latest.answers_json : [];
+    renderQA(qas);
+
+    // Buttons
+    document.getElementById("btnHr").addEventListener("click", async () => {
+      setStatus("", "");
+      try{
+        const { data, error } = await supabase.rpc(
+          "oap_hr_escalate_absence_investigation",
+          { p_inv_id: invId } // ✅ IMPORTANT: p_inv_id بالضبط
+        );
+        if (error) throw error;
+        setStatus("ok", "تم رفع ملف التحقيق للشؤون القانونية وإرسال البريد بنجاح.");
+        document.getElementById("btnHr").disabled = true;
+      }catch(e){
+        setStatus("err", "تعذر تنفيذ الإجراء. تحقق من صلاحيات الـ RPC/السياسات.");
+        console.error(e);
+      }
+    });
+
+    document.getElementById("btnClose").addEventListener("click", async () => {
+      setStatus("", "");
+      try{
+        const { data, error } = await supabase.rpc(
+          "oap_close_absence_investigation",
+          { p_inv_id: invId } // ✅ IMPORTANT
+        );
+        if (error) throw error;
+        setStatus("ok", "تم إغلاق ملف التحقيق بنجاح.");
+        document.getElementById("btnClose").disabled = true;
+      }catch(e){
+        setStatus("err", "تعذر تنفيذ الإجراء. تحقق من صلاحيات الـ RPC/السياسات.");
+        console.error(e);
+      }
+    });
+
+  }catch(err){
+    console.error(err);
+    setStatus("err", "حدث خطأ غير متوقع.");
+  }
+})();
+</script>
+</body>
+</html>

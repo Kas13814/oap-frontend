@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OAP — Join side panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+    :root{
+      --radius-xl: 22px;
+      --shadow-soft: 0 28px 80px rgba(15, 23, 42, 0.55);
+      --shadow-chip: 0 14px 36px rgba(15, 23, 42, 0.55);
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+
+    [data-theme="light"]{
+      --bg:#f4f2ec;
+      --ink:#111827;
+      --muted:#6b7280;
+      --panel:#F2ECE3;
+      --panel-soft:#f3f4f6;
+      --line:#d1d5db;
+      --accent:#111827;
+      --accent-soft:rgba(15, 23, 42, 0.06);
+      --accent-strong:#111827;
+      --danger:#b91c1c;
+      --success:#16a34a;
+      --chip-bg:#e5e7eb;
+    }
+    [data-theme="dark"]{
+      --bg:#020617;
+      --ink:#e5e7eb;
+      --muted:#9ca3af;
+      --panel:#020617;
+      --panel-soft:#020617;
+      --line:rgba(148, 163, 184, 0.45);
+      --accent:#38bdf8;
+      --accent-soft:rgba(56, 189, 248, 0.16);
+      --accent-strong:#0ea5e9;
+      --danger:#ef4444;
+      --success:#22c55e;
+      --chip-bg:rgba(15, 23, 42, 0.9);
+    }
+
+    *{box-sizing:border-box;}
+
+    html,body{
+      margin:0;
+      padding:0;
+      height:100%;
+    }
+
+    body{
+      min-height:100vh;
+      font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:transparent;
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      margin:0;
+      padding:0;
+    }
+
+    .shell{
+      max-width:520px;
+      width:100%;
+      border-radius:26px;
+      background:var(--panel);
+      border:1px solid rgba(209,213,219,.9);
+      box-shadow:var(--shadow-soft);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      position:relative;
+    }
+
+    [data-theme="dark"] .shell{
+      background:radial-gradient(circle at top,rgba(15,23,42,.96),rgba(15,23,42,1));
+      border-color:rgba(30,64,175,.8);
+    }
+
+    @media(max-width:960px){
+    body{
+      min-height:100vh;
+      font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:transparent;
+      color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      margin:0;
+      padding:0;
+    }
+    }
+
+    .shell__main{
+      padding:22px 24px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .shell__meta{display:none;}
+
+    /* header */
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .header-l{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .logo{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      background:
+        radial-gradient(circle at 0 0,rgba(56,189,248,.4),transparent 55%),
+        radial-gradient(circle at 100% 100%,rgba(129,140,248,.3),transparent 55%),
+        #020617;
+      border:1px solid rgba(148,163,184,.7);
+      display:grid;
+      place-items:center;
+      box-shadow:var(--shadow-chip);
+      color:#e5e7eb;
+      font-weight:600;
+      font-size:18px;
+    }
+    .header-title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    .header-title-main{
+      font-size:15px;
+      font-weight:600;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+    }
+    .header-title-sub{
+      font-size:11px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .header-r{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .chip{
+      border-radius:999px;
+      padding:4px 10px;
+      border:1px solid rgba(148,163,184,.7);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:var(--chip-bg);
+    }
+    .chip-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--success);
+      box-shadow:0 0 0 4px rgba(34,197,94,.28);
+    }
+
+    /* join panel */
+    .panel{
+      margin:0;
+      border-radius:24px 0 0 24px;
+      background:var(--panel);
+      border:1px solid rgba(209,213,219,.9);
+      box-shadow:0 24px 60px rgba(15,23,42,.08);
+      padding:18px 18px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:100vh;
+      width:100%;
+    }
+    /* Make the form body stretch so actions sit at the bottom */
+    .panel > .grid{
+      display:flex;
+      flex-direction:column;
+      flex:1 1 auto;
+      min-height:0;
+      gap:12px;
+      align-items:stretch;
+      justify-content:flex-start;
+    }
+
+
+    [data-theme="dark"] .panel{
+      background:radial-gradient(circle at top left,rgba(15,23,42,.96),rgba(15,23,42,1));
+      border-color:rgba(51,65,85,.9);
+      box-shadow:0 24px 70px rgba(15,23,42,.9);
+    }
+
+    .panel-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .panel-title{
+      font-size:14px;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .step-badge{
+      display:none;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.8);
+      padding:4px 10px;
+      font-size:11px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      color:var(--muted);
+      background:var(--panel-soft);
+    }
+
+    .grid{
+      margin-top:18px;
+      display:grid;
+      grid-template-columns:minmax(0,1fr);
+      gap:12px;
+    }
+    @media(max-width:720px){
+      .grid{grid-template-columns:minmax(0,1fr);}
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      font-size:12px;
+    }
+    .field-label{
+      font-weight:500;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:6px;
+    }
+    .field-label span.tag{
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+    }
+    .required{color:var(--danger); margin-left:3px;}
+
+    
+    
+    
+    
+
+    .row-wide{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:12px;
+    }
+
+    .pill{
+      border-radius:999px;
+      padding:7px 12px;
+      border:1px dashed rgba(156,163,175,.7);
+      background:var(--panel-soft);
+      font-size:12px;
+      color:var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    [data-theme="dark"] .pill{
+      background:rgba(15,23,42,.96);
+      border-color:rgba(55,65,81,.9);
+    }
+
+    .actions{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .left-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border-radius:8px;
+      border:1px solid transparent;
+      padding:9px 16px;
+      font-size:12px;
+      font-weight:500;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      transition:background .15s var(--ease),box-shadow .15s var(--ease),transform .08s,var(--ease);
+      background:var(--panel-soft);
+      color:var(--ink);
+    }
+    .btn span.icon{font-size:13px;}
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--accent),var(--accent-strong));
+      color:#f9fafb;
+      border-color:rgba(15,23,42,.12);
+      box-shadow:0 18px 50px rgba(15,23,42,.35);
+    }
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 22px 60px rgba(15,23,42,.4);}
+    .btn-primary:active{transform:translateY(0);box-shadow:0 14px 40px rgba(15,23,42,.45);}
+
+    .btn-ghost{
+      background:transparent;
+      border-color:rgba(209,213,219,.9);
+    }
+
+    .status-rail{
+      margin-top:10px;
+      border-radius:999px;
+      padding:7px 12px;
+      border:1px dashed rgba(156,163,175,.8);
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:var(--panel-soft);
+    }
+    .status-dot{
+      width:7px;
+      height:7px;
+      border-radius:999px;
+      background:rgba(148,163,184,.9);
+    }
+    .status-rail[data-mode="ok"] .status-dot{
+      background:var(--success);
+      box-shadow:0 0 0 4px rgba(34,197,94,.26);
+    }
+    .status-rail[data-mode="error"] .status-dot{
+      background:var(--danger);
+      box-shadow:0 0 0 4px rgba(248,113,113,.26);
+    }
+    .status-rail[data-mode="busy"] .status-dot{
+      background:#facc15;
+      box-shadow:0 0 0 4px rgba(250,204,21,.26);
+    }
+
+    .footer{
+      margin-top:8px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+      flex-wrap:wrap;
+    }
+    .footer a{
+      color:var(--accent);
+      text-decoration:none;
+      font-weight:500;
+    }
+    .footer a:hover{text-decoration:underline;}
+
+    /* meta */
+    .meta-card{
+      width:100%;
+      max-width:320px;
+      border-radius:22px;
+      background:
+        radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 55%),
+        linear-gradient(145deg,rgba(249,250,251,.96),rgba(243,244,246,1));
+      border:1px solid rgba(209,213,219,1);
+      box-shadow:var(--shadow-soft);
+      padding:18px 18px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      position:relative;
+      overflow:hidden;
+    }
+    [data-theme="dark"] .meta-card{
+      background:
+        radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 55%),
+        linear-gradient(145deg,rgba(15,23,42,.96),rgba(15,23,42,1));
+      border-color:rgba(30,64,175,.85);
+    }
+
+    .meta-pill{
+      border-radius:999px;
+      padding:4px 10px;
+      border:1px solid rgba(148,163,184,.7);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--muted);
+      background:var(--chip-bg);
+    }
+    .meta-title{
+      font-size:18px;
+      font-weight:600;
+      letter-spacing:.03em;
+    }
+    .meta-grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      font-size:11px;
+    }
+    .meta-chip{
+      border-radius:999px;
+      padding:6px 10px;
+      border:1px solid rgba(148,163,184,.75);
+      background:var(--chip-bg);
+      color:var(--ink);
+    }
+  
+    
+    
+    /* From Uiverse.io by TechByElijah */
+    .input-container {
+      position: relative;
+    }
+
+    .input {
+      font-size: 1em;
+      width: 100%;
+      padding: 0.6em 1em;
+      border: none;
+      border-radius: 6px;
+      background-color: #f8f8f8;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      color: #333;
+    }
+
+    .input:hover {
+      background-color: #f2f2f2;
+    }
+
+    .input:focus {
+      outline: none;
+      background-color: #fff;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .input::placeholder {
+      color: #999;
+    }
+
+    .highlight {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background-color: #000000;
+      transition: width 0.3s ease;
+    }
+
+    .input:focus + .highlight {
+      width: 100%;
+    }
+
+    @keyframes input-focus {
+      from {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0.1);
+      }
+
+      to {
+        transform: scale(1.02);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .input:focus {
+      animation: input-focus 0.3s ease;
+    }
+</style>
+</head>
+<body>
+<section class="panel">
+        <input id="tenantInput" type="hidden" value="1" />
+
+        <div class="panel-header">
+          <div class="panel-title">Join request</div>
+          <div class="step-badge">
+            <span>Step 1</span>
+            <span>Join</span>
+          </div>
+        </div>
+
+        
+        <div class="grid">
+          
+          <div class="field">
+            <label class="field-label">
+              <span>Employee ID<span class="required">*</span></span>
+              <span class="tag">Employee</span>
+            </label>
+            <div class="input-container">
+              <input id="employeeInput" class="input" type="text" inputmode="numeric" placeholder="Your SGS employee ID" />
+              <span class="highlight"></span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">
+              <span>Job role<span class="required">*</span></span>
+              <span class="tag">Role</span>
+            </label>
+            <div class="input-container">
+              <select id="roleSelect" class="input">
+                <option value="" disabled selected hidden>Select role</option>
+                <option value="employee">Employee</option>
+                <option value="control">Control</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="shift_manager">Shift Manager</option>
+                <option value="assistant_manager">Assistant Manager</option>
+                <option value="manager">Manager</option>
+                <option value="administrator">Administrator</option>
+              </select>
+              <span class="highlight"></span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="actions">
+          <div class="left-actions">
+            <button class="btn btn-ghost" type="button" id="clearBtn">
+              <span class="icon">⟳</span>
+              <span>Clear</span>
+            </button>
+            <button class="btn btn-primary" type="button" id="submitBtn">
+              <span class="icon">✚</span>
+              <span>Submit join request</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="status-rail" id="statusRail" data-mode="idle">
+          <span class="status-dot"></span>
+          <span id="statusText"></span>
+        </div>
+      </section>
+
+<script>
+    (function(){
+      const root = document.documentElement;
+      const KEY  = 'pref-theme';
+
+      function applyTheme(theme){
+        if(!theme) return;
+        root.setAttribute('data-theme', theme);
+      }
+
+      // initial sync with main page preference
+      const saved = localStorage.getItem(KEY);
+      const initial = saved || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+      applyTheme(initial);
+
+      // keep in sync when main page changes the theme (localStorage change)
+      window.addEventListener('storage', function(e){
+        if(e.key === KEY){
+          applyTheme(e.newValue);
+        }
+      });
+    })();
+  </script>
+<script src="nxs_config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+  const statusRail = document.getElementById("statusRail");
+  const statusText = document.getElementById("statusText");
+
+  function setStatus(mode, text){
+    if (!statusRail || !statusText) return;
+    statusRail.dataset.mode = mode;
+    statusText.textContent = text || "";
+  }
+
+  function clearForm(){
+    const tenantInput = document.getElementById("tenantInput");
+    const employeeInput = document.getElementById("employeeInput");
+    const roleSelect = document.getElementById("roleSelect");
+
+    if (tenantInput) tenantInput.value = "1";
+    if (employeeInput) employeeInput.value = "";
+    if (roleSelect) roleSelect.selectedIndex = 0;
+
+    setStatus("idle","Form cleared.");
+  }
+
+  const { createClient } = supabase;
+  const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
+
+  async function submitJoin(){
+    const tenantInput = document.getElementById("tenantInput");
+    const employeeInput = document.getElementById("employeeInput");
+    const roleSelect = document.getElementById("roleSelect");
+
+    const tenantId = parseInt((tenantInput && tenantInput.value) || "0", 10);
+    const employeeIdRaw = (employeeInput && employeeInput.value || "").trim();
+    const role = roleSelect && roleSelect.value;
+
+    if (!role) {
+      setStatus("error","Job role is required.");
+      return;
+    }
+
+    if (!tenantId || !employeeIdRaw){
+      setStatus("error","Tenant ID and Employee ID are required.");
+      return;
+    }
+
+    const employeeId = parseInt(employeeIdRaw, 10);
+    if (Number.isNaN(employeeId)) {
+      setStatus("error","Employee ID must be a number.");
+      return;
+    }
+
+    try {
+      setStatus("busy","Submitting join request…");
+
+      const { error } = await sb
+        .from("join_requests")
+        .insert({
+          tenant_id: tenantId,
+          employee_id: employeeId,
+          requested_role: role
+        });
+
+      if (error) {
+        console.error("join_requests insert error:", error);
+        setStatus("error", error.message || "Failed to submit join request.");
+        return;
+      }
+
+      setStatus("ok","Join request submitted.");
+    } catch (err) {
+      console.error(err);
+      setStatus("error", err.message || "Failed to submit join request.");
+    }
+  }
+
+  const clearBtn = document.getElementById("clearBtn");
+  const submitBtn = document.getElementById("submitBtn");
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      clearForm();
+    });
+  }
+
+  if (submitBtn) {
+    submitBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      submitJoin();
+    });
+  }
+</script>
+
+</body>
+</html>
