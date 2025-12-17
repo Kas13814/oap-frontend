@@ -1410,7 +1410,18 @@
 
 <script>
   // ===== Configuration & State =====
-  const API_URL = "/chat";
+  const API_BASE = "https://oap-backend-875458188350.europe-west1.run.app";
+
+async function sendToNXS(userText) {
+  const res = await fetch(`${API_BASE}/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: userText })
+  });
+
+  const data = await res.json();
+  return data;
+}
 
   const shellEl = document.getElementById("shell");
   const sidebarToggleOpenEl = document.getElementById("sidebarToggleOpen");
@@ -1944,23 +1955,7 @@
     abortController = new AbortController();
 
     try {
-      const payload = {
-        message: text,
-        lang: settings.language || "auto"
-      };
-
-      const response = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        signal: abortController.signal
-      });
-
-      if (!response.ok) {
-        throw new Error("Server error: " + response.status);
-      }
-
-      const data = await response.json();
+      const data = await sendToNXS(text);
       clearThinking();
       abortController = null;
 
