@@ -3,382 +3,361 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>OAP Login | تسجيل دخول اوبريشن KAS</title>
-  <meta name="description" content="صفحة تسجيل الدخول الرسمية لمنصة OAP (اوبريشن). للوصول إلى نظام KAS للتحليل والعمليات، يرجى إدخال بيانات الاعتماد الخاصة بك.">
-  <meta name="keywords" content="OAP, oap, KAS, kas, اوبريشن, OAP Login">
+  <title>OAP Login</title>
+
+  <!-- Basic hardening (client-side). Real security must be enforced server-side too. -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self';
+                 script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+                 connect-src 'self' https:;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                 font-src https://fonts.gstatic.com;
+                 img-src 'self' data:;
+                 base-uri 'self';
+                 form-action 'self';
+                 frame-ancestors 'none';">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
-    :root{
-      --radius-xl: 22px;
-      --shadow-soft: 0 28px 80px rgba(15, 23, 42, 0.55);
-      --ease: cubic-bezier(.22,.61,.36,1);
+    html, body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #F0EFE8;
     }
-    [data-theme="light"]{
-      --bg:#f4f2ec;
-      --ink:#111827;
-      --muted:#6b7280;
-      --panel:#ffffff;
-      --panel-soft:#f3f4f6;
-      --line:#d1d5db;
-      --accent:#111827;
-      --accent-soft:rgba(15,23,42,.06);
-      --danger:#b91c1c;
-      --success:#16a34a;
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #F0EFE8;
     }
-    [data-theme="dark"]{
-      --bg:#020617;
-      --ink:#e5e7eb;
-      --muted:#9ca3af;
-      --panel:#020617;
-      --panel-soft:#020617;
-      --line:rgba(148,163,184,.45);
-      --accent:#38bdf8;
-      --accent-soft:rgba(56,189,248,.16);
-      --danger:#ef4444;
-      --success:#22c55e;
+
+    /* From Uiverse.io by glisovic01 */
+    .login-box {
+      position: relative;
+      width: 400px;
+      padding: 52px 40px 40px 40px;
+      box-sizing: border-box;
+      background: rgba(0,0,0,.9);
+      box-shadow: 0 15px 25px rgba(0,0,0,.6);
+      border-radius: 10px;
     }
-    *{box-sizing:border-box;}
-    html,body{margin:0;padding:0;height:100%;}
-    body{
-      min-height:100vh;
-      font-family:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:
-        radial-gradient(circle at top left,rgba(56,189,248,.12),transparent 55%),
-        radial-gradient(circle at bottom right,rgba(129,140,248,.18),transparent 60%),
-        var(--bg);
-      color:var(--ink);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px 10px;
-      -webkit-font-smoothing:antialiased;
+
+    /* OAP label (top-left inside the box) */
+    .oap-tag{
+      position:absolute;
+      top: 14px;
+      left: 14px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      color: rgba(255,255,255,.9);
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      background: rgba(255,255,255,.04);
+      user-select: none;
+      pointer-events: none;
     }
-    .card{
-      width:100%;
-      max-width:420px;
-      border-radius:var(--radius-xl);
-      background:var(--panel);
-      border:1px solid rgba(209,213,219,.9);
-      box-shadow:var(--shadow-soft);
-      padding:22px 22px 18px;
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+
+    .login-box .login-title {
+      margin: 0 0 30px;
+      padding: 0;
+      color: #ffffff;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
     }
-    [data-theme="dark"] .card{
-      background:radial-gradient(circle at top left,rgba(15,23,42,.96),rgba(15,23,42,1));
-      border-color:rgba(51,65,85,.9);
+
+    .login-box .user-box { position: relative; }
+
+    .login-box .user-box input {
+      width: 100%;
+      padding: 10px 0;
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 30px;
+      border: none;
+      border-bottom: 1px solid #fff;
+      outline: none;
+      background: transparent;
     }
-    .logo-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
+
+    .login-box .user-box label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      padding: 10px 0;
+      font-size: 16px;
+      color: #fff;
+      pointer-events: none;
+      transition: .5s;
     }
-    .logo-left{
-      display:flex;
-      align-items:center;
-      gap:10px;
+
+    .login-box .user-box input:focus ~ label,
+    .login-box .user-box input:valid ~ label {
+      top: -20px;
+      left: 0;
+      color: #fff;
+      font-size: 12px;
     }
-    .logo-box{
-      width:40px;
-      height:40px;
-      border-radius:14px;
-      background:
-        radial-gradient(circle at 0 0,rgba(56,189,248,.4),transparent 55%),
-        radial-gradient(circle at 100% 100%,rgba(129,140,248,.3),transparent 55%),
-        #020617;
-      border:1px solid rgba(148,163,184,.7);
-      display:grid;
-      place-items:center;
-      color:#e5e7eb;
-      font-weight:600;
-      box-shadow:0 18px 40px rgba(15,23,42,.7);
+
+    /* Submit button (same animation as original <a>) */
+    .login-box .btn-submit {
+      position: relative;
+      display: inline-block;
+      padding: 10px 20px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 16px;
+      text-decoration: none;
+      text-transform: uppercase;
+      overflow: hidden;
+      transition: .5s;
+      margin-top: 10px;
+      letter-spacing: 3px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
     }
-    .logo-text-main{
-      font-size:16px;
-      font-weight:600;
-      letter-spacing:.08em;
-      text-transform:uppercase;
+
+    .login-box .btn-submit:hover {
+      background: #fff;
+      color: #272727;
+      border-radius: 5px;
     }
-    .logo-text-sub{
-      font-size:11px;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-      color:var(--muted);
+
+    .login-box .btn-submit span {
+      position: absolute;
+      display: block;
     }
-    .mode-pill{
-      border-radius:999px;
-      padding:4px 10px;
-      border:1px solid rgba(148,163,184,.7);
-      font-size:11px;
-      color:var(--muted);
-      background:var(--panel-soft);
+
+    .login-box .btn-submit span:nth-child(1) {
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #fff);
+      animation: btn-anim1 1.5s linear infinite;
     }
-    .fields{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-top:6px;
+
+    @keyframes btn-anim1 {
+      0% { left: -100%; }
+      50%,100% { left: 100%; }
     }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      font-size:12px;
+
+    .login-box .btn-submit span:nth-child(2) {
+      top: -100%;
+      right: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, #fff);
+      animation: btn-anim2 1.5s linear infinite;
+      animation-delay: .375s
     }
-    .label{color:var(--muted);font-weight:500;}
-    .required{color:var(--danger);margin-left:3px;}
-    .input{
-      border-radius:999px;
-      border:1px solid rgba(209,213,219,1);
-      background:#ffffff;
-      color:var(--ink);
-      padding:10px 14px;
-      font-size:13px;
-      outline:none;
-      transition:border-color .16s var(--ease),box-shadow .16s var(--ease);
+
+    @keyframes btn-anim2 {
+      0% { top: -100%; }
+      50%,100% { top: 100%; }
     }
-    [data-theme="dark"] .input{
-      background:rgba(15,23,42,.96);
-      border-color:rgba(55,65,81,.9);
+
+    .login-box .btn-submit span:nth-child(3) {
+      bottom: 0;
+      right: -100%;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(270deg, transparent, #fff);
+      animation: btn-anim3 1.5s linear infinite;
+      animation-delay: .75s
     }
-    .input::placeholder{color:rgba(148,163,175,.9);}
-    .actions{
-      margin-top:8px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+
+    @keyframes btn-anim3 {
+      0% { right: -100%; }
+      50%,100% { right: 100%; }
     }
-    .btn-main{
-      border-radius:999px;
-      border:1px solid transparent;
-      padding:10px 16px;
-      font-size:13px;
-      font-weight:500;
-      letter-spacing:.09em;
-      text-transform:uppercase;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:6px;
-      cursor:pointer;
-      background:linear-gradient(135deg,var(--accent),#000000);
-      color:#f9fafb;
-      box-shadow:0 22px 55px rgba(15,23,42,.56);
-      transition:background .14s var(--ease),box-shadow .14s var(--ease),transform .08s var(--ease);
+
+    .login-box .btn-submit span:nth-child(4) {
+      bottom: -100%;
+      left: 0;
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(360deg, transparent, #fff);
+      animation: btn-anim4 1.5s linear infinite;
+      animation-delay: 1.125s
     }
-    .btn-main:hover{transform:translateY(-1px);box-shadow:0 26px 60px rgba(15,23,42,.6);}
-    .btn-main:active{transform:translateY(0);box-shadow:0 18px 46px rgba(15,23,42,.7);}
+
+    @keyframes btn-anim4 {
+      0% { bottom: -100%; }
+      50%,100% { bottom: 100%; }
+    }
+
+    /* Links row (Reset / Join) */
     .links-row{
       display:flex;
-      flex-wrap:wrap;
-      gap:8px;
+      gap:10px;
       justify-content:space-between;
-      font-size:12px;
+      flex-wrap:wrap;
+      margin-top: 18px;
     }
     .link-btn{
-      border-radius:999px;
-      padding:8px 12px;
-      border:1px solid rgba(209,213,219,.9);
-      background:var(--panel-soft);
-      color:var(--ink);
-      text-decoration:none;
       display:inline-flex;
       align-items:center;
-      gap:6px;
-      font-size:12px;
-      font-weight:500;
-    }
-    .link-btn span.icon{font-size:13px;}
-    .bottom-row{
-      margin-top:6px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
       gap:8px;
-      font-size:11px;
-      color:var(--muted);
-    }
-    .bottom-row a{
-      color:var(--accent);
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.25);
+      color:#fff;
       text-decoration:none;
-      font-weight:500;
+      font-size: 13px;
+      transition: .2s;
+      background: rgba(255,255,255,.04);
     }
-    .bottom-row a:hover{text-decoration:underline;}
-    .status{
-      margin-top:6px;
-      font-size:12px;
-      line-height:1.6;
-      color:var(--muted);
-      white-space:pre-line;
+    .link-btn:hover{
+      background: rgba(255,255,255,.12);
+      color:#fff;
     }
-    .status.error{color:var(--danger);}
-    .status.success{color:var(--success);}
-  
-.status-box {
-  margin-top: 10px;
-  font-size: 13px;
-  min-height: 18px;
-}
-.status-ok {
-  color: #0a7f2e;
-}
-.status-error {
-  color: #b00020;
-}
 
-</style>
+    .status-box {
+      margin-top: 14px;
+      font-size: 13px;
+      min-height: 18px;
+      color: #aaa;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+    .status-ok { color: #22c55e; }
+    .status-error { color: #ef4444; }
+  </style>
 </head>
+
 <body>
-  <script>
-    (function(){
-      const root=document.documentElement;
-      const KEY='pref-theme';
-      const saved=localStorage.getItem(KEY);
-      const initial=saved || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light':'dark');
-      root.setAttribute('data-theme',initial);
-    })();
-  </script>
+  <div class="login-box" role="dialog" aria-label="OAP Login">
+    <div class="oap-tag">OAP</div>
 
-  <div class="card">
-    <div class="logo-row">
-      <div class="logo-left">
-        <div class="logo-box">NX</div>
-        <div>
-          <div class="login-title">OAP Platform</div>
-          <div class="logo-text-sub">LOGIN</div>
-        </div>
-      </div>
-      <div class="mode-pill">Secure login</div>
-    </div>
+    <p class="login-title">Login</p>
 
-    <div class="fields">
-      <div class="field">
-        <div class="label">Employee ID<span class="required">*</span></div>
-        <input id="employeeId" class="input" type="text" placeholder="Your SGS employee ID" autocomplete="username" />
+    <form id="loginForm" autocomplete="on" novalidate>
+      <div class="user-box">
+        <input id="Employee_login" name="employee" type="text"
+               required
+               inputmode="numeric"
+               pattern="[0-9]{4,20}"
+               minlength="4"
+               maxlength="20"
+               autocomplete="username"
+               aria-label="Employee ID" />
+        <label>Employee ID</label>
       </div>
-      <div class="field">
-        <div class="label">Password<span class="required">*</span></div>
-        <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password" />
-      </div>
-    </div>
 
-    <div class="actions">
-      <button id="btnLogin" class="btn-main" type="button">
-        <span>Sign in</span>
+      <div class="user-box">
+        <input id="Password" name="password" type="password"
+               required
+               minlength="4"
+               maxlength="128"
+               autocomplete="current-password"
+               aria-label="Password" />
+        <label>Password</label>
+      </div>
+
+      <button id="Login_button" class="btn-submit" type="submit">
+        <span></span><span></span><span></span><span></span>
+        Submit
       </button>
 
-      <div class="links-row">
+      <div class="links-row" aria-label="Additional actions">
         <a class="link-btn" href="password_full_flow.html">
-          <span class="icon">⟳</span>
+          <span aria-hidden="true">⟳</span>
           <span>Reset password</span>
         </a>
         <a class="link-btn" href="joining.html">
-          <span class="icon">✚</span>
+          <span aria-hidden="true">✚</span>
           <span>Join workspace</span>
         </a>
       </div>
-    </div>
 
-    <div id="status" class="status"></div>
-
-    <div class="bottom-row">
-      <span></span>
-      <a href="index.html">Back to home</a>
-    </div>
+      <div id="status_box" class="status-box" role="status" aria-live="polite"></div>
+    </form>
   </div>
 
   <script src="nxs_config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  // OAP Login using Supabase Auth
-  const { createClient } = supabase;
-  const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
 
-  const employeeInput = document.getElementById("Employee_login");
-  const passwordInput = document.getElementById("Password");
-  const btnLogin = document.getElementById("Login_button");
-  const statusBox = document.getElementById("status_box");
+    const employeeInput = document.getElementById("Employee_login");
+    const passwordInput = document.getElementById("Password");
+    const btnLogin = document.getElementById("Login_button");
+    const statusBox = document.getElementById("status_box");
+    const form = document.getElementById("loginForm");
 
-  function setStatus(message, type) {
-    if (!statusBox) return;
-    statusBox.textContent = message || "";
-    statusBox.className = "";
-    if (message) {
-      statusBox.classList.add(type === "error" ? "status-error" : "status-ok");
-    }
-  }
-
-  async function callLogin() {
-    const employee_login = (employeeInput.value || "").trim();
-    const password = (passwordInput.value || "").trim();
-
-    if (!employee_login || !password) {
-      setStatus("Please enter both Employee ID and Password.", "error");
-      return;
+    function setStatus(message, type) {
+      statusBox.textContent = message || "";
+      statusBox.classList.remove("status-ok", "status-error");
+      if (message) statusBox.classList.add(type === "error" ? "status-error" : "status-ok");
     }
 
-    // بناء البريد من رقم الموظف
-    const email = employee_login + "@saudiags.com";
+    function cleanDigits(value) {
+      return (value || "").replace(/[^\d]/g, "").trim();
+    }
 
-    btnLogin.disabled = true;
-    setStatus("Checking credentials with OAP Auth...", "");
+    async function callLogin() {
+      const employee_login = cleanDigits(employeeInput.value);
+      const password = (passwordInput.value || "").trim();
 
-    try {
-      const { data, error } = await sb.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        const code = error.message || error.name || "LOGIN_FAILED";
-        if (code.includes("Invalid login credentials")) {
-          setStatus("Invalid Employee ID or password.", "error");
-        } else {
-          setStatus("Login failed: " + code, "error");
-        }
+      if (!employee_login || !password) {
+        setStatus("Please enter both Employee ID and Password.", "error");
         return;
       }
 
-      const session = data && data.session;
-      const jwt = session && session.access_token;
-      if (jwt) {
-        try {
-          localStorage.setItem("oap_jwt", jwt);
-        } catch (_) {
-          // ignore quota errors
+      const email = employee_login + "@saudiags.com";
+
+      btnLogin.disabled = true;
+      setStatus("Checking credentials with OAP Auth...", "ok");
+
+      try {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          const msg = (error.message || "").toLowerCase();
+          if (msg.includes("invalid login credentials")) {
+            setStatus("Invalid Employee ID or password.", "error");
+          } else {
+            setStatus("Login failed: " + (error.message || "LOGIN_FAILED"), "error");
+          }
+          return;
         }
+
+        const session = data && data.session;
+        const jwt = session && session.access_token;
+        if (jwt) {
+          try { localStorage.setItem("oap_jwt", jwt); } catch (_) {}
+        }
+
+        setStatus("Login successful. Welcome to OAP.", "ok");
+        setTimeout(() => { window.location.href = "index.html"; }, 800);
+
+      } catch (err) {
+        console.error(err);
+        setStatus("Login failed: " + ((err && err.message) || "Network error."), "error");
+      } finally {
+        btnLogin.disabled = false;
       }
-
-      setStatus("Login successful. Welcome to OAP.", "ok");
-      setTimeout(() => {
-        window.location.href = "index.html";
-      }, 800);
-    } catch (err) {
-      console.error(err);
-      const msg = (err && err.message) || "Network error.";
-      setStatus("Login failed: " + msg, "error");
-    } finally {
-      btnLogin.disabled = false;
     }
-  }
 
-  if (btnLogin) {
-    btnLogin.addEventListener("click", (e) => {
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
       callLogin();
     });
-  }
-
-  if (passwordInput) {
-    passwordInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        callLogin();
-      }
-    });
-  }
-</script>
+  </script>
 </body>
 </html>
