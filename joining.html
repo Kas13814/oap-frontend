@@ -91,6 +91,12 @@
       border-bottom: 1px solid #fff;
       outline: none;
       background: transparent;
+    /* Fix: add horizontal padding to Employee ID input */
+    .login-box .user-box input{
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
     }
 
     /* dropdown background requested */
@@ -318,10 +324,31 @@
   </div>
 
   <script src="oap_config.js"></script>
+  <script src="nxs_config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const { createClient } = supabase;
-    const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
+    function getSupabaseClient(){
+      // Accept multiple config filenames/variable names to avoid deployment mismatches.
+      const url = window.NXS_SUPABASE_URL || window.OAP_SUPABASE_URL || window.SUPABASE_URL;
+      const key = window.NXS_SUPABASE_ANON_KEY || window.OAP_SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY;
+      if(!url || !key){
+        setStatus("❌ لم يتم تحميل ملف الإعدادات (config). تأكد من وجود oap_config.js أو nxs_config.js في نفس المجلد.", "error");
+        return null;
+      }
+
+      if(!window.supabase || !window.supabase.createClient){
+        setStatus("❌ تعذر تحميل مكتبة Supabase. تحقق من اتصال الإنترنت أو سياسة الحماية (CSP).", "error");
+        return null;
+      }
+
+      try{
+        return window.supabase.createClient(url, key);
+      }catch(e){
+        console.error(e);
+        setStatus("❌ تعذر تهيئة الاتصال. يرجى المحاولة مرة أخرى أو التواصل مع المسؤول.", "error");
+        return null;
+      }
+    }
 
     const tenantInput = document.getElementById("tenantInput");
     const employeeInput = document.getElementById("employeeInput");
@@ -337,8 +364,13 @@
       if (message) statusBox.classList.add(type === "error" ? "status-error" : "status-ok");
     }
 
+    function normalizeDigits(s){
+      if(!s) return s;
+      const map = {'٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+      return String(s).replace(/[٠-٩]/g, ch => map[ch]);
+    }
     function cleanDigits(value) {
-      return (value || "").replace(/[^\d]/g, "").trim();
+      return normalizeDigits(value || "").replace(/[^0-9]/g, "").trim();
     }
 
     function clearForm(){
@@ -376,6 +408,9 @@
       setStatus("جاري إرسال الطلب…", "ok");
 
       try{
+        const sb = getSupabaseClient();
+        if(!sb) return;
+
         const { error } = await sb
           .from("join_requests")
           .insert({
