@@ -1,11 +1,12 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <title>TCC Analytics Console</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAP KSA | لوحة تحكم الاستعلامات KAS</title>
+    <meta name="description" content="لوحة تحكم OAP المتقدمة لإدارة عمليات وتحليلات KAS. تتبع البيانات والتقارير بدقة عالية.">
+    <meta name="keywords" content="OAP, KAS, اوبريشن, تحليلات, استعلامات">
+<style>
     :root {
       --bg-main: #111827;
       --bg-sidebar: #020617;
@@ -654,7 +655,7 @@
   <aside class="sidebar">
     <div class="brand-row">
       <span class="brand-dot"></span>
-      <span class="brand-title">TCC Analytics</span>
+      <span class="brand-title">OAP Analytics</span>
     </div>
 
     <div class="nav-section-title">Datasets</div>
@@ -716,7 +717,7 @@
     <div class="top-bar">
       <div class="top-left">
         <div class="title">Search & Analytics</div>
-        <div class="sub" id="currentDatasetLabel">Flight delays (TCC)</div>
+        <div class="sub" id="currentDatasetLabel">OAP Queries</div>
       </div>
       <div class="top-right">
 <button class="mini-btn" type="button" id="btnBack"
@@ -740,7 +741,7 @@
     <section class="card">
       <div class="card-header">
         <div class="card-title">Filters</div>
-        <span class="badge badge-sky" id="queryKeyLabel">TCC_DELAY_SUMMARY</span>
+        <span class="badge badge-sky" id="queryKeyLabel">OAP_QUERY_CONSOLE</span>
       </div>
 
       <div class="filters-grid">
@@ -906,6 +907,11 @@
 </script>
 
 <script>
+  // حماية الصفحة: إذا لم يكن هناك جلسة دخول، ارجع لصفحة تسجيل الدخول فوراً
+  if (!localStorage.getItem('isLoggedIn')) { 
+    window.location.href = 'index.html'; 
+  }
+
   const API_ANALYTICS_URL = "/api/analytics/run"; // عدّلها إذا لزم
 
   const datasetList = document.getElementById("datasetList");
