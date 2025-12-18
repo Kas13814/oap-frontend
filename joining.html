@@ -594,98 +594,129 @@
       });
     })();
   </script>
-<script src="nxs_config.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-  const statusRail = document.getElementById("statusRail");
-  const statusText = document.getElementById("statusText");
+<script src="nxs_config.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script defer>
+  (function(){
+    const statusRail = document.getElementById("statusRail");
+    const statusText = document.getElementById("statusText");
 
-  function setStatus(mode, text){
-    if (!statusRail || !statusText) return;
-    statusRail.dataset.mode = mode;
-    statusText.textContent = text || "";
-  }
-
-  function clearForm(){
-    const tenantInput = document.getElementById("tenantInput");
-    const employeeInput = document.getElementById("employeeInput");
-    const roleSelect = document.getElementById("roleSelect");
-
-    if (tenantInput) tenantInput.value = "1";
-    if (employeeInput) employeeInput.value = "";
-    if (roleSelect) roleSelect.selectedIndex = 0;
-
-    setStatus("idle","Form cleared.");
-  }
-
-  const { createClient } = supabase;
-  const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
-
-  async function submitJoin(){
-    const tenantInput = document.getElementById("tenantInput");
-    const employeeInput = document.getElementById("employeeInput");
-    const roleSelect = document.getElementById("roleSelect");
-
-    const tenantId = parseInt((tenantInput && tenantInput.value) || "0", 10);
-    const employeeIdRaw = (employeeInput && employeeInput.value || "").trim();
-    const role = roleSelect && roleSelect.value;
-
-    if (!role) {
-      setStatus("error","Job role is required.");
-      return;
+    function setStatus(mode, text){
+      if (!statusRail || !statusText) return;
+      statusRail.dataset.mode = mode;
+      statusText.textContent = text || "";
     }
 
-    if (!tenantId || !employeeIdRaw){
-      setStatus("error","Tenant ID and Employee ID are required.");
-      return;
+    function clearForm(){
+      const tenantInput = document.getElementById("tenantInput");
+      const employeeInput = document.getElementById("employeeInput");
+      const roleSelect = document.getElementById("roleSelect");
+
+      if (tenantInput) tenantInput.value = "1";
+      if (employeeInput) employeeInput.value = "";
+      if (roleSelect) roleSelect.selectedIndex = 0;
+
+      setStatus("idle","Form cleared.");
     }
 
-    const employeeId = parseInt(employeeIdRaw, 10);
-    if (Number.isNaN(employeeId)) {
-      setStatus("error","Employee ID must be a number.");
-      return;
+    function getSupabaseClient(){
+      // After deployment the most common issue is that nxs_config.js is not found/loaded
+      // which leaves these values undefined.
+      const url = window.NXS_SUPABASE_URL;
+      const key = window.NXS_SUPABASE_ANON_KEY;
+
+      if (!url || !key){
+        setStatus("error","Supabase config not loaded. Ensure nxs_config.js is deployed in the same folder and is publicly accessible.");
+        return null;
+      }
+
+      if (!window.supabase || !window.supabase.createClient){
+        setStatus("error","Supabase library failed to load. Check network/CSP and the CDN script.");
+        return null;
+      }
+
+      try{
+        return window.supabase.createClient(url, key);
+      } catch (e){
+        console.error("createClient error:", e);
+        setStatus("error", e.message || "Failed to initialize Supabase client.");
+        return null;
+      }
     }
 
-    try {
-      setStatus("busy","Submitting join request…");
+    async function submitJoin(sb){
+      const tenantInput = document.getElementById("tenantInput");
+      const employeeInput = document.getElementById("employeeInput");
+      const roleSelect = document.getElementById("roleSelect");
 
-      const { error } = await sb
-        .from("join_requests")
-        .insert({
-          tenant_id: tenantId,
-          employee_id: employeeId,
-          requested_role: role
-        });
+      const tenantId = parseInt((tenantInput && tenantInput.value) || "0", 10);
+      const employeeIdRaw = (employeeInput && employeeInput.value || "").trim();
+      const role = roleSelect && roleSelect.value;
 
-      if (error) {
-        console.error("join_requests insert error:", error);
-        setStatus("error", error.message || "Failed to submit join request.");
+      if (!role) {
+        setStatus("error","Job role is required.");
         return;
       }
 
-      setStatus("ok","Join request submitted.");
-    } catch (err) {
-      console.error(err);
-      setStatus("error", err.message || "Failed to submit join request.");
+      if (!tenantId || !employeeIdRaw){
+        setStatus("error","Tenant ID and Employee ID are required.");
+        return;
+      }
+
+      const employeeId = parseInt(employeeIdRaw, 10);
+      if (Number.isNaN(employeeId)) {
+        setStatus("error","Employee ID must be a number.");
+        return;
+      }
+
+      try {
+        setStatus("busy","Submitting join request…");
+
+        const { error } = await sb
+          .from("join_requests")
+          .insert({
+            tenant_id: tenantId,
+            employee_id: employeeId,
+            requested_role: role
+          });
+
+        if (error) {
+          console.error("join_requests insert error:", error);
+          setStatus("error", error.message || "Failed to submit join request.");
+          return;
+        }
+
+        setStatus("ok","Join request submitted.");
+      } catch (err) {
+        console.error(err);
+        setStatus("error", err.message || "Failed to submit join request.");
+      }
     }
-  }
 
-  const clearBtn = document.getElementById("clearBtn");
-  const submitBtn = document.getElementById("submitBtn");
+    // Bind after everything is parsed + deferred scripts are available
+    window.addEventListener("DOMContentLoaded", function(){
+      setStatus("idle","");
 
-  if (clearBtn) {
-    clearBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      clearForm();
+      const clearBtn = document.getElementById("clearBtn");
+      const submitBtn = document.getElementById("submitBtn");
+
+      if (clearBtn) {
+        clearBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          clearForm();
+        });
+      }
+
+      if (submitBtn) {
+        submitBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const sb = getSupabaseClient();
+          if (!sb) return;
+          submitJoin(sb);
+        });
+      }
     });
-  }
-
-  if (submitBtn) {
-    submitBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      submitJoin();
-    });
-  }
+  })();
 </script>
 
 </body>
