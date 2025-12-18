@@ -620,13 +620,13 @@
     }
 
     function getSupabaseClient(){
-      // After deployment the most common issue is that oap_config.js is not found/loaded
+      // After deployment the most common issue is that nxs_config.js is not found/loaded
       // which leaves these values undefined.
       const url = window.NXS_SUPABASE_URL;
       const key = window.NXS_SUPABASE_ANON_KEY;
 
       if (!url || !key){
-        setStatus("error","Supabase config not loaded. Ensure oap_config.js is deployed in the same folder and is publicly accessible.");
+        setStatus("error","Supabase config not loaded. Ensure nxs_config.js is deployed in the same folder and is publicly accessible.");
         return null;
       }
 
