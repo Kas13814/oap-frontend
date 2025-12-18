@@ -3,6 +3,12 @@
 <!-- build: 2025-10-21_#1 -->
 <html lang="ar" dir="ltr">
 <head>
+<script>
+  // إذا المستخدم غير مسجل دخول -> ودّه لصفحة تسجيل الدخول
+  if (!localStorage.getItem('isLoggedIn')) {
+    window.location.href = 'Login.html';
+  }
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>OAP KSA | اوبريشن - منصة العمليات المتكاملة KAS</title>
