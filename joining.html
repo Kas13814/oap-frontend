@@ -416,8 +416,9 @@
         }
 
         setStatus("✅ تم إرسال طلب الانضمام بنجاح.", "ok");
-        // Optional: keep values or clear
-        // clearForm();
+        // Clear fields only after successful send
+        clearForm();
+        setStatus("✅ تم إرسال طلب الانضمام بنجاح.", "ok");
       } catch (err){
         console.error(err);
         setStatus("❌ تعذر إرسال الطلب. يرجى المحاولة مرة أخرى، أو التواصل مع المسؤول وإبلاغه بالمشكلة.", "error");
