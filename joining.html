@@ -528,11 +528,6 @@
               <input id="employeeInput" class="input" type="text" inputmode="numeric" placeholder="Your SGS employee ID" />
               <span class="highlight"></span>
             </div>
-
-          <div class="field">
-            <label for="fullNameInput">Full Name</label>
-            <input id="fullNameInput" type="text" placeholder="Enter full name" />
-          </div>
           </div>
 
           <div class="field">
@@ -617,9 +612,7 @@
       const employeeInput = document.getElementById("employeeInput");
       const roleSelect = document.getElementById("roleSelect");
 
-      
-      const fullNameInput = document.getElementById("fullNameInput");
-if (tenantInput) tenantInput.value = "1";
+      if (tenantInput) tenantInput.value = "1";
       if (employeeInput) employeeInput.value = "";
       if (roleSelect) roleSelect.selectedIndex = 0;
 
@@ -660,10 +653,7 @@ if (tenantInput) tenantInput.value = "1";
       const employeeIdRaw = (employeeInput && employeeInput.value || "").trim();
       const role = roleSelect && roleSelect.value;
 
-      
-
-      const fullName = (fullNameInput && fullNameInput.value || "").trim();
-if (!role) {
+      if (!role) {
         setStatus("error","Job role is required.");
         return;
       }
@@ -673,13 +663,7 @@ if (!role) {
         return;
       }
 
-      
-      if (!fullName){
-        setStatus("error","Full Name is required.");
-        return;
-      }
-
-const employeeId = parseInt(employeeIdRaw, 10);
+      const employeeId = parseInt(employeeIdRaw, 10);
       if (Number.isNaN(employeeId)) {
         setStatus("error","Employee ID must be a number.");
         return;
@@ -693,8 +677,7 @@ const employeeId = parseInt(employeeIdRaw, 10);
           .insert({
             tenant_id: tenantId,
             employee_id: employeeId,
-            requested_role: role,
-            full_name: fullName
+            requested_role: role
           });
 
         if (error) {
