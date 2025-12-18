@@ -32,7 +32,7 @@
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
     const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+    const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_ANON_KEY"; // ضع نفس المفتاح الموجود بملف قرار الغياب
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const msgEl   = document.getElementById("msg");
@@ -43,7 +43,7 @@
       stateEl.textContent = text;
     }
 
-    // ✅ نقرأ من # ثم من ? (نفس آليتك بملف الغياب)
+    // نفس الآلية: نقرأ من # ثم من ?
     function getParams() {
       const url = new URL(window.location.href);
       const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
@@ -82,12 +82,12 @@
 
       if (action === "approve" && reqRow.status === "approved") {
         state("ok", "تمت الموافقة مسبقًا.");
-        msgEl.textContent = `Employee ID: ${reqRow.employee_id} — Email: ${reqRow.email}`;
+        msgEl.textContent = `الموظف: ${reqRow.employee_id} — البريد: ${reqRow.email}`;
         return;
       }
       if (action === "reject" && reqRow.status === "rejected") {
         state("ok", "تم الإغلاق/الرفض مسبقًا.");
-        msgEl.textContent = `Employee ID: ${reqRow.employee_id} — Email: ${reqRow.email}`;
+        msgEl.textContent = `الموظف: ${reqRow.employee_id} — البريد: ${reqRow.email}`;
         return;
       }
 
@@ -103,7 +103,7 @@
         return;
       }
 
-      // إرسال البريد فورًا
+      // إرسال البريد فورًا (بدون انتظار cron) — نفس آليتك
       try {
         await fetch("https://inuqlhkoaoeiycefvjyj.supabase.co/functions/v1/nxs-email-worker", {
           method: "POST",
@@ -113,7 +113,7 @@
       } catch (_) {}
 
       state("ok", action === "approve" ? "تم الاعتماد وإرسال التفعيل للموظف ✅" : "تم إغلاق الطلب دون اعتماد ✅");
-      msgEl.textContent = `Employee ID: ${reqRow.employee_id} — Email: ${reqRow.email}`;
+      msgEl.textContent = `الموظف: ${reqRow.employee_id} — البريد: ${reqRow.email}`;
     }
 
     start().catch((e) => {
