@@ -664,6 +664,8 @@
       }
 
       const employeeId = parseInt(employeeIdRaw, 10);
+      const email = `${employeeId}@saudiags.com`;
+      const username = String(employeeId);
       if (Number.isNaN(employeeId)) {
         setStatus("error","Employee ID must be a number.");
         return;
@@ -677,6 +679,8 @@
           .insert({
             tenant_id: tenantId,
             employee_id: employeeId,
+            email: email,
+            username: username,
             requested_role: role
           });
 
