@@ -413,7 +413,15 @@
         } catch (_) {}
 
         setStatus("Login successful. Welcome to OAP.", "ok");
-        setTimeout(() => { window.location.href = "index.html"; }, 200);
+
+        // ✅ Redirect to the home page (index.html)
+        // - When hosted on a domain: go to the site root (/index.html)
+        // - When opened locally (file://): go to index.html in the same folder
+        const homeUrl = (window.location.origin && window.location.origin !== "null")
+          ? (window.location.origin.replace(/\/$/, "") + "/index.html")
+          : new URL("index.html", window.location.href).href;
+
+        setTimeout(() => { window.location.replace(homeUrl); }, 50);
 
       } catch (err) {
         console.error(err);
