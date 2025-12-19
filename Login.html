@@ -412,50 +412,122 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        setStatus("Login successful. Redirecting to the home page…", "ok");
+        setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // ✅ Robust redirect to index.html
-        // Tries multiple safe candidates (root, same folder, one level up) and multiple navigation methods.
+        // --- Redirect to Home (index.html) ---
+        // Some environments (embedded webviews / iframes) may restrict automatic navigation.
+        // We therefore try multiple navigation methods AND show a fallback button if needed.
         const currentHref = window.location.href;
 
+        // Hide the login form so the page clearly "moves on" even if navigation is blocked.
+        try { if (form) form.style.display = "none"; } catch (_) {}
+
+        // Overlay UI while redirecting (minimal, no dependency on existing CSS)
+        try {
+          const overlay = document.createElement("div");
+          overlay.id = "oapRedirectOverlay";
+          overlay.style.cssText =
+            "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;" +
+            "background:rgba(0,0,0,.55);padding:24px;text-align:center;color:#fff;font-family:inherit;";
+          overlay.innerHTML = `
+            <div style="max-width:560px">
+              <div style="font-size:20px;font-weight:800;margin-bottom:8px">جارٍ فتح الصفحة الرئيسية…</div>
+              <div style="opacity:.9;line-height:1.7;margin-bottom:16px">
+                إذا لم يتم الانتقال تلقائياً خلال ثوانٍ، اضغط زر <b>فتح الصفحة الرئيسية</b>.
+              </div>
+              <button id="oapGoHomeBtn" type="button"
+                style="padding:10px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:800">
+                فتح الصفحة الرئيسية
+              </button>
+              <div id="oapGoHomeHint" style="margin-top:12px;font-size:12px;opacity:.85"></div>
+            </div>`;
+          document.body.appendChild(overlay);
+        } catch (_) {}
+
+        // Build candidate URLs for index.html
         const candidates = [];
+        try { candidates.push(new URL("index.html", window.location.href).href); } catch (_) {}
+        try { candidates.push(new URL("./index.html", window.location.href).href); } catch (_) {}
+        try { candidates.push(new URL("/index.html", window.location.href).href); } catch (_) {}
+        try { candidates.push(new URL("../index.html", window.location.href).href); } catch (_) {}
         try {
           if (window.location.origin && window.location.origin !== "null") {
             candidates.push(window.location.origin.replace(/\/$/, "") + "/index.html");
           }
         } catch (_) {}
-
-        try { candidates.push(new URL("index.html", window.location.href).href); } catch (_) {}
-        try { candidates.push(new URL("../index.html", window.location.href).href); } catch (_) {}
-
         const homeCandidates = Array.from(new Set(candidates.filter(Boolean)));
 
-        function tryNavigate(url) {
+        function hint(url) {
+          try {
+            const el = document.getElementById("oapGoHomeHint");
+            if (el) el.textContent = "المسار المستخدم: " + url;
+          } catch (_) {}
+        }
+
+        function navigate(url) {
+          if (!url) return false;
+          hint(url);
+
+          // 1) Best: replace (no back button to login)
           try { window.location.replace(url); return true; } catch (_) {}
+
+          // 2) assign / href
           try { window.location.assign(url); return true; } catch (_) {}
           try { window.location.href = url; return true; } catch (_) {}
-          try { if (window.top) window.top.location.href = url; return true; } catch (_) {}
-          try { if (window.parent) window.parent.location.href = url; return true; } catch (_) {}
+
+          // 3) Anchor click (works in some restricted webviews)
+          try {
+            const a = document.createElement("a");
+            a.href = url;
+            a.target = "_self";
+            a.rel = "noopener";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            return true;
+          } catch (_) {}
+
+          // 4) window.open in same tab
           try { window.open(url, "_self"); return true; } catch (_) {}
+
           return false;
         }
 
-        // 1) First attempt (next frame so the success message renders)
-        requestAnimationFrame(() => {
-          tryNavigate(homeCandidates[0] || "index.html");
+        // Wire the manual fallback button
+        try {
+          const btn = document.getElementById("oapGoHomeBtn");
+          if (btn) btn.onclick = () => navigate(homeCandidates[0] || "index.html");
+        } catch (_) {}
 
-          // 2) Fallback attempts if we are still on the same page after a moment
-          setTimeout(() => {
-            try {
-              if (window.location.href === currentHref) {
-                for (const u of homeCandidates) {
-                  if (tryNavigate(u)) break;
-                }
+        // Attempt 1 (soon, so the success message is visible briefly)
+        setTimeout(() => {
+          navigate(homeCandidates[0] || "index.html");
+        }, 50);
+
+        // Attempt 2 (cycle candidates)
+        setTimeout(() => {
+          try {
+            if (window.location.href === currentHref) {
+              for (const u of homeCandidates) {
+                if (navigate(u)) break;
               }
-            } catch (_) {}
-          }, 700);
-        });
-} catch (err) {
+            }
+          } catch (_) {}
+        }, 700);
+
+        // Attempt 3 (meta refresh as a last resort)
+        setTimeout(() => {
+          try {
+            if (window.location.href === currentHref) {
+              const meta = document.createElement("meta");
+              meta.httpEquiv = "refresh";
+              meta.content = "0;url=" + (homeCandidates[0] || "index.html");
+              document.head.appendChild(meta);
+            }
+          } catch (_) {}
+        }, 1400);
+
+      } catch (err) {
         console.error(err);
         setStatus("Login failed. Please check your connection and try again.", "error");
       } finally {
