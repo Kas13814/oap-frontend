@@ -412,148 +412,16 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        // ✅ Required by index.html gate: allow entering the home page after successful login
-        try { localStorage.setItem("isLoggedIn", "1"); } catch (_) {}
-
-        // Optional: time-limited session (8 hours)
-        try { localStorage.setItem("oap_auth_exp", String(Date.now() + 8 * 60 * 60 * 1000)); } catch (_) {}
-
-        // Optional: cookie shared across www/non-www (helps if you ever use both hostnames)
-        try {
-          const baseDomain = window.location.hostname.replace(/^www\./i, "");
-          const secure = window.location.protocol === "https:" ? "; Secure" : "";
-          document.cookie =
-            "oap_auth=1; Max-Age=" + (8 * 60 * 60) +
-            "; Path=/; SameSite=Lax" + secure +
-            "; Domain=" + baseDomain;
-        } catch (_) {}
-
-        // If we were redirected here from another page, respect ?next=
-        const nextParam = new URLSearchParams(window.location.search).get("next");
-        let nextUrl = "";
-        try {
-          if (nextParam) {
-            const u = new URL(nextParam, window.location.origin);
-            if (u.origin === window.location.origin) nextUrl = u.href; // prevent open-redirect
-          }
-        } catch (_) {}
-
         setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // --- Redirect to Home (index.html) ---
-        // Some environments (embedded webviews / iframes) may restrict automatic navigation.
-        // We therefore try multiple navigation methods AND show a fallback button if needed.
-        const currentHref = window.location.href;
+        // ✅ Redirect to the home page (index.html)
+        // - When hosted on a domain: go to the site root (/index.html)
+        // - When opened locally (file://): go to index.html in the same folder
+        const homeUrl = (window.location.origin && window.location.origin !== "null")
+          ? (window.location.origin.replace(/\/$/, "") + "/index.html")
+          : new URL("index.html", window.location.href).href;
 
-        // Hide the login form so the page clearly "moves on" even if navigation is blocked.
-        try { if (form) form.style.display = "none"; } catch (_) {}
-
-        // Overlay UI while redirecting (minimal, no dependency on existing CSS)
-        try {
-          const overlay = document.createElement("div");
-          overlay.id = "oapRedirectOverlay";
-          overlay.style.cssText =
-            "position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;" +
-            "background:rgba(0,0,0,.55);padding:24px;text-align:center;color:#fff;font-family:inherit;";
-          overlay.innerHTML = `
-            <div style="max-width:560px">
-              <div style="font-size:20px;font-weight:800;margin-bottom:8px">جارٍ فتح الصفحة الرئيسية…</div>
-              <div style="opacity:.9;line-height:1.7;margin-bottom:16px">
-                إذا لم يتم الانتقال تلقائياً خلال ثوانٍ، اضغط زر <b>فتح الصفحة الرئيسية</b>.
-              </div>
-              <button id="oapGoHomeBtn" type="button"
-                style="padding:10px 16px;border:0;border-radius:12px;cursor:pointer;font-weight:800">
-                فتح الصفحة الرئيسية
-              </button>
-              <div id="oapGoHomeHint" style="margin-top:12px;font-size:12px;opacity:.85"></div>
-            </div>`;
-          document.body.appendChild(overlay);
-        } catch (_) {}
-
-        // Build candidate URLs for index.html
-        const candidates = [];
-        try { candidates.push(new URL("index.html", window.location.href).href); } catch (_) {}
-        try { candidates.push(new URL("./index.html", window.location.href).href); } catch (_) {}
-        try { candidates.push(new URL("/index.html", window.location.href).href); } catch (_) {}
-        try { candidates.push(new URL("../index.html", window.location.href).href); } catch (_) {}
-        try {
-          if (window.location.origin && window.location.origin !== "null") {
-            candidates.push(window.location.origin.replace(/\/$/, "") + "/index.html");
-          }
-        } catch (_) {}
-        const homeCandidates = Array.from(new Set(candidates.filter(Boolean)));
-
-        const primaryHome = nextUrl || homeCandidates[0] || "index.html";
-
-        function hint(url) {
-          try {
-            const el = document.getElementById("oapGoHomeHint");
-            if (el) el.textContent = "المسار المستخدم: " + url;
-          } catch (_) {}
-        }
-
-        function navigate(url) {
-          if (!url) return false;
-          hint(url);
-
-          // 1) Best: replace (no back button to login)
-          try { window.location.replace(url); return true; } catch (_) {}
-
-          // 2) assign / href
-          try { window.location.assign(url); return true; } catch (_) {}
-          try { window.location.href = url; return true; } catch (_) {}
-
-          // 3) Anchor click (works in some restricted webviews)
-          try {
-            const a = document.createElement("a");
-            a.href = url;
-            a.target = "_self";
-            a.rel = "noopener";
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            return true;
-          } catch (_) {}
-
-          // 4) window.open in same tab
-          try { window.open(url, "_self"); return true; } catch (_) {}
-
-          return false;
-        }
-
-        // Wire the manual fallback button
-        try {
-          const btn = document.getElementById("oapGoHomeBtn");
-          if (btn) btn.onclick = () => navigate(primaryHome);
-        } catch (_) {}
-
-        // Attempt 1 (soon, so the success message is visible briefly)
-        setTimeout(() => {
-          navigate(primaryHome);
-        }, 50);
-
-        // Attempt 2 (cycle candidates)
-        setTimeout(() => {
-          try {
-            if (window.location.href === currentHref) {
-              for (const u of homeCandidates) {
-                if (navigate(u)) break;
-              }
-            }
-          } catch (_) {}
-        }, 700);
-
-        // Attempt 3 (meta refresh as a last resort)
-        setTimeout(() => {
-          try {
-            if (window.location.href === currentHref) {
-              const meta = document.createElement("meta");
-              meta.httpEquiv = "refresh";
-              meta.content = "0;url=" + (primaryHome);
-              document.head.appendChild(meta);
-            }
-          } catch (_) {}
-        }, 1400);
+        setTimeout(() => { window.location.replace(homeUrl); }, 50);
 
       } catch (err) {
         console.error(err);
