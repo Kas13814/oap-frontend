@@ -412,6 +412,32 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
+        // ✅ Required by index.html gate: allow entering the home page after successful login
+        try { localStorage.setItem("isLoggedIn", "1"); } catch (_) {}
+
+        // Optional: time-limited session (8 hours)
+        try { localStorage.setItem("oap_auth_exp", String(Date.now() + 8 * 60 * 60 * 1000)); } catch (_) {}
+
+        // Optional: cookie shared across www/non-www (helps if you ever use both hostnames)
+        try {
+          const baseDomain = window.location.hostname.replace(/^www\./i, "");
+          const secure = window.location.protocol === "https:" ? "; Secure" : "";
+          document.cookie =
+            "oap_auth=1; Max-Age=" + (8 * 60 * 60) +
+            "; Path=/; SameSite=Lax" + secure +
+            "; Domain=" + baseDomain;
+        } catch (_) {}
+
+        // If we were redirected here from another page, respect ?next=
+        const nextParam = new URLSearchParams(window.location.search).get("next");
+        let nextUrl = "";
+        try {
+          if (nextParam) {
+            const u = new URL(nextParam, window.location.origin);
+            if (u.origin === window.location.origin) nextUrl = u.href; // prevent open-redirect
+          }
+        } catch (_) {}
+
         setStatus("Login successful. Welcome to OAP.", "ok");
 
         // --- Redirect to Home (index.html) ---
@@ -457,6 +483,8 @@
         } catch (_) {}
         const homeCandidates = Array.from(new Set(candidates.filter(Boolean)));
 
+        const primaryHome = nextUrl || homeCandidates[0] || "index.html";
+
         function hint(url) {
           try {
             const el = document.getElementById("oapGoHomeHint");
@@ -496,12 +524,12 @@
         // Wire the manual fallback button
         try {
           const btn = document.getElementById("oapGoHomeBtn");
-          if (btn) btn.onclick = () => navigate(homeCandidates[0] || "index.html");
+          if (btn) btn.onclick = () => navigate(primaryHome);
         } catch (_) {}
 
         // Attempt 1 (soon, so the success message is visible briefly)
         setTimeout(() => {
-          navigate(homeCandidates[0] || "index.html");
+          navigate(primaryHome);
         }, 50);
 
         // Attempt 2 (cycle candidates)
@@ -521,7 +549,7 @@
             if (window.location.href === currentHref) {
               const meta = document.createElement("meta");
               meta.httpEquiv = "refresh";
-              meta.content = "0;url=" + (homeCandidates[0] || "index.html");
+              meta.content = "0;url=" + (primaryHome);
               document.head.appendChild(meta);
             }
           } catch (_) {}
