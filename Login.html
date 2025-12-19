@@ -236,6 +236,23 @@
     }
     .status-ok { color: #22c55e; }
     .status-error { color: #ef4444; }
+  
+    /* Password eye toggle (added) */
+    .pw-toggle{
+      position:absolute;
+      right: 0;
+      top: 6px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 6px 0 6px 10px;
+      line-height: 1;
+      opacity: .9;
+    }
+    .pw-toggle:hover{ opacity: 1; }
+
   </style>
 </head>
 
@@ -265,6 +282,7 @@
                maxlength="128"
                autocomplete="current-password"
                aria-label="Password" />
+        <button id="togglePassword" class="pw-toggle" type="button" aria-label="Show/Hide password">👁</button>
         <label>Password</label>
       </div>
 
@@ -314,47 +332,87 @@
       const employee_login = cleanDigits(employeeInput.value);
       const password = (passwordInput.value || "").trim();
 
+      // basic validation
       if (!employee_login || !password) {
         setStatus("Please enter both Employee ID and Password.", "error");
         return;
       }
 
-      const email = employee_login + "@saudiags.com";
+      // simple client-side throttle (best effort)
+      const now = Date.now();
+      const last = Number(localStorage.getItem("oap_login_last") || "0");
+      if (now - last < 1500) {
+        setStatus("Please wait a moment and try again.", "error");
+        return;
+      }
+      localStorage.setItem("oap_login_last", String(now));
 
       btnLogin.disabled = true;
-      setStatus("Checking credentials with OAP Auth...", "ok");
+      setStatus("Checking credentials...", "ok");
 
       try {
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        // ✅ Server-side verification via RPC (recommended)
+        // RPC name: public.oap_login(p_employee_id bigint, p_password text) returns json { ok, tenant_id, role, ... }
+        const res = await fetch(window.NXS_SUPABASE_URL + "/rest/v1/rpc/oap_login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: window.NXS_SUPABASE_ANON_KEY,
+            Authorization: "Bearer " + window.NXS_SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            p_employee_id: Number(employee_login),
+            p_password: password
+          })
+        });
 
-        if (error) {
-          const msg = (error.message || "").toLowerCase();
-          if (msg.includes("invalid login credentials")) {
-            setStatus("Invalid Employee ID or password.", "error");
-          } else {
-            setStatus("Login failed: " + (error.message || "LOGIN_FAILED"), "error");
-          }
+        const text = await res.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch (_) {}
+
+        if (!res.ok) {
+          // لا نُظهر تفاصيل حساسة
+          setStatus("Login failed. Please try again.", "error");
           return;
         }
 
-        const session = data && data.session;
-        const jwt = session && session.access_token;
-        if (jwt) {
-          try { localStorage.setItem("oap_jwt", jwt); } catch (_) {}
+        if (!data || data.ok !== true) {
+          setStatus("Invalid Employee ID or password.", "error");
+          return;
         }
+
+        // Save minimal session hints (no secrets)
+        try {
+          localStorage.setItem("oap_employee_id", String(employee_login));
+          if (data.tenant_id != null) localStorage.setItem("oap_tenant_id", String(data.tenant_id));
+          if (data.role != null) localStorage.setItem("oap_role", String(data.role));
+        } catch (_) {}
 
         setStatus("Login successful. Welcome to OAP.", "ok");
         setTimeout(() => { window.location.href = "index.html"; }, 800);
 
       } catch (err) {
         console.error(err);
-        setStatus("Login failed: " + ((err && err.message) || "Network error."), "error");
+        setStatus("Login failed. Please check your connection and try again.", "error");
       } finally {
         btnLogin.disabled = false;
       }
     }
 
+    // Password show/hide (added)
+    const togglePassword = document.getElementById("togglePassword");
+    if (togglePassword) {
+      togglePassword.addEventListener("click", () => {
+        const isPw = passwordInput.type === "password";
+        passwordInput.type = isPw ? "text" : "password";
+        togglePassword.textContent = isPw ? "🙈" : "👁";
+      });
+    }
+
     form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      callLogin();
+    });("submit", (e) => {
       e.preventDefault();
       callLogin();
     });
