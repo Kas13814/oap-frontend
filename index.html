@@ -907,7 +907,7 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
               <ul>
                 <li><a class="active" href="Navigation panel.html">Form</a></li>
                 <li><button type="button" class="form-like nav-settings-btn" id="openSettings" aria-haspopup="dialog" aria-controls="settingsModal">Settings</button></li>
-                <li><a class="form-like" href="AI.html">AI</a></li>
+                <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
 </ul>
             </nav>
 
@@ -1052,6 +1052,69 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
     <button id="tClose" type="button">إغلاق</button>
   </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===== Auth + Permissions (Admin pages) — minimal patch =====
+   يعتمد على Supabase Auth + دالة can_access_page الموجودة في قاعدة البيانات.
+   - إذا لا يوجد Session: نخفي Settings/AI/Dashboard
+   - إذا يوجد Session: نتحقق من الصلاحيات ونخفي ما لا تملك صلاحية له
+   ملاحظة: ضع بيانات مشروعك في SUPABASE_URL و SUPABASE_ANON_KEY
+*/
+(function(){
+  const SUPABASE_URL = "PUT_YOUR_SUPABASE_URL";
+  const SUPABASE_ANON_KEY = "PUT_YOUR_SUPABASE_ANON_KEY";
+
+  // عناصر القائمة العلوية
+  const elDashboard = document.getElementById('openDashboard');
+  const elSettings  = document.getElementById('openSettings');
+  const elAI        = document.getElementById('navAI');
+
+  function hide(el){ if(el) el.style.display = 'none'; }
+  function show(el){ if(el) el.style.display = ''; }
+
+  // إذا لم يتم وضع مفاتيح Supabase بعد، لا نكسر الصفحة — فقط نخفي العناصر الحساسة
+  if(!window.supabase || SUPABASE_URL.indexOf('PUT_YOUR_SUPABASE_URL') !== -1 || SUPABASE_ANON_KEY.indexOf('PUT_YOUR_SUPABASE_ANON_KEY') !== -1){
+    hide(elDashboard); hide(elSettings); hide(elAI);
+    return;
+  }
+
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function canAccess(pageKey){
+    const { data, error } = await client.rpc('can_access_page', { p_page_key: pageKey });
+    if(error) return false;
+    return data === true;
+  }
+
+  async function apply(){
+    // افتراضيًا نخفي الثلاثة إلى أن نتأكد
+    hide(elDashboard); hide(elSettings); hide(elAI);
+
+    const { data: { session } } = await client.auth.getSession();
+    if(!session) return;
+
+    // صلاحيات الصفحات
+    const [okDash, okSettings, okAI] = await Promise.all([
+      canAccess('dashboard'),
+      canAccess('settings'),
+      canAccess('ai')
+    ]);
+
+    if(okDash) show(elDashboard);
+    if(okSettings) show(elSettings);
+    if(okAI) show(elAI);
+  }
+
+  // شغّل بعد تحميل DOM
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', apply);
+  }else{
+    apply();
+  }
+})();
+</script>
+
 
 <script>
 /* لمسة/نقرة سريعة */
