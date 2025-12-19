@@ -31,14 +31,6 @@
       place-items: center;
       background: #F0EFE8;
     }
-    body {
-      margin: 0;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #F0EFE8;
-    }
 
     /* From Uiverse.io by glisovic01 */
     .login-box {
@@ -406,6 +398,33 @@
         }
 
         // Save minimal session hints (no secrets)
+        // =============================
+        // ✅ FIX (Session Gate for Home Page)
+        // This allows the Home (index.html in your project) to open ONLY after login.
+        // The Home page should check one of these keys:
+        //  - sessionStorage["oap_home_gate_v1"]
+        //  - sessionStorage["oap_session_v1"]
+        // =============================
+        try {
+          const now = Date.now();
+          const ttlMs = 8 * 60 * 60 * 1000; // 8 hours
+          sessionStorage.setItem("oap_home_gate_v1", JSON.stringify({
+            issued_at: now,
+            expires_at: now + ttlMs
+          }));
+          sessionStorage.setItem("oap_session_v1", JSON.stringify({
+            v: 1,
+            employee_id: String(employee_login),
+            tenant_id: (data && data.tenant_id != null) ? String(data.tenant_id) : null,
+            role: (data && data.role != null) ? String(data.role) : null,
+            issued_at: now,
+            expires_at: now + ttlMs
+          }));
+          // extra common flags (harmless) for compatibility with existing guards
+          sessionStorage.setItem("isLoggedIn", "1");
+          localStorage.setItem("isLoggedIn", "1");
+        } catch (_) {}
+
         try {
           localStorage.setItem("oap_employee_id", String(employee_login));
           if (data.tenant_id != null) localStorage.setItem("oap_tenant_id", String(data.tenant_id));
@@ -548,10 +567,7 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       callLogin();
-    });("submit", (e) => {
-      e.preventDefault();
-      callLogin();
     });
-  </script>
+</script>
 </body>
 </html>
