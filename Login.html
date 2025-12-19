@@ -412,18 +412,50 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        setStatus("Login successful. Welcome to OAP.", "ok");
+        setStatus("Login successful. Redirecting to the home page…", "ok");
 
-        // ✅ Redirect to the home page (index.html)
-        // - When hosted on a domain: go to the site root (/index.html)
-        // - When opened locally (file://): go to index.html in the same folder
-        const homeUrl = (window.location.origin && window.location.origin !== "null")
-          ? (window.location.origin.replace(/\/$/, "") + "/index.html")
-          : new URL("index.html", window.location.href).href;
+        // ✅ Robust redirect to index.html
+        // Tries multiple safe candidates (root, same folder, one level up) and multiple navigation methods.
+        const currentHref = window.location.href;
 
-        setTimeout(() => { window.location.replace(homeUrl); }, 50);
+        const candidates = [];
+        try {
+          if (window.location.origin && window.location.origin !== "null") {
+            candidates.push(window.location.origin.replace(/\/$/, "") + "/index.html");
+          }
+        } catch (_) {}
 
-      } catch (err) {
+        try { candidates.push(new URL("index.html", window.location.href).href); } catch (_) {}
+        try { candidates.push(new URL("../index.html", window.location.href).href); } catch (_) {}
+
+        const homeCandidates = Array.from(new Set(candidates.filter(Boolean)));
+
+        function tryNavigate(url) {
+          try { window.location.replace(url); return true; } catch (_) {}
+          try { window.location.assign(url); return true; } catch (_) {}
+          try { window.location.href = url; return true; } catch (_) {}
+          try { if (window.top) window.top.location.href = url; return true; } catch (_) {}
+          try { if (window.parent) window.parent.location.href = url; return true; } catch (_) {}
+          try { window.open(url, "_self"); return true; } catch (_) {}
+          return false;
+        }
+
+        // 1) First attempt (next frame so the success message renders)
+        requestAnimationFrame(() => {
+          tryNavigate(homeCandidates[0] || "index.html");
+
+          // 2) Fallback attempts if we are still on the same page after a moment
+          setTimeout(() => {
+            try {
+              if (window.location.href === currentHref) {
+                for (const u of homeCandidates) {
+                  if (tryNavigate(u)) break;
+                }
+              }
+            } catch (_) {}
+          }, 700);
+        });
+} catch (err) {
         console.error(err);
         setStatus("Login failed. Please check your connection and try again.", "error");
       } finally {
