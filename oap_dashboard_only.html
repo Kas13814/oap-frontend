@@ -440,6 +440,14 @@
       * { animation: none !important; transition: none !important; }
     }
 
+    
+    /* Hide the holo button after dashboard appears (per request) */
+    body.dash-active .checkbox-container.is-hidden {
+      opacity: 0 !important;
+      transform: translateX(-50%) scale(0.86) translateY(-10px) !important;
+      pointer-events: none !important;
+    }
+
     /* ===== Inject original Uiverse CSS (same holo design) ===== */
 /* From Uiverse.io by reglobby */ 
 .stars-container {
@@ -1260,20 +1268,12 @@
 
       <div class="holo-glow"></div>
     </label>
-
-    <div class="status-text" id="statusText"></div>
-
-    <div class="frequency-spectrum" aria-hidden="true">
-      <!-- 20 bars -->
-      <div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div>
+<div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div>
       <div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div>
       <div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div>
       <div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div><div class="frequency-bar"></div>
     </div>
-
-    <div class="data-chips">
-      <div class="data-chip" id="chipStatus">STATUS: IDLE [0x4F]</div>
-      <div class="data-chip" id="chipRange">RANGE: LAST 14D</div>
+<div class="data-chip" id="chipRange">RANGE: LAST 14D</div>
       <div class="data-chip" id="chipRows">ROWS: --</div>
       <div class="data-chip" id="chipSig">0x7A2C8B9F</div>
     </div>
@@ -1426,14 +1426,17 @@
      * ⚙️ إعداد الربط (غيّر فقط هذا الجزء)
      ****************************************************************/
     const CONFIG = {
-      mode: "api", // "api" | "supabase" | "demo"
-      apiBaseUrl: "", // نفس الدومين: اتركه فارغ. أو ضع: "https://your-domain.com"
-      // Supabase (اختياري)
-      supabaseUrl: "",
-      supabaseAnonKey: "",
-      // Default period
+      mode: "supabase", // "api" | "supabase" | "demo"
+      apiBaseUrl: "", // غير مستخدم في وضع Supabase
+      // Supabase
+      supabaseUrl: "https://inuqlhkoaoeiycefvjyj.supabase.co",
+      supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow",
+      // Default period + limits
       defaultDays: 14,
-      maxTop: 10
+      maxTop: 10,
+      // حد أقصى للصفوف المقروءة من Supabase (لأداء أفضل). زدها إذا احتجت.
+      maxRows: 20000,
+      pageSize: 5000
     };
 
     /****************************************************************
@@ -1453,7 +1456,6 @@
     // ===== Elements =====
     const body = document.body;
     const holoCheck = document.getElementById("holo-check");
-    const statusText = document.getElementById("statusText");
     const dashboard = document.getElementById("dashboard");
 
     const fromDate = document.getElementById("fromDate");
@@ -1463,12 +1465,6 @@
 
     const refreshBtn = document.getElementById("refreshBtn");
     const exportBtn = document.getElementById("exportBtn");
-
-    const chipStatus = document.getElementById("chipStatus");
-    const chipRange = document.getElementById("chipRange");
-    const chipRows = document.getElementById("chipRows");
-    const chipSig = document.getElementById("chipSig");
-
     const metaUpdated = document.getElementById("metaUpdated");
     const metaMode = document.getElementById("metaMode");
     const metaHint = document.getElementById("metaHint");
@@ -1513,7 +1509,6 @@
       from.setDate(from.getDate() - CONFIG.defaultDays + 1);
       fromDate.value = isoDate(from);
       toDate.value = isoDate(to);
-      chipRange.textContent = `RANGE: LAST ${CONFIG.defaultDays}D`;
     }
 
     function animateNumber(el, to, duration=650) {
@@ -1650,7 +1645,7 @@
       metaHint.textContent = (CONFIG.mode === "api")
         ? "أمان أعلى: API عبر السيرفر"
         : (CONFIG.mode === "supabase")
-          ? "قراءة مباشرة: Supabase (تأكد من RLS)"
+          ? "قراءة مباشرة: Supabase (تأكد من RLS + Policy للـ SELECT)"
           : "Demo: بيانات تجريبية";
 
       if (CONFIG.mode !== "api") return;
@@ -1699,12 +1694,33 @@
         });
       }
       const sb = window.supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey);
-      let q = sb.from("sgs_flight_delay").select('*').gte("Date", from).lte("Date", to).limit(10000);
-      if (shift) q = q.eq("Shift", shift);
-      if (airline) q = q.eq("Airlines", airline);
-      const { data, error } = await q;
-      if (error) throw error;
-      return data || [];
+
+      // Pagination: fetch in pages up to CONFIG.maxRows
+      const all = [];
+      let offset = 0;
+
+      while (offset < CONFIG.maxRows) {
+        let q = sb
+          .from("sgs_flight_delay")
+          .select("*")
+          .gte("Date", from)
+          .lte("Date", to)
+          .range(offset, offset + CONFIG.pageSize - 1);
+
+        if (shift) q = q.eq("Shift", shift);
+        if (airline) q = q.eq("Airlines", airline);
+
+        const { data, error } = await q;
+        if (error) throw error;
+
+        const batch = data || [];
+        all.push(...batch);
+
+        if (batch.length < CONFIG.pageSize) break;
+        offset += CONFIG.pageSize;
+      }
+
+      return all;
     }
 
     function summarizeRows(rows) {
@@ -1785,10 +1801,6 @@
     function setLoadingState() {
       metaUpdated.textContent = "آخر تحديث: جاري التحليل...";
       kpiStamp.textContent = "جاري التحميل...";
-      chipRows.textContent = "ROWS: ...";
-      chipStatus.textContent = "STATUS: LOADING [0xA1]";
-      statusText.innerHTML = '<span class="loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span> ANALYZING...</span>';
-
       // reset UI numbers
       kpiTotal.textContent = "—";
       kpiUnique.textContent = "—";
@@ -1822,11 +1834,6 @@
       kpiAirLabel.textContent = safeStr(topAir.label);
       animateNumber(kpiAirCount, topAir.count);
       kpiAirPct.textContent = `${pct(topAir.count, Math.max(total,1))}`;
-
-      chipRows.textContent = `ROWS: ${fmtInt(total)}`;
-      chipStatus.textContent = "STATUS: ONLINE [0x7F]";
-      statusText.textContent = "DASHBOARD ONLINE";
-
       // Table
       const rows = summary.top_flights || [];
       lastTopFlights = rows;
@@ -1868,6 +1875,11 @@
       codeChart  = makeBar (document.getElementById("chartCodes"), codeLabels, codeData);
       airChart   = makeBar (document.getElementById("chartAir"),   airLabels,  airData);
       shiftChart = makeDonut(document.getElementById("chartShift"), shiftLabels, shiftData);
+      // Hide the holo button shortly after dashboard is rendered (per request)
+      setTimeout(() => {
+        const a = document.getElementById("activator");
+        if (a) a.classList.add("is-hidden");
+      }, 650);
 
       // move view to top smoothly after first render
       setTimeout(() => {
@@ -1890,6 +1902,21 @@
           summary = await fetchSummaryApi(from, to, shift, airline);
         } else if (CONFIG.mode === "supabase") {
           const rows = await fetchRowsSupabase(from, to, shift, airline);
+
+          // تعبئة القوائم تلقائياً من نفس البيانات (بدون /api/meta)
+          if (shiftSel.options.length <= 1) {
+            const sset = new Set();
+            const aset = new Set();
+            for (const r of rows) {
+              const sh = (r["Shift"] ?? "").toString().trim();
+              const al = (r["Airlines"] ?? "").toString().trim();
+              if (sh) sset.add(sh);
+              if (al) aset.add(al);
+            }
+            fillSelect(shiftSel, Array.from(sset).sort());
+            fillSelect(airlineSel, Array.from(aset).sort());
+          }
+
           summary = summarizeRows(rows);
         } else {
           const rows = DEMO_ROWS.filter(r => r.Date >= from && r.Date <= to);
@@ -1899,9 +1926,6 @@
         render(summary);
       } catch (e) {
         console.error(e);
-        chipStatus.textContent = "STATUS: ERROR [0xE2]";
-        statusText.textContent = "CONNECTION FAILED";
-        chipRows.textContent = "ROWS: --";
         metaUpdated.textContent = "آخر تحديث: فشل الاتصال";
         showToast("تعذر تحميل البيانات. تأكد من /api/summary أو إعداد Supabase.");
       }
@@ -1909,11 +1933,9 @@
 
     function activate() {
       body.classList.add("dash-active");
+      const a = document.getElementById("activator");
+      if (a) a.classList.remove("is-hidden");
       dashboard.setAttribute("aria-hidden", "false");
-      statusText.textContent = "INITIALIZING...";
-      chipStatus.textContent = "STATUS: INIT [0x11]";
-      chipSig.textContent = "0x" + Math.floor(Math.random()*0xffffffff).toString(16).toUpperCase().padStart(8,"0");
-
       setTimeout(() => {
         dashboard.scrollTo({ top: 0, behavior: "smooth" });
       }, 70);
@@ -1923,10 +1945,9 @@
 
     function deactivate() {
       body.classList.remove("dash-active");
+      const a = document.getElementById("activator");
+      if (a) a.classList.remove("is-hidden");
       dashboard.setAttribute("aria-hidden", "true");
-      statusText.textContent = "";
-      chipStatus.textContent = "STATUS: IDLE [0x4F]";
-      chipRows.textContent = "ROWS: --";
       lastTopFlights = [];
       destroyCharts();
     }
