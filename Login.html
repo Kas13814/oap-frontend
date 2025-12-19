@@ -412,16 +412,39 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        setStatus("Login successful. Welcome to OAP.", "ok");
+        
+        // ✅ FIX: Create a short-lived gate/session so index.html can verify this login
+        try {
+          const now = Date.now();
+          const ttlMs = 8 * 60 * 60 * 1000; // 8 hours
+          sessionStorage.setItem("oap_home_gate_v1", JSON.stringify({
+            issued_at: now,
+            expires_at: now + ttlMs
+          }));
+          sessionStorage.setItem("oap_session_v1", JSON.stringify({
+            v: 1,
+            employee_id: String(employee_login),
+            tenant_id: (data && data.tenant_id != null) ? String(data.tenant_id) : null,
+            role: (data && data.role != null) ? String(data.role) : null,
+            issued_at: now,
+            expires_at: now + ttlMs
+          }));
+          sessionStorage.setItem("isLoggedIn", "1");
+          localStorage.setItem("isLoggedIn", "1");
+        } catch (_) {}
+setStatus("Login successful. Welcome to OAP.", "ok");
 
         // ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
         // - When opened locally (file://): go to index.html in the same folder
-        const homeUrl = (window.location.origin && window.location.origin !== "null")
-          ? (window.location.origin.replace(/\/$/, "") + "/index.html")
-          : new URL("index.html", window.location.href).href;
-
-        setTimeout(() => { window.location.replace(homeUrl); }, 50);
+        const homeUrl = "index.html";
+        // Try multiple navigation methods for maximum compatibility
+        setTimeout(() => {
+          try { window.location.replace(homeUrl); return; } catch (_) {}
+          try { window.location.assign(homeUrl); return; } catch (_) {}
+          try { window.location.href = homeUrl; return; } catch (_) {}
+          try { window.open(homeUrl, "_self"); return; } catch (_) {}
+        }, 50);
 
       } catch (err) {
         console.error(err);
@@ -444,10 +467,7 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       callLogin();
-    });("submit", (e) => {
-      e.preventDefault();
-      callLogin();
     });
-  </script>
+</script>
 </body>
 </html>
