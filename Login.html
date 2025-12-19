@@ -250,8 +250,31 @@
       padding: 6px 0 6px 10px;
       line-height: 1;
       opacity: .9;
+    
+      z-index: 5;
+      pointer-events: auto;
     }
     .pw-toggle:hover{ opacity: 1; }
+
+  
+    /* submit full width */
+    #btnLogin, button[type="submit"]{
+      width:100%;
+      display:block;
+      box-sizing:border-box;
+    }
+  
+    /* Fix browser autofill background (keep same dark design) */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-text-fill-color: #fff !important;
+      transition: background-color 9999s ease-out 0s;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+      box-shadow: 0 0 0px 1000px transparent inset !important;
+      caret-color: #fff !important;
+    }
 
   </style>
 </head>
@@ -372,7 +395,8 @@
 
         if (!res.ok) {
           // لا نُظهر تفاصيل حساسة
-          setStatus("Login failed. Please try again.", "error");
+          console.error("oap_login RPC failed:", res.status, text);
+          setStatus("Login failed. (" + res.status + ")", "error");
           return;
         }
 
@@ -389,7 +413,7 @@
         } catch (_) {}
 
         setStatus("Login successful. Welcome to OAP.", "ok");
-        setTimeout(() => { window.location.href = "index.html"; }, 800);
+        setTimeout(() => { window.location.href = "index.html"; }, 200);
 
       } catch (err) {
         console.error(err);
@@ -402,11 +426,11 @@
     // Password show/hide (added)
     const togglePassword = document.getElementById("togglePassword");
     if (togglePassword) {
-      togglePassword.addEventListener("click", () => {
+      togglePassword.onclick = () => {
         const isPw = passwordInput.type === "password";
         passwordInput.type = isPw ? "text" : "password";
         togglePassword.textContent = isPw ? "🙈" : "👁";
-      });
+      };
     }
 
     form.addEventListener("submit", (e) => {
