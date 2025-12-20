@@ -1055,6 +1055,33 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ===== Require Login for index.html =====
+   إذا لا يوجد Session في Supabase Auth → تحويل مباشر إلى Login.html
+*/
+(function(){
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+  if(!window.supabase) return; // supabase-js should be loaded
+
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function enforce(){
+    const { data: { session } } = await client.auth.getSession();
+    if(!session){
+      window.location.replace("Login.html");
+      return;
+    }
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', enforce);
+  }else{
+    enforce();
+  }
+})();
+</script>
+
+<script>
 /* ===== Auth + Permissions (Admin pages) — minimal patch =====
    يعتمد على Supabase Auth + دالة can_access_page الموجودة في قاعدة البيانات.
    - إذا لا يوجد Session: نخفي Settings/AI/Dashboard
@@ -1062,8 +1089,8 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
    ملاحظة: ضع بيانات مشروعك في SUPABASE_URL و SUPABASE_ANON_KEY
 */
 (function(){
-  const SUPABASE_URL = "PUT_YOUR_SUPABASE_URL";
-  const SUPABASE_ANON_KEY = "PUT_YOUR_SUPABASE_ANON_KEY";
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
 
   // عناصر القائمة العلوية
   const elDashboard = document.getElementById('openDashboard');
@@ -1074,7 +1101,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   function show(el){ if(el) el.style.display = ''; }
 
   // إذا لم يتم وضع مفاتيح Supabase بعد، لا نكسر الصفحة — فقط نخفي العناصر الحساسة
-  if(!window.supabase || SUPABASE_URL.indexOf('PUT_YOUR_SUPABASE_URL') !== -1 || SUPABASE_ANON_KEY.indexOf('PUT_YOUR_SUPABASE_ANON_KEY') !== -1){
+  if(!window.supabase || SUPABASE_URL.indexOf('https://inuqlhkoaoeiycefvjyj.supabase.co') !== -1 || SUPABASE_ANON_KEY.indexOf('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow') !== -1){
     hide(elDashboard); hide(elSettings); hide(elAI);
     return;
   }
