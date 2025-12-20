@@ -934,8 +934,13 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
             <nav class="divider__nav" aria-label="Primary">
               <ul>
                 <li><a class="active" href="Navigation panel.html">Form</a></li>
-                <li><button type="button" class="form-like nav-settings-btn" id="openSettings" aria-haspopup="dialog" aria-controls="settingsModal">Settings</button></li>
-                <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
+                <li>
+</li>
+                <li><a id="navSettings" class="form-like nav-settings-btn" href="Settings.html" title="Settings">
+  <span class="icon" aria-hidden="true">⚙️</span>
+  <span class="label">Settings</span>
+</a>
+<a class="form-like" href="AI.html" id="navAI">AI</a></li>
 </ul>
             </nav>
 
@@ -1126,7 +1131,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   const role = (sess && sess.role) ? String(sess.role) : (localStorage.getItem("oap_role") || "");
 
   const elDashboard = document.getElementById("openDashboard");
-  const elSettings  = document.getElementById("openSettings");
+  const elSettings  = document.getElementById("navSettings");
   const elAI        = document.getElementById("navAI");
 
   function hide(el){ if(el) el.style.display = "none"; }
@@ -1546,6 +1551,8 @@ setInterval(updateTime,60000);
   else init();
 })();
 </script>
+
+
 
 </body>
 </html>
