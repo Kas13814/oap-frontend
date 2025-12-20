@@ -907,22 +907,19 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
 }
 
 
-/* ===== Patch: Settings hover (no shadow) + Drawer solid ===== */
+/* ===== Patch: Settings hover (no shadow) + Theme-aware drawer background ===== */
 .nav-settings-btn:hover{
   box-shadow: none !important;
 }
-/* keep consistent hover without shadow */
-.nav-settings-btn:hover{
-  transform: none !important;
-}
 
+/* Drawer uses the same theme background (light/dark) without transparency */
 .settings-drawer{
-  background: #0b0f14 !important;
+  background: var(--bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 .settings-drawer__head{
-  background: #0b0f14 !important;
+  background: var(--bg) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
