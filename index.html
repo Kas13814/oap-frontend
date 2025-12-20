@@ -30,7 +30,7 @@
   --d-rect-w: 235px; --d-rect-h: 110px; --d-rect-round: 14px;
   --rect-slide-left:-18px; --rect-slide-right:26px;
 
-  /* ===== تحكم الهاتف (لوحة الإعدادات) ===== */
+  /* ===== تحكم الهاتف (لوحة Settings) ===== */
   /* العناوين الثلاثة */
   --m-ops-x:0vw;  --m-ops-y:3vh;  --m-ops-fs:14.8vw;
   --m-ana-x:12.5vw; --m-ana-y:3vh; --m-ana-fs:12.8vw;
@@ -277,7 +277,7 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
     z-index:4200;
     transform: translate(var(--m-home-x), var(--m-home-y));
   
-  /* ألوان العناوين على الهاتف (من لوحة الإعدادات) */
+  /* ألوان العناوين على الهاتف (من لوحة Settings) */
   .hero__brand{
     color: var(--m-ops-color, var(--accent)) !important;
     opacity: var(--m-ops-alpha, 1) !important;
@@ -320,7 +320,7 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 
 }}
 
-/* ===== لوحة الإعدادات (Mobile only) ===== */
+/* ===== لوحة Settings (Mobile only) ===== */
 .tuner-toggle{
   position:fixed; right:12px; bottom:12px; z-index:3800;
   width:44px; height:44px; border-radius:12px; border:1px solid var(--line);
@@ -343,7 +343,7 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 @media (max-width:980px){
   .t-row, .t-head{ grid-template-columns: 180px repeat(6, 1fr); }
 @media (max-width:640px){
-  /* تنظيم لوحة الإعدادات على الهاتف حتى لا تغطي كامل الشاشة */
+  /* تنظيم لوحة Settings على الهاتف حتى لا تغطي كامل الشاشة */
   .tuner{
     max-height:60vh;
     overflow-y:auto;
@@ -772,6 +772,83 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 
 
 /* ===== Settings Drawer (right, 25%) ===== */
+
+/* ===== Drawer polish ===== */
+.settings-drawer{
+  box-shadow: -24px 0 60px rgba(0,0,0,.35);
+}
+.settings-drawer__head{
+  padding: 16px 16px 12px;
+  background: rgba(255,255,255,.06);
+}
+.settings-drawer__title{
+  font-size: 14px;
+  text-transform: none;
+  letter-spacing: .2px;
+}
+.settings-drawer__close{
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.settings-drawer__body{
+  padding: 16px;
+}
+.settings-card{
+  border-radius: 18px;
+}
+.settings-section{
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  padding: 14px;
+}
+.settings-section h4{
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  font-weight: 900;
+}
+.settings-section p{
+  margin: 0 0 10px 0;
+  font-size: 12px;
+  opacity: .85;
+}
+.settings-input{
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  color: inherit;
+  outline: none;
+}
+.settings-input:focus{
+  border-color: rgba(255,255,255,.28);
+  box-shadow: 0 0 0 4px rgba(255,255,255,.06);
+}
+.settings-chips{
+  display:flex; gap:10px; flex-wrap:wrap; margin: 10px 0 12px;
+}
+.settings-chip{
+  display:flex; gap:8px; align-items:center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.10);
+}
+.settings-chip input{ transform: translateY(1px); }
+#permSaveBtn{
+  border-radius: 14px;
+}
+#permStatus{
+  padding-top: 8px;
+}
+.nav-ico{
+  display:inline-flex;
+  width: 18px;
+  justify-content:center;
+  margin-right: 8px;
+  opacity: .95;
+}
+
 :root{ --settings-drawer-w: min(25vw, 420px); }
 body.settings-open{ padding-right: var(--settings-drawer-w); transition: padding-right .22s ease; }
 .settings-drawer{
@@ -992,12 +1069,12 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
             <!-- قائمة علوية: حذف Fleet + إعادة التسمية -->
             <nav class="divider__nav" aria-label="Primary">
               <ul>
-                <li><a class="active" href="Navigation panel.html">Form</a></li>
+                <li><a class="active" href="Navigation panel.html"><span class="nav-ico" aria-hidden="true">📝</span><span>Form</span></a></li>
                 <li><button id="openSettingsDrawer" class="form-like nav-settings-btn" type="button" title="Settings">
                   <span class="icon" aria-hidden="true">⚙️</span>
                   <span class="label">Settings</span>
                 </button></li>
-                <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
+                <li><a class="form-like" href="AI.html" id="navAI"><span class="nav-ico" aria-hidden="true">🤖</span><span>AI</span></a></li>
 </ul>
             </nav>
 
@@ -1039,8 +1116,8 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   </div>
 </div>
 
-<!-- ===== لوحة الإعدادات — للهاتف فقط ===== -->
-<button class="tuner-toggle" id="tunerToggle" title="الإعدادات">⚙️</button>
+<!-- ===== لوحة Settings — للهاتف فقط ===== -->
+<button class="tuner-toggle" id="tunerToggle" title="Settings">⚙️</button>
 <div class="tuner" id="tuner">
 
   <div class="t-head">
@@ -1587,13 +1664,13 @@ setInterval(updateTime,60000);
         if(!email) { setMsg("أدخل البريد الإلكتروني أولاً.", false); return; }
 
         btn.disabled = true;
-        setMsg("جارٍ حفظ الصلاحيات...", true);
+        setMsg("جارٍ Save Permissions...", true);
 
         try {
           await setOne('settings', sEl && sEl.checked);
           await setOne('ai', aEl && aEl.checked);
           await setOne('dashboard', dEl && dEl.checked);
-          setMsg("تم حفظ الصلاحيات بنجاح ✅", true);
+          setMsg("تم Save Permissions بنجاح ✅", true);
         } catch(e) {
           console.error(e);
           setMsg("فشل الحفظ. تأكد من البريد وأنك Admin.", false);
@@ -1615,23 +1692,22 @@ setInterval(updateTime,60000);
 <!-- ===== Settings Drawer (panel) ===== -->
 <aside id="settingsDrawer" class="settings-drawer" aria-hidden="true">
   <div class="settings-drawer__head">
-    <div class="settings-drawer__title"><span aria-hidden="true">⚙️</span><span>الإعدادات</span></div>
+    <div class="settings-drawer__title"><span aria-hidden="true">⚙️</span><span>Settings</span></div>
     <button id="closeSettingsDrawer" class="settings-drawer__close" type="button">✕</button>
   </div>
 
   <div class="settings-drawer__body">
     <div class="small-note" style="opacity:.85; font-size:12px; margin-bottom:10px;">
-      هذه الإعدادات لا تظهر إلا للمالك/الأدمن.
+      هذه Settings لا تظهر إلا للمالك/الأدمن.
     </div>
 
     <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.04);">
-      <div style="font-weight:800; margin-bottom:6px;">صلاحيات الصفحات</div>
+      <div style="font-weight:800; margin-bottom:6px;">Page Permissions</div>
       <div style="opacity:.85; font-size:12px; margin-bottom:10px;">
-        أدخل <b>الرقم الوظيفي</b> ثم اختر الصفحات المسموح له فتحها.
+        Enter an <b>Employee ID</b>, then choose which pages the user can access.
       </div>
 
-      <input id="permEmployeeId" inputmode="numeric" placeholder="مثال: 15013814"
-             style="width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:#fff; outline:none; margin-bottom:10px;">
+      <input id="permEmployeeId" class="settings-input" inputmode="numeric" placeholder="Employee ID">
 
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
         <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
@@ -1648,7 +1724,7 @@ setInterval(updateTime,60000);
         </label>
       </div>
 
-      <button id="permSaveBtn" class="btn primary" style="width:100%;">حفظ الصلاحيات</button>
+      <button id="permSaveBtn" class="btn primary" style="width:100%;">Save Permissions</button>
       <div id="permStatus" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
     </div>
   </div>
@@ -1732,19 +1808,19 @@ setInterval(updateTime,60000);
 
   if(btn) btn.addEventListener('click', async ()=>{
     const employeeId = (empEl && empEl.value || "").trim();
-    if(!employeeId) { setMsg("أدخل الرقم الوظيفي أولاً.", false); return; }
-    if(!/^[0-9]+$/.test(employeeId)) { setMsg("الرقم الوظيفي يجب أن يكون أرقام فقط.", false); return; }
+    if(!employeeId) { setMsg("Enter the Employee ID first.", false); return; }
+    if(!/^[0-9]+$/.test(employeeId)) { setMsg("Employee ID must be digits only.", false); return; }
 
     btn.disabled = true;
-    setMsg("جارٍ حفظ الصلاحيات...", true);
+    setMsg("جارٍ Save Permissions...", true);
     try {
       await setOne('settings', sEl && sEl.checked, employeeId);
       await setOne('ai', aEl && aEl.checked, employeeId);
       await setOne('dashboard', dEl && dEl.checked, employeeId);
-      setMsg("تم حفظ الصلاحيات بنجاح ✅", true);
+      setMsg("تم Save Permissions بنجاح ✅", true);
     } catch(e) {
       console.error(e);
-      setMsg("فشل الحفظ. نفّذ كود SQL الخاص بالدالة admin_set_page_access_by_employee.", false);
+      setMsg("Save failed. Make sure the RPC function admin_set_page_access_by_employee exists and you are Owner/Admin.", false);
     } finally {
       btn.disabled = false;
     }
