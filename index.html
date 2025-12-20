@@ -934,7 +934,14 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
             <nav class="divider__nav" aria-label="Primary">
               <ul>
                 <li><a class="active" href="Navigation panel.html">Form</a></li>
-                <li><button type="button" class="form-like nav-settings-btn" id="openSettings" aria-haspopup="dialog" aria-controls="settingsModal">Settings</button></li>
+                <li><button id="openSettings" class="form-like nav-settings-btn" type="button" aria-haspopup="dialog" aria-controls="settingsPanel" title="Settings">
+  <span class="icon" aria-hidden="true">⚙️</span>
+  <span class="label">Settings</span>
+</button>
+<button id="openSettings2" class="form-like nav-settings-btn" type="button" aria-haspopup="dialog" aria-controls="settingsPanel" title="Settings">
+  <span class="icon" aria-hidden="true">⚙️</span>
+  <span class="label">Settings</span>
+</button></li>
                 <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
 </ul>
             </nav>
@@ -1544,6 +1551,37 @@ setInterval(updateTime,60000);
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
+})();
+</script>
+
+
+<script>
+/* ===== Settings open button (bind both) ===== */
+(function(){
+  const modal = document.getElementById('settingsPanel');
+  const btn1 = document.getElementById('openSettings');
+  const btn2 = document.getElementById('openSettings2');
+  const closeBtn = document.getElementById('closeSettings');
+
+  function openModal(){
+    if(!modal) return;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden','false');
+  }
+  function closeModal(){
+    if(!modal) return;
+    modal.setAttribute('aria-hidden','true');
+    modal.style.display = 'none';
+  }
+
+  if(btn1) btn1.addEventListener('click', (e)=>{ e.preventDefault(); openModal(); });
+  if(btn2) btn2.addEventListener('click', (e)=>{ e.preventDefault(); openModal(); });
+  if(closeBtn) closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeModal(); });
+
+  // click outside closes
+  if(modal){
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+  }
 })();
 </script>
 
