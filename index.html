@@ -1106,10 +1106,26 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   // افتراضيًا نخفي
   hide(elDashboard); hide(elSettings); hide(elAI);
 
-  // سياسة صارمة: فقط Administrator يظهر له (Settings/AI/Dashboard)
-  const isAdmin = role.toLowerCase() === "administrator" || role.toLowerCase() === "admin";
+  // صلاحيات الإظهار (مشدّدة + مرنة):
+  // 1) إذا role تُشير لأدمن (إنجليزي/عربي) → مسموح
+  // 2) أو إذا Employee ID ضمن قائمة المالك/الأدمن → مسموح
+  const normRole = String(role || "").trim().toLowerCase();
 
-  if (isAdmin) {
+  const adminRoleKeywords = [
+    "administrator", "admin", "owner", "super admin",
+    "مدير", "مدير النظام", "ادمن", "أدمن", "مشرف", "مسؤول"
+  ];
+
+  // ضع أرقام الموظفين المسموح لهم كأدمن هنا (المالك + أي أدمن آخر)
+  // مثال: const adminEmployeeIds = ["15013814", "15000654"];
+  const adminEmployeeIds = ["15013814"];
+
+  const employeeId = (sess && sess.employee_id) ? String(sess.employee_id) : (localStorage.getItem("oap_employee_id") || "");
+
+  const isAdminByRole = adminRoleKeywords.some(k => normRole.includes(k));
+  const isAdminById   = adminEmployeeIds.includes(String(employeeId).trim());
+
+  if (isAdminByRole || isAdminById) {
     show(elDashboard); show(elSettings); show(elAI);
   }
 })();
