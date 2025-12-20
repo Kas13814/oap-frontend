@@ -1224,6 +1224,7 @@ function onTap(el, fn){
 
   function openModal(){
     if(!modal) return;
+    modal.style.display = 'flex';
     modal.setAttribute('aria-hidden','false');
     // focus close button for accessibility
     setTimeout(()=>{ closeBtn && closeBtn.focus(); }, 0);
@@ -1231,6 +1232,7 @@ function onTap(el, fn){
   function closeModal(){
     if(!modal) return;
     modal.setAttribute('aria-hidden','true');
+    modal.style.display = 'none';
     setTimeout(()=>{ openBtn && openBtn.focus(); }, 0);
   }
 
