@@ -742,6 +742,23 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
   opacity: 1;
 }
 
+
+/* ===== Settings button UX fix (hover + clickability) ===== */
+.divider__nav .nav-settings{
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 20;
+}
+.divider__nav .nav-settings:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.divider__nav .nav-settings:active{
+  transform: translateY(0px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.14);
+}
+
 </style>
 </head>
 
