@@ -665,8 +665,109 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 }
 
 
+/* ===== Advanced Settings Modal (minimal patch) ===== */
+.settings-modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:5000; }
+.settings-modal[aria-hidden="false"]{ display:flex; }
+.settings-modal__backdrop{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
+.settings-modal__panel{
+  position:relative;
+  width:min(720px, calc(100vw - 32px));
+  max-height:min(80vh, 680px);
+  overflow:auto;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:16px;
+  background: rgba(16, 16, 24, .92);
+  color: var(--ink);
+  box-shadow:0 22px 50px rgba(15,23,42,.65);
+  padding:18px 18px 16px;
+}
+:root[data-theme="light"] .settings-modal__panel{
+  background: rgba(255,255,255,.92);
+  color: #1b1b25;
+  border:1px solid rgba(0,0,0,.10);
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+.settings-modal__head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.settings-modal__title{ font-size:14px; letter-spacing:.08em; text-transform:uppercase; opacity:.9; }
+.settings-modal__close{
+  appearance:none; border:0; background:transparent; color:inherit;
+  width:34px; height:34px; border-radius:10px; cursor:pointer;
+  display:grid; place-items:center; opacity:.8;
+}
+.settings-modal__close:hover{ opacity:1; }
+.settings-modal__grid{ display:grid; gap:12px; margin-top:10px; }
+.settings-modal__card{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:14px;
+  padding:12px 12px;
+  background: rgba(255,255,255,.04);
+}
+:root[data-theme="light"] .settings-modal__card{
+  border:1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.03);
+}
+.settings-modal__row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.settings-modal__label{ font-size:13px; opacity:.9; }
+.settings-modal__hint{ font-size:12px; opacity:.7; margin-top:6px; line-height:1.45; }
+.settings-modal__action{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  border-radius:12px;
+  padding:8px 10px;
+  font-size:12px;
+  cursor:pointer;
+  opacity:.9;
+}
+:root[data-theme="light"] .settings-modal__action{
+  border:1px solid rgba(0,0,0,.14);
+  background: rgba(255,255,255,.7);
+}
+.settings-modal__action:hover{ opacity:1; }
+.divider__nav button.form-like{
+  text-decoration:none;
+  color:#f5f5f5;
+  opacity:.86;
+  font-size:12px;
+  transition:opacity .2s ease;
+  padding:0;
+  background:transparent;
+  border:0;
+  cursor:pointer;
+}
+.divider__nav button.form-like:hover{ opacity:1; color:#ffffff; }
+:root[data-theme="light"] .divider__nav button.form-like{
+  color: var(--muted);
+  opacity: 1;
+}
 
 
+.divider__nav .nav-settings:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.divider__nav .nav-settings:active{
+  transform: translateY(0px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.14);
+}
+
+
+/* ===== Settings button UX + Click fix (final) ===== */
+.form-like.nav-settings-btn{
+  cursor:pointer;
+  pointer-events:auto !important;
+  position:relative;
+  z-index:9999;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.form-like.nav-settings-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.form-like.nav-settings-btn:active{
+  transform: translateY(0px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.14);
 }
 
 </style>
@@ -833,7 +934,8 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
             <nav class="divider__nav" aria-label="Primary">
               <ul>
                 <li><a class="active" href="Navigation panel.html">Form</a></li>
-<li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
+                <li><button type="button" class="form-like nav-settings-btn" id="openSettings" aria-haspopup="dialog" aria-controls="settingsModal">Settings</button></li>
+                <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
 </ul>
             </nav>
 
@@ -1024,13 +1126,14 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   const role = (sess && sess.role) ? String(sess.role) : (localStorage.getItem("oap_role") || "");
 
   const elDashboard = document.getElementById("openDashboard");
+  const elSettings  = document.getElementById("openSettings");
   const elAI        = document.getElementById("navAI");
 
   function hide(el){ if(el) el.style.display = "none"; }
   function show(el){ if(el) el.style.display = ""; }
 
   // افتراضيًا نخفي
-  hide(elDashboard); hide(elAI);
+  hide(elDashboard); hide(elSettings); hide(elAI);
 
   // صلاحيات الإظهار (مشدّدة + مرنة):
   // 1) إذا role تُشير لأدمن (إنجليزي/عربي) → مسموح
@@ -1052,7 +1155,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   const isAdminById   = adminEmployeeIds.includes(String(employeeId).trim());
 
   if (isAdminByRole || isAdminById) {
-    show(elDashboard); show(elAI);
+    show(elDashboard); show(elSettings); show(elAI);
   }
 })();
 </script>
@@ -1138,6 +1241,63 @@ function onTap(el, fn){
   });
 
   restoreAll();
+})();
+
+/* ===== Settings Modal logic (minimal patch) ===== */
+(function(){
+  const openBtn = document.getElementById('openSettings');
+  const modal = document.getElementById('settingsModal');
+  const closeBtn = document.getElementById('closeSettings');
+  const backdrop = modal ? modal.querySelector('[data-close="1"]') : null;
+
+  function openModal(){
+    if(!modal) return;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden','false');
+    // focus close button for accessibility
+    setTimeout(()=>{ closeBtn && closeBtn.focus(); }, 0);
+  }
+  function closeModal(){
+    if(!modal) return;
+    modal.setAttribute('aria-hidden','true');
+    modal.style.display = 'none';
+    setTimeout(()=>{ openBtn && openBtn.focus(); }, 0);
+  }
+
+  openBtn && openBtn.addEventListener('click', openModal);
+  closeBtn && closeBtn.addEventListener('click', closeModal);
+  backdrop && backdrop.addEventListener('click', closeModal);
+
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && modal && modal.getAttribute('aria-hidden') === 'false'){
+      closeModal();
+    }
+  });
+
+  // Settings actions
+  const toggleThemeBtn = document.getElementById('settingsToggleTheme');
+  const hiddenThemeSwitch = document.getElementById('switch'); // existing theme checkbox
+  toggleThemeBtn && toggleThemeBtn.addEventListener('click', ()=>{
+    if(hiddenThemeSwitch){
+      hiddenThemeSwitch.checked = !hiddenThemeSwitch.checked;
+      hiddenThemeSwitch.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+  });
+
+  const clearCacheBtn = document.getElementById('settingsClearCache');
+  clearCacheBtn && clearCacheBtn.addEventListener('click', ()=>{
+    try{
+      localStorage.removeItem('theme');
+      localStorage.removeItem('nxs_theme');
+    }catch(err){}
+    // keep current theme, just confirm action silently by quick close/open flash
+    closeModal();
+  });
+
+  const aboutBtn = document.getElementById('settingsAbout');
+  aboutBtn && aboutBtn.addEventListener('click', ()=>{
+    alert('NXS — Advanced Settings\n\n• Theme toggle\n• Cache clear\n\n(You can customize this modal content as needed.)');
+  });
 })();
 
 </script>
@@ -1266,9 +1426,44 @@ setInterval(updateTime,60000);
 </script>
 
 
+<!-- ===== Advanced Settings Modal ===== -->
+<div class="settings-modal" id="settingsModal" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Advanced settings">
+  <div class="settings-modal__backdrop" data-close="1" aria-hidden="true"></div>
+  <div class="settings-modal__panel" role="document">
+    <div class="settings-modal__head">
+      <div>
+        <div class="settings-modal__title">Advanced Settings</div>
+      </div>
+      <button class="settings-modal__close" type="button" id="closeSettings" aria-label="Close">✕</button>
+    </div>
 
+    <div class="settings-modal__grid">
+      <div class="settings-modal__card">
+        <div class="settings-modal__row">
+          <div class="settings-modal__label">Theme</div>
+          <button class="settings-modal__action" type="button" id="settingsToggleTheme">Toggle</button>
+        </div>
+        <div class="settings-modal__hint">Use the existing theme toggle logic — this button just triggers it.</div>
+      </div>
 
+      <div class="settings-modal__card">
+        <div class="settings-modal__row">
+          <div class="settings-modal__label">Cache</div>
+          <button class="settings-modal__action" type="button" id="settingsClearCache">Clear</button>
+        </div>
+        <div class="settings-modal__hint">Clears local saved theme + UI state (if any).</div>
+      </div>
 
+      <div class="settings-modal__card">
+        <div class="settings-modal__row">
+          <div class="settings-modal__label">About</div>
+          <button class="settings-modal__action" type="button" id="settingsAbout">Info</button>
+        </div>
+        <div class="settings-modal__hint">Shows build info and quick help.</div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <script>
@@ -1286,6 +1481,7 @@ setInterval(updateTime,60000);
 
   const box = document.getElementById('adminPermBox');
   const emailEl = document.getElementById('permEmail');
+  const sEl = document.getElementById('permSettings');
   const aEl = document.getElementById('permAI');
   const dEl = document.getElementById('permDashboard');
   const btn = document.getElementById('permSaveBtn');
@@ -1332,6 +1528,7 @@ setInterval(updateTime,60000);
         setMsg("جارٍ حفظ الصلاحيات...", true);
 
         try {
+          await setOne('settings', sEl && sEl.checked);
           await setOne('ai', aEl && aEl.checked);
           await setOne('dashboard', dEl && dEl.checked);
           setMsg("تم حفظ الصلاحيات بنجاح ✅", true);
