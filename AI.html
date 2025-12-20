@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TCC AI</title>
+  <title>OAP AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     :root {
@@ -20,10 +20,10 @@
 
     /* ثيم فاتح بألوانك */
     body.theme-light {
-      --bg-main: #FAF9F5;
-      --bg-sidebar: #F5F4ED;
-      --bg-card: #FFFFFF;
-      --bg-input: #FFFFFF;
+      --bg-main: #E6E3DF;     /* لون الصفحة */
+      --bg-sidebar: #CCC8C6;  /* لون اللوحة الجانبية */
+      --bg-card: #F6F5F4;     /* لون مربع السؤال */
+      --bg-input: #F6F5F4;    /* يطابق مربع السؤال */
       --text-main: #111827;
       --text-muted: #6b7280;
       --border-subtle: #d1d5db;
@@ -59,6 +59,9 @@
 
     /* ===== Sidebar (left) ===== */
     .sidebar {
+      scrollbar-color: rgba(39, 39, 47, 0.2) transparent;
+      scrollbar-width: thin;
+
       width: 260px;
       background: var(--bg-sidebar);
       border-right: none;
@@ -77,7 +80,7 @@
     }
 
     .sidebar::-webkit-scrollbar {
-      width: 0px;  /* Chrome/Safari */
+      width: 6px;  /* Chrome/Safari */
       height: 0px;
       background: transparent;
     }
@@ -87,7 +90,13 @@
     }
 
 
-    body.theme-light .sidebar {
+    
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: rgba(39, 39, 47, 0.2); /* 80% transparent */
+      border-radius: 999px;
+    }
+body.theme-light .sidebar {
       box-shadow: none;
     }
 
@@ -231,9 +240,6 @@
       background: transparent;
     }
     
-    body.theme-light .nav-list::-webkit-scrollbar-thumb {
-      background: rgba(156, 163, 175, 0.3);
-    }
     body.theme-light .nav-list::-webkit-scrollbar-track {
       background: transparent;
     }
@@ -1175,7 +1181,49 @@
       font-size: 12px;
       color: var(--text-muted);
     }
-  </style>
+  
+
+
+
+/* Light theme: hide sidebar scrollbar completely (keep scrolling enabled) */
+body.theme-light .sidebar{
+  scrollbar-width: none;           /* Firefox */
+  -ms-overflow-style: none;        /* IE/Edge legacy */
+}
+body.theme-light .sidebar::-webkit-scrollbar{
+  width: 0 !important;             /* Chrome/Safari */
+  height: 0 !important;
+  background: transparent !important;
+}
+body.theme-light .sidebar::-webkit-scrollbar-thumb{
+  background: transparent !important;
+}
+body.theme-light .sidebar::-webkit-scrollbar-track{
+  background: transparent !important;
+}
+
+
+
+/* Light theme: chat list scrollbar subtle (high transparency) */
+body.theme-light .nav-list{
+  scrollbar-width: thin;                               /* Firefox */
+  scrollbar-color: rgba(0,0,0,0.12) transparent;       /* Firefox */
+}
+body.theme-light .nav-list::-webkit-scrollbar{
+  width: 5px;                                          /* Chrome/Safari */
+}
+body.theme-light .nav-list::-webkit-scrollbar-track{
+  background: transparent;
+}
+body.theme-light .nav-list::-webkit-scrollbar-thumb{
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}
+body.theme-light .nav-list::-webkit-scrollbar-thumb:hover{
+  background: rgba(0,0,0,0.18);
+}
+
+</style>
 </head>
 <body>
 <div class="shell" id="shell">
@@ -1183,14 +1231,13 @@
   <aside class="sidebar">
     <div class="brand-row">
       <span class="brand-dot"></span>
-      <span class="brand-title">TCC AI</span>
+      <span class="brand-title">OAP AI</span>
     </div>
 
     <button id="sidebarToggleClose" class="sidebar-toggle-close" type="button" title="Close sidebar">❮</button>
 
     <button id="newChatSidebar" class="new-chat-btn" type="button">
-      <span class="icon">+</span>
-      <span>New chat</span>
+      + New chat
     </button>
 
     <div class="nav-section-title">Chats</div>
@@ -1205,9 +1252,9 @@
     </div>
   </aside>
 
-  <!-- TCC AI + زر فتح اللوحة -->
+  <!-- OAP AI + زر فتح اللوحة -->
   <div class="brand-outside">
-    <span class="brand-outside-label">TCC AI</span>
+    <span class="brand-outside-label">OAP AI</span>
     <button id="sidebarToggleOpen" class="sidebar-toggle-open" type="button" title="Open sidebar">❯</button>
   </div>
 
@@ -1353,7 +1400,7 @@
         <div class="prompt-input-wrap">
           <span class="prompt-input-prefix">+</span>
           <textarea id="userInput" class="prompt-input" rows="1"
-                    placeholder="Ask anything about TCC operations…" autocomplete="off"></textarea>
+                    placeholder="Ask anything about OAP operations…" autocomplete="off"></textarea>
         </div>
 
         <button class="icon-btn" type="button" title="Voice">🎙</button>
@@ -1428,6 +1475,7 @@ async function sendToNXS(userText) {
   const sidebarToggleCloseEl = document.getElementById("sidebarToggleClose");
   const chatListEl = document.getElementById("chatList");
   const chatLogEl = document.getElementById("chatLog");
+  const heroTitleEl = document.querySelector(".hero-title");
   const userInputEl = document.getElementById("userInput");
   const sendBtn = document.getElementById("sendBtn");
   const newChatSidebarBtn = document.getElementById("newChatSidebar");
@@ -1444,7 +1492,8 @@ async function sendToNXS(userText) {
   // Settings State with Enhanced Features
   let settings = {
     fontSize: 15,
-    fontColor: '#ffffff',
+    fontColorLight: '#111827',
+    fontColorDark: '#ffffff',
     language: 'en',
     model: 'claude-sonnet-4',
     stream: true,
@@ -1486,9 +1535,11 @@ async function sendToNXS(userText) {
     document.getElementById('fontSizeInput').value = settings.fontSize;
     document.getElementById('fontSizeValue').textContent = settings.fontSize + 'px';
 
-    // Font color
-    document.body.style.color = settings.fontColor;
-    document.getElementById('fontColorInput').value = settings.fontColor;
+    // Font color (separate for light/dark)
+    const isLightTheme = document.body.classList.contains('theme-light');
+    const currentFontColor = isLightTheme ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
+    document.body.style.color = currentFontColor;
+    document.getElementById('fontColorInput').value = currentFontColor;
 
     // Language
     document.getElementById('languageSelect').value = settings.language;
@@ -1520,12 +1571,16 @@ async function sendToNXS(userText) {
   });
 
   document.getElementById('fontColorInput').addEventListener('input', (e) => {
-    settings.fontColor = e.target.value;
-    document.body.style.color = settings.fontColor;
+    const isLightTheme = document.body.classList.contains('theme-light');
+    if (isLightTheme) {
+      settings.fontColorLight = e.target.value;
+    } else {
+      settings.fontColorDark = e.target.value;
+    }
+    document.body.style.color = e.target.value;
     saveSettings();
   });
-
-  document.getElementById('languageSelect').addEventListener('change', (e) => {
+document.getElementById('languageSelect').addEventListener('change', (e) => {
     settings.language = e.target.value;
     saveSettings();
     applyLanguage();
@@ -1585,12 +1640,23 @@ async function sendToNXS(userText) {
     document.body.setAttribute('dir', 'ltr');
 
     if (isArabic) {
-      userInputEl.placeholder = 'اسأل أي شيء عن عمليات TCC…';
+      userInputEl.placeholder = 'اسأل أي شيء عن عمليات OAP…';
     } else {
-      userInputEl.placeholder = 'Ask anything about TCC operations…';
+      userInputEl.placeholder = 'Ask anything about OAP operations…';
     }
 
-    // Localize settings window
+    
+    // Localize hero title and New chat buttons
+    if (heroTitleEl) {
+      heroTitleEl.textContent = isArabic ? 'بماذا تريد أن تبدأ؟' : 'What would you like to start with?';
+    }
+    if (newChatSidebarBtn) {
+      newChatSidebarBtn.textContent = isArabic ? '+ محادثة جديدة' : '+ New chat';
+    }
+    if (menuNewChat) {
+      menuNewChat.textContent = isArabic ? 'محادثة جديدة' : 'New chat';
+    }
+// Localize settings window
     const sectionTitles = document.querySelectorAll('#settingsMenu .settings-section-title');
     const labels = document.querySelectorAll('#settingsMenu .setting-label');
     const descriptions = document.querySelectorAll('#settingsMenu .setting-description');
@@ -1678,6 +1744,10 @@ async function sendToNXS(userText) {
     const isLight = themeToggleInput.checked;
     document.body.classList.toggle("theme-light", isLight);
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    const currentFontColor = isLight ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
+    document.body.style.color = currentFontColor;
+    const fontColorInput = document.getElementById('fontColorInput');
+    if (fontColorInput) fontColorInput.value = currentFontColor;
   });
 
   // Load theme preference
@@ -1685,6 +1755,15 @@ async function sendToNXS(userText) {
   if (savedTheme === 'light') {
     themeToggleInput.checked = true;
     document.body.classList.add('theme-light');
+  }
+
+  // Apply correct font color after theme load
+  {
+    const isLightTheme = document.body.classList.contains('theme-light');
+    const currentFontColor = isLightTheme ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
+    document.body.style.color = currentFontColor;
+    const fontColorInput = document.getElementById('fontColorInput');
+    if (fontColorInput) fontColorInput.value = currentFontColor;
   }
 
   // ===== Conversation Management =====
@@ -1830,7 +1909,7 @@ async function sendToNXS(userText) {
 
     const author = document.createElement("div");
     author.className = "msg-author";
-    author.textContent = role === "user" ? "You" : "TCC AI";
+    author.textContent = role === "user" ? "You" : "OAP AI";
 
     const body = document.createElement("div");
     bubble.appendChild(author);
@@ -1873,7 +1952,7 @@ async function sendToNXS(userText) {
     bubble.className = "msg-bubble " + (isArabic ? "rtl" : "ltr");
     const author = document.createElement("div");
     author.className = "msg-author";
-    author.textContent = "TCC AI";
+    author.textContent = "OAP AI";
     const body = document.createElement("div");
     const spanText = document.createElement("span");
     spanText.className = "thinking-text";
