@@ -770,6 +770,65 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
   box-shadow: 0 6px 16px rgba(0,0,0,.14);
 }
 
+
+/* ===== Settings Drawer (right, 25%) ===== */
+:root{ --settings-drawer-w: min(25vw, 420px); }
+body.settings-open{ padding-right: var(--settings-drawer-w); transition: padding-right .22s ease; }
+.settings-drawer{
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: var(--settings-drawer-w);
+  height: 100vh;
+  transform: translateX(100%);
+  transition: transform .22s ease;
+  z-index: 9998;
+  border-left: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+body.settings-open .settings-drawer{ transform: translateX(0); }
+
+.settings-drawer__head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding: 14px 14px 10px;
+  position: sticky;
+  top: 0;
+  background: rgba(0,0,0,.10);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  z-index: 2;
+}
+.settings-drawer__title{
+  display:flex; align-items:center; gap:10px;
+  font-weight: 900;
+}
+.settings-drawer__close{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.18);
+  color: inherit;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.settings-drawer__close:hover{ transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0,0,0,.18); }
+
+.settings-drawer__body{ padding: 14px; }
+
+@media (max-width: 900px){
+  :root{ --settings-drawer-w: min(88vw, 460px); }
+  body.settings-open{ padding-right: 0; }
+  .settings-drawer{ border-left:none; }
+}
+
 </style>
 </head>
 
@@ -934,13 +993,11 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
             <nav class="divider__nav" aria-label="Primary">
               <ul>
                 <li><a class="active" href="Navigation panel.html">Form</a></li>
-                <li>
-</li>
-                <li><a id="navSettings" class="form-like nav-settings-btn" href="Settings.html" title="Settings">
-  <span class="icon" aria-hidden="true">⚙️</span>
-  <span class="label">Settings</span>
-</a>
-<a class="form-like" href="AI.html" id="navAI">AI</a></li>
+                <li><button id="openSettingsDrawer" class="form-like nav-settings-btn" type="button" title="Settings">
+                  <span class="icon" aria-hidden="true">⚙️</span>
+                  <span class="label">Settings</span>
+                </button></li>
+                <li><a class="form-like" href="AI.html" id="navAI">AI</a></li>
 </ul>
             </nav>
 
@@ -1553,6 +1610,147 @@ setInterval(updateTime,60000);
 </script>
 
 
+
+
+<!-- ===== Settings Drawer (panel) ===== -->
+<aside id="settingsDrawer" class="settings-drawer" aria-hidden="true">
+  <div class="settings-drawer__head">
+    <div class="settings-drawer__title"><span aria-hidden="true">⚙️</span><span>الإعدادات</span></div>
+    <button id="closeSettingsDrawer" class="settings-drawer__close" type="button">✕</button>
+  </div>
+
+  <div class="settings-drawer__body">
+    <div class="small-note" style="opacity:.85; font-size:12px; margin-bottom:10px;">
+      هذه الإعدادات لا تظهر إلا للمالك/الأدمن.
+    </div>
+
+    <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.04);">
+      <div style="font-weight:800; margin-bottom:6px;">صلاحيات الصفحات</div>
+      <div style="opacity:.85; font-size:12px; margin-bottom:10px;">
+        أدخل <b>الرقم الوظيفي</b> ثم اختر الصفحات المسموح له فتحها.
+      </div>
+
+      <input id="permEmployeeId" inputmode="numeric" placeholder="مثال: 15013814"
+             style="width:100%; padding:12px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(0,0,0,.18); color:#fff; outline:none; margin-bottom:10px;">
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
+          <input id="permSettings" type="checkbox">
+          <span>Settings</span>
+        </label>
+        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
+          <input id="permAI" type="checkbox">
+          <span>AI</span>
+        </label>
+        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
+          <input id="permDashboard" type="checkbox">
+          <span>Dashboard</span>
+        </label>
+      </div>
+
+      <button id="permSaveBtn" class="btn primary" style="width:100%;">حفظ الصلاحيات</button>
+      <div id="permStatus" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+/* ===== Settings Drawer behavior + Admin permissions save ===== */
+(function(){
+  const drawer = document.getElementById('settingsDrawer');
+  const openBtn = document.getElementById('openSettingsDrawer');
+  const closeBtn = document.getElementById('closeSettingsDrawer');
+
+  function openDrawer(){
+    if(!drawer) return;
+    drawer.setAttribute('aria-hidden','false');
+    document.body.classList.add('settings-open');
+  }
+  function closeDrawer(){
+    if(!drawer) return;
+    drawer.setAttribute('aria-hidden','true');
+    document.body.classList.remove('settings-open');
+  }
+
+  if(openBtn) openBtn.addEventListener('click', (e)=>{ e.preventDefault(); openDrawer(); });
+  if(closeBtn) closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeDrawer(); });
+
+  // إغلاق بزر Esc
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape') closeDrawer();
+  });
+
+  // ===== Admin permission save (employee id) =====
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+  if(!window.supabase) return;
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const empEl = document.getElementById('permEmployeeId');
+  const sEl = document.getElementById('permSettings');
+  const aEl = document.getElementById('permAI');
+  const dEl = document.getElementById('permDashboard');
+  const btn = document.getElementById('permSaveBtn');
+  const status = document.getElementById('permStatus');
+
+  function setMsg(msg, ok){
+    if(!status) return;
+    status.textContent = msg || "";
+    status.style.color = ok ? "#22c55e" : "#ef4444";
+  }
+
+  function isOwnerOrAdmin(){
+    try {
+      const ss = sessionStorage.getItem("oap_session_v1");
+      const sess = ss ? JSON.parse(ss) : null;
+      const employeeId = sess && sess.employee_id ? String(sess.employee_id) : (localStorage.getItem("oap_employee_id") || "");
+      const role = sess && sess.role ? String(sess.role) : (localStorage.getItem("oap_role") || "");
+      const norm = role.trim().toLowerCase();
+      const ownerId = "15013814";
+      const adminRoleKeywords = ["administrator","admin","owner","super admin","مدير","مدير النظام","ادمن","أدمن","مشرف","مسؤول"];
+      return String(employeeId).trim() === ownerId || adminRoleKeywords.some(k => norm.includes(k));
+    } catch(e) {
+      return false;
+    }
+  }
+
+  // أخفِ لوحة الصلاحيات إذا ليس أدمن/مالك (حتى لو فتح الدرج)
+  if(!isOwnerOrAdmin()) {
+    const box = btn && btn.closest('div');
+    if(box) box.style.display = 'none';
+  }
+
+  async function setOne(pageKey, canAccess, employeeId){
+    const { error } = await sb.rpc('admin_set_page_access_by_employee', {
+      p_employee_id: Number(employeeId),
+      p_page_key: pageKey,
+      p_can_access: !!canAccess
+    });
+    if(error) throw error;
+  }
+
+  if(btn) btn.addEventListener('click', async ()=>{
+    const employeeId = (empEl && empEl.value || "").trim();
+    if(!employeeId) { setMsg("أدخل الرقم الوظيفي أولاً.", false); return; }
+    if(!/^[0-9]+$/.test(employeeId)) { setMsg("الرقم الوظيفي يجب أن يكون أرقام فقط.", false); return; }
+
+    btn.disabled = true;
+    setMsg("جارٍ حفظ الصلاحيات...", true);
+    try {
+      await setOne('settings', sEl && sEl.checked, employeeId);
+      await setOne('ai', aEl && aEl.checked, employeeId);
+      await setOne('dashboard', dEl && dEl.checked, employeeId);
+      setMsg("تم حفظ الصلاحيات بنجاح ✅", true);
+    } catch(e) {
+      console.error(e);
+      setMsg("فشل الحفظ. نفّذ كود SQL الخاص بالدالة admin_set_page_access_by_employee.", false);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+})();
+</script>
 
 </body>
 </html>
