@@ -1070,10 +1070,7 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
             <nav class="divider__nav" aria-label="Primary">
               <ul>
                 <li><a class="active" href="Navigation panel.html"><span class="nav-ico" aria-hidden="true">📝</span><span>Form</span></a></li>
-                <li><button id="openSettingsDrawer" class="form-like nav-settings-btn" type="button" title="Settings">
-                  <span class="icon" aria-hidden="true">⚙️</span>
-                  <span class="label">Settings</span>
-                </button></li>
+                <li><a id="openSettingsDrawer" class="form-like nav-settings-btn" href="#" title="Settings"><span class="nav-ico" aria-hidden="true">⚙️</span><span>Settings</span></a></li>
                 <li><a class="form-like" href="AI.html" id="navAI"><span class="nav-ico" aria-hidden="true">🤖</span><span>AI</span></a></li>
 </ul>
             </nav>
@@ -1689,6 +1686,7 @@ setInterval(updateTime,60000);
 
 
 
+
 <!-- ===== Settings Drawer (panel) ===== -->
 <aside id="settingsDrawer" class="settings-drawer" aria-hidden="true">
   <div class="settings-drawer__head">
@@ -1697,42 +1695,86 @@ setInterval(updateTime,60000);
   </div>
 
   <div class="settings-drawer__body">
-    <div class="small-note" style="opacity:.85; font-size:12px; margin-bottom:10px;">
-      هذه Settings لا تظهر إلا للمالك/الأدمن.
+
+    <div class="settings-section">
+      <h4>Admin Session</h4>
+      <p>To manage permissions securely, sign in with your <b>Supabase Auth</b> admin account.</p>
+
+      <div id="adminSessionSignedOut">
+        <input id="adminEmail" class="settings-input" type="email" placeholder="Admin email" style="margin-bottom:10px;">
+        <input id="adminPass" class="settings-input" type="password" placeholder="Admin password" style="margin-bottom:10px;">
+        <button id="adminSignInBtn" class="btn primary" style="width:100%;">Sign in</button>
+        <div id="adminAuthStatus" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
+      </div>
+
+      <div id="adminSessionSignedIn" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+          <div style="font-size:12px; opacity:.9;">
+            Signed in as: <b id="adminWho"></b>
+          </div>
+          <button id="adminSignOutBtn" class="settings-drawer__close" type="button">Sign out</button>
+        </div>
+        <div id="adminAuthStatus2" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
+      </div>
     </div>
 
-    <div style="margin-top:14px; padding:12px; border:1px solid rgba(255,255,255,.10); border-radius:14px; background:rgba(255,255,255,.04);">
-      <div style="font-weight:800; margin-bottom:6px;">Page Permissions</div>
-      <div style="opacity:.85; font-size:12px; margin-bottom:10px;">
-        Enter an <b>Employee ID</b>, then choose which pages the user can access.
-      </div>
+    <div class="settings-section" style="margin-top:14px;">
+      <h4>Grant / Update Permissions</h4>
+      <p>Enter an <b>Employee ID</b>, choose allowed pages, then save.</p>
 
       <input id="permEmployeeId" class="settings-input" inputmode="numeric" placeholder="Employee ID">
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
-          <input id="permSettings" type="checkbox">
-          <span>Settings</span>
-        </label>
-        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
-          <input id="permAI" type="checkbox">
-          <span>AI</span>
-        </label>
-        <label style="display:flex; gap:8px; align-items:center; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.12);">
-          <input id="permDashboard" type="checkbox">
-          <span>Dashboard</span>
-        </label>
+      <div class="settings-chips">
+        <label class="settings-chip"><input id="permSettings" type="checkbox"><span>Settings</span></label>
+        <label class="settings-chip"><input id="permAI" type="checkbox"><span>AI</span></label>
+        <label class="settings-chip"><input id="permDashboard" type="checkbox"><span>Dashboard</span></label>
       </div>
 
-      <button id="permSaveBtn" class="btn primary" style="width:100%;">Save Permissions</button>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="permLoadBtn" class="btn" style="flex:1;">Load</button>
+        <button id="permSaveBtn" class="btn primary" style="flex:1;">Save</button>
+      </div>
+
       <div id="permStatus" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
     </div>
+
+    <div class="settings-section" style="margin-top:14px;">
+      <h4>Users with Access</h4>
+      <p>Review, edit, or revoke page permissions.</p>
+
+      <input id="permSearch" class="settings-input" placeholder="Search by email or employee id" style="margin-bottom:10px;">
+
+      <div style="overflow:auto; border-radius:14px; border:1px solid rgba(255,255,255,.10);">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead style="background: rgba(255,255,255,.06);">
+            <tr>
+              <th style="text-align:left; padding:10px;">Employee</th>
+              <th style="text-align:left; padding:10px;">Email</th>
+              <th style="text-align:center; padding:10px;">Settings</th>
+              <th style="text-align:center; padding:10px;">AI</th>
+              <th style="text-align:center; padding:10px;">Dashboard</th>
+              <th style="text-align:right; padding:10px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="permTableBody"></tbody>
+        </table>
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button id="permRefreshBtn" class="btn" style="flex:1;">Refresh</button>
+      </div>
+
+      <div id="permListStatus" style="margin-top:10px; font-size:12px; opacity:.9;"></div>
+    </div>
+
   </div>
 </aside>
 
 
+
+
 <script>
-/* ===== Settings Drawer behavior + Admin permissions save ===== */
+/* ===== Settings Drawer (Advanced) ===== */
 (function(){
   const drawer = document.getElementById('settingsDrawer');
   const openBtn = document.getElementById('openSettingsDrawer');
@@ -1751,80 +1793,236 @@ setInterval(updateTime,60000);
 
   if(openBtn) openBtn.addEventListener('click', (e)=>{ e.preventDefault(); openDrawer(); });
   if(closeBtn) closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); closeDrawer(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDrawer(); });
 
-  // إغلاق بزر Esc
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeDrawer();
-  });
-
-  // ===== Admin permission save (employee id) =====
+  // ===== Supabase client =====
   const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
   if(!window.supabase) return;
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = window.__sbClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.__sbClient = sb;
 
-  const empEl = document.getElementById('permEmployeeId');
-  const sEl = document.getElementById('permSettings');
-  const aEl = document.getElementById('permAI');
-  const dEl = document.getElementById('permDashboard');
-  const btn = document.getElementById('permSaveBtn');
-  const status = document.getElementById('permStatus');
+  // ===== Elements =====
+  const adminEmail = document.getElementById('adminEmail');
+  const adminPass  = document.getElementById('adminPass');
+  const signInBtn  = document.getElementById('adminSignInBtn');
+  const signOutBtn = document.getElementById('adminSignOutBtn');
+  const whoEl      = document.getElementById('adminWho');
 
-  function setMsg(msg, ok){
-    if(!status) return;
-    status.textContent = msg || "";
-    status.style.color = ok ? "#22c55e" : "#ef4444";
+  const signedOutBox = document.getElementById('adminSessionSignedOut');
+  const signedInBox  = document.getElementById('adminSessionSignedIn');
+  const authStatus1  = document.getElementById('adminAuthStatus');
+  const authStatus2  = document.getElementById('adminAuthStatus2');
+
+  const empEl  = document.getElementById('permEmployeeId');
+  const sEl    = document.getElementById('permSettings');
+  const aEl    = document.getElementById('permAI');
+  const dEl    = document.getElementById('permDashboard');
+  const loadBtn= document.getElementById('permLoadBtn');
+  const saveBtn= document.getElementById('permSaveBtn');
+  const permStatus = document.getElementById('permStatus');
+
+  const searchEl = document.getElementById('permSearch');
+  const refreshBtn = document.getElementById('permRefreshBtn');
+  const tableBody = document.getElementById('permTableBody');
+  const listStatus = document.getElementById('permListStatus');
+
+  function setMsg(el, msg, ok){
+    if(!el) return;
+    el.textContent = msg || "";
+    el.style.color = ok ? "#22c55e" : "#ef4444";
   }
 
-  function isOwnerOrAdmin(){
-    try {
-      const ss = sessionStorage.getItem("oap_session_v1");
-      const sess = ss ? JSON.parse(ss) : null;
-      const employeeId = sess && sess.employee_id ? String(sess.employee_id) : (localStorage.getItem("oap_employee_id") || "");
-      const role = sess && sess.role ? String(sess.role) : (localStorage.getItem("oap_role") || "");
-      const norm = role.trim().toLowerCase();
-      const ownerId = "15013814";
-      const adminRoleKeywords = ["administrator","admin","owner","super admin","مدير","مدير النظام","ادمن","أدمن","مشرف","مسؤول"];
-      return String(employeeId).trim() === ownerId || adminRoleKeywords.some(k => norm.includes(k));
-    } catch(e) {
+  async function isAdmin(){
+    const { data, error } = await sb.rpc('is_admin');
+    if(error) return false;
+    return data === true;
+  }
+
+  async function syncAdminUI(){
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session){
+      signedInBox.style.display = 'none';
+      signedOutBox.style.display = '';
+      setMsg(authStatus2, "", true);
       return false;
     }
+    const ok = await isAdmin();
+    if(!ok){
+      // signed in but not admin
+      signedInBox.style.display = 'none';
+      signedOutBox.style.display = '';
+      setMsg(authStatus1, "Signed in but not authorized as admin.", false);
+      return false;
+    }
+    signedOutBox.style.display = 'none';
+    signedInBox.style.display = '';
+    whoEl.textContent = session.user.email || session.user.id;
+    setMsg(authStatus2, "Admin session active ✅", true);
+    setMsg(authStatus1, "", true);
+    return true;
   }
 
-  // أخفِ لوحة الصلاحيات إذا ليس أدمن/مالك (حتى لو فتح الدرج)
-  if(!isOwnerOrAdmin()) {
-    const box = btn && btn.closest('div');
-    if(box) box.style.display = 'none';
+  async function signInAdmin(){
+    setMsg(authStatus1, "Signing in...", true);
+    const email = (adminEmail.value||"").trim();
+    const pass  = (adminPass.value||"").trim();
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if(error){
+      setMsg(authStatus1, "Sign in failed. Check email/password.", false);
+      return;
+    }
+    setMsg(authStatus1, "", true);
+    await syncAdminUI();
+    await refreshList();
   }
 
-  async function setOne(pageKey, canAccess, employeeId){
-    const { error } = await sb.rpc('admin_set_page_access_by_employee', {
-      p_employee_id: Number(employeeId),
-      p_page_key: pageKey,
-      p_can_access: !!canAccess
-    });
-    if(error) throw error;
+  async function signOutAdmin(){
+    await sb.auth.signOut();
+    await syncAdminUI();
+    setMsg(listStatus, "", true);
+    if(tableBody) tableBody.innerHTML = "";
   }
 
-  if(btn) btn.addEventListener('click', async ()=>{
-    const employeeId = (empEl && empEl.value || "").trim();
-    if(!employeeId) { setMsg("Enter the Employee ID first.", false); return; }
-    if(!/^[0-9]+$/.test(employeeId)) { setMsg("Employee ID must be digits only.", false); return; }
+  if(signInBtn) signInBtn.addEventListener('click', (e)=>{ e.preventDefault(); signInAdmin(); });
+  if(signOutBtn) signOutBtn.addEventListener('click', (e)=>{ e.preventDefault(); signOutAdmin(); });
 
-    btn.disabled = true;
-    setMsg("جارٍ Save Permissions...", true);
+  // ===== Permissions helpers =====
+  function readEmployeeId(){
+    const v = (empEl.value||"").trim();
+    if(!v) return null;
+    if(!/^[0-9]+$/.test(v)) return null;
+    return Number(v);
+  }
+
+  async function loadOne(){
+    const ok = await syncAdminUI();
+    if(!ok) { setMsg(permStatus, "Admin sign-in required.", false); return; }
+
+    const emp = readEmployeeId();
+    if(emp === null) { setMsg(permStatus, "Enter a valid Employee ID.", false); return; }
+    setMsg(permStatus, "Loading...", true);
+
+    const { data, error } = await sb.rpc('admin_get_permissions_by_employee', { p_employee_id: emp });
+    if(error){ setMsg(permStatus, "Load failed. Make sure the employee exists and is linked.", false); return; }
+
+    sEl.checked = !!data.settings;
+    aEl.checked = !!data.ai;
+    dEl.checked = !!data.dashboard;
+    setMsg(permStatus, "Loaded ✅", true);
+  }
+
+  async function saveOne(){
+    const ok = await syncAdminUI();
+    if(!ok) { setMsg(permStatus, "Admin sign-in required.", false); return; }
+
+    const emp = readEmployeeId();
+    if(emp === null) { setMsg(permStatus, "Enter a valid Employee ID.", false); return; }
+
+    saveBtn.disabled = true;
+    setMsg(permStatus, "Saving...", true);
     try {
-      await setOne('settings', sEl && sEl.checked, employeeId);
-      await setOne('ai', aEl && aEl.checked, employeeId);
-      await setOne('dashboard', dEl && dEl.checked, employeeId);
-      setMsg("تم Save Permissions بنجاح ✅", true);
+      await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'settings',  p_can_access: !!sEl.checked });
+      await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'ai',        p_can_access: !!aEl.checked });
+      await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'dashboard', p_can_access: !!dEl.checked });
+      setMsg(permStatus, "Saved ✅", true);
+      await refreshList();
     } catch(e) {
       console.error(e);
-      setMsg("Save failed. Make sure the RPC function admin_set_page_access_by_employee exists and you are Owner/Admin.", false);
+      setMsg(permStatus, "Save failed.", false);
     } finally {
-      btn.disabled = false;
+      saveBtn.disabled = false;
     }
+  }
+
+  if(loadBtn) loadBtn.addEventListener('click', (e)=>{ e.preventDefault(); loadOne(); });
+  if(saveBtn) saveBtn.addEventListener('click', (e)=>{ e.preventDefault(); saveOne(); });
+
+  // ===== List & edit =====
+  function rowHtml(r){
+    const emp = r.employee_id ?? "";
+    const email = r.email ?? "";
+    const s = r.settings ? "checked" : "";
+    const a = r.ai ? "checked" : "";
+    const d = r.dashboard ? "checked" : "";
+    return `
+      <tr data-emp="${emp}">
+        <td style="padding:10px;">${emp}</td>
+        <td style="padding:10px; word-break:break-word;">${email}</td>
+        <td style="padding:10px; text-align:center;"><input class="tblS" type="checkbox" ${s}></td>
+        <td style="padding:10px; text-align:center;"><input class="tblA" type="checkbox" ${a}></td>
+        <td style="padding:10px; text-align:center;"><input class="tblD" type="checkbox" ${d}></td>
+        <td style="padding:10px; text-align:right;">
+          <button class="btn tblSave" type="button">Update</button>
+          <button class="btn tblRevoke" type="button" style="margin-left:8px;">Revoke</button>
+        </td>
+      </tr>`;
+  }
+
+  async function refreshList(){
+    const ok = await syncAdminUI();
+    if(!ok){ setMsg(listStatus, "Admin sign-in required to view the list.", false); return; }
+
+    setMsg(listStatus, "Loading list...", true);
+    const { data, error } = await sb.rpc('admin_list_permissions');
+    if(error){ console.error(error); setMsg(listStatus, "Failed to load list.", false); return; }
+
+    const q = (searchEl.value||"").trim().toLowerCase();
+    const rows = (data||[]).filter(r => {
+      if(!q) return true;
+      return String(r.email||"").toLowerCase().includes(q) || String(r.employee_id||"").toLowerCase().includes(q);
+    });
+
+    tableBody.innerHTML = rows.map(rowHtml).join("");
+    setMsg(listStatus, `Loaded ${rows.length} users ✅`, true);
+  }
+
+  if(refreshBtn) refreshBtn.addEventListener('click', (e)=>{ e.preventDefault(); refreshList(); });
+  if(searchEl) searchEl.addEventListener('input', ()=>{ refreshList(); });
+
+  // delegate table actions
+  if(tableBody){
+    tableBody.addEventListener('click', async (e)=>{
+      const tr = e.target.closest('tr');
+      if(!tr) return;
+      const emp = Number(tr.getAttribute('data-emp'));
+      if(!emp) return;
+
+      if(e.target.classList.contains('tblSave')){
+        const s = tr.querySelector('.tblS').checked;
+        const a = tr.querySelector('.tblA').checked;
+        const d = tr.querySelector('.tblD').checked;
+        setMsg(listStatus, "Updating...", true);
+        try {
+          await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'settings',  p_can_access: !!s });
+          await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'ai',        p_can_access: !!a });
+          await sb.rpc('admin_set_page_access_by_employee', { p_employee_id: emp, p_page_key: 'dashboard', p_can_access: !!d });
+          setMsg(listStatus, "Updated ✅", true);
+        } catch(err) {
+          console.error(err);
+          setMsg(listStatus, "Update failed.", false);
+        }
+      }
+
+      if(e.target.classList.contains('tblRevoke')){
+        setMsg(listStatus, "Revoking...", true);
+        try {
+          await sb.rpc('admin_revoke_all_by_employee', { p_employee_id: emp });
+          await refreshList();
+          setMsg(listStatus, "Revoked ✅", true);
+        } catch(err) {
+          console.error(err);
+          setMsg(listStatus, "Revoke failed.", false);
+        }
+      }
+    });
+  }
+
+  // init
+  sb.auth.onAuthStateChange(async ()=>{
+    await syncAdminUI();
   });
+  syncAdminUI();
 })();
 </script>
 
