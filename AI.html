@@ -59,9 +59,6 @@
 
     /* ===== Sidebar (left) ===== */
     .sidebar {
-      scrollbar-color: rgba(39, 39, 47, 0.2) transparent;
-      scrollbar-width: thin;
-
       width: 260px;
       background: var(--bg-sidebar);
       border-right: none;
@@ -80,7 +77,7 @@
     }
 
     .sidebar::-webkit-scrollbar {
-      width: 6px;  /* Chrome/Safari */
+      width: 0px;  /* Chrome/Safari */
       height: 0px;
       background: transparent;
     }
@@ -90,13 +87,7 @@
     }
 
 
-    
-
-    .sidebar::-webkit-scrollbar-thumb {
-      background: rgba(39, 39, 47, 0.2); /* 80% transparent */
-      border-radius: 999px;
-    }
-body.theme-light .sidebar {
+    body.theme-light .sidebar {
       box-shadow: none;
     }
 
@@ -1182,46 +1173,24 @@ body.theme-light .sidebar {
       color: var(--text-muted);
     }
   
+/* ===== Pro Patches (no layout changes) ===== */
+body { --chat-text: inherit; }
+.chat-log, .chat-log .message, .chat-log .message * { color: var(--chat-text); }
+.prompt-input, .hero-title { color: var(--chat-text); }
 
+.message.is-ar { direction: rtl; text-align: right; }
+.message.is-en { direction: ltr; text-align: left; }
 
+/* Light theme chat list scrollbar: auto-hide + very subtle */
+body.theme-light .nav-list::-webkit-scrollbar { width: 5px; }
+body.theme-light .nav-list::-webkit-scrollbar-track { background: transparent; }
+body.theme-light .nav-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 999px; }
+body.theme-light .nav-list:not(.scrolling)::-webkit-scrollbar-thumb { background: transparent; }
+body.theme-light .nav-list { scrollbar-color: transparent transparent; scrollbar-width: thin; }
+body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transparent; }
 
-/* Light theme: hide sidebar scrollbar completely (keep scrolling enabled) */
-body.theme-light .sidebar{
-  scrollbar-width: none;           /* Firefox */
-  -ms-overflow-style: none;        /* IE/Edge legacy */
-}
-body.theme-light .sidebar::-webkit-scrollbar{
-  width: 0 !important;             /* Chrome/Safari */
-  height: 0 !important;
-  background: transparent !important;
-}
-body.theme-light .sidebar::-webkit-scrollbar-thumb{
-  background: transparent !important;
-}
-body.theme-light .sidebar::-webkit-scrollbar-track{
-  background: transparent !important;
-}
-
-
-
-/* Light theme: chat list scrollbar subtle (high transparency) */
-body.theme-light .nav-list{
-  scrollbar-width: thin;                               /* Firefox */
-  scrollbar-color: rgba(0,0,0,0.12) transparent;       /* Firefox */
-}
-body.theme-light .nav-list::-webkit-scrollbar{
-  width: 5px;                                          /* Chrome/Safari */
-}
-body.theme-light .nav-list::-webkit-scrollbar-track{
-  background: transparent;
-}
-body.theme-light .nav-list::-webkit-scrollbar-thumb{
-  background: rgba(0,0,0,0.12);
-  border-radius: 999px;
-}
-body.theme-light .nav-list::-webkit-scrollbar-thumb:hover{
-  background: rgba(0,0,0,0.18);
-}
+.setting-warning{ margin-top:6px; font-size:12px; opacity:0.8; }
+.setting-warning.hidden{ display:none; }
 
 </style>
 </head>
@@ -1287,7 +1256,9 @@ body.theme-light .nav-list::-webkit-scrollbar-thumb:hover{
         <div class="setting-item">
           <label class="setting-label">Font Color</label>
           <input id="fontColorInput" type="color" value="#ffffff">
-        </div>
+        
+          <div id="fontColorWarn" class="setting-warning hidden"></div>
+</div>
       </div>
 
       <!-- Language Section -->
@@ -1508,7 +1479,10 @@ async function sendToNXS(userText) {
   let thinkingRow = null;
   let abortController = null;
 
-  // ===== Load/Save Settings =====
+  
+  let _lastSendAt = 0;
+  let _lastSendText = "";
+// ===== Load/Save Settings =====
   function loadSettings() {
     try {
       const saved = localStorage.getItem('tcc_settings');
@@ -1539,6 +1513,7 @@ async function sendToNXS(userText) {
     const isLightTheme = document.body.classList.contains('theme-light');
     const currentFontColor = isLightTheme ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
     document.body.style.color = currentFontColor;
+    document.body.style.setProperty('--chat-text', currentFontColor);
     document.getElementById('fontColorInput').value = currentFontColor;
 
     // Language
@@ -1572,19 +1547,19 @@ async function sendToNXS(userText) {
 
   document.getElementById('fontColorInput').addEventListener('input', (e) => {
     const isLightTheme = document.body.classList.contains('theme-light');
-    if (isLightTheme) {
-      settings.fontColorLight = e.target.value;
-    } else {
-      settings.fontColorDark = e.target.value;
-    }
-    document.body.style.color = e.target.value;
+    if (isLightTheme) settings.fontColorLight = e.target.value;
+    else settings.fontColorDark = e.target.value;
+    applyFontColorByTheme();
     saveSettings();
   });
 document.getElementById('languageSelect').addEventListener('change', (e) => {
     settings.language = e.target.value;
     saveSettings();
     applyLanguage();
-  });
+  
+  bindNavListAutohide();
+  applyFontColorByTheme();
+});
 
   document.getElementById('modelSelect').addEventListener('change', (e) => {
     settings.model = e.target.value;
@@ -1744,11 +1719,8 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     const isLight = themeToggleInput.checked;
     document.body.classList.toggle("theme-light", isLight);
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    const currentFontColor = isLight ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
-    document.body.style.color = currentFontColor;
-    const fontColorInput = document.getElementById('fontColorInput');
-    if (fontColorInput) fontColorInput.value = currentFontColor;
-  });
+        applyFontColorByTheme();
+});
 
   // Load theme preference
   const savedTheme = localStorage.getItem('theme');
@@ -1757,16 +1729,10 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     document.body.classList.add('theme-light');
   }
 
-  // Apply correct font color after theme load
-  {
-    const isLightTheme = document.body.classList.contains('theme-light');
-    const currentFontColor = isLightTheme ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
-    document.body.style.color = currentFontColor;
-    const fontColorInput = document.getElementById('fontColorInput');
-    if (fontColorInput) fontColorInput.value = currentFontColor;
-  }
-
-  // ===== Conversation Management =====
+  
+    // Apply initial font color after theme load
+  applyFontColorByTheme();
+// ===== Conversation Management =====
   function saveConversations() {
     try {
       localStorage.setItem("conversations", JSON.stringify(conversations));
@@ -1785,7 +1751,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
       const cc = localStorage.getItem("chatCounter");
       if (cc) chatCounter = Number(cc) || chatCounter;
       conversations = saved || {};
-      renderChatList();
+      scheduleRenderChatList();
       const storedActive = localStorage.getItem("currentChatId");
       if (storedActive && conversations[storedActive]) {
         // Keep in list but don't set active
@@ -1802,7 +1768,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
       title: title || "New chat",
       messages: []
     };
-    renderChatList();
+    scheduleRenderChatList();
     setActiveChat(id);
     saveConversations();
     return id;
@@ -1868,7 +1834,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
 
   function setActiveChat(chatId) {
     currentChatId = chatId;
-    renderChatList();
+    scheduleRenderChatList();
     renderChatMessages(chatId);
   }
 
@@ -1885,7 +1851,79 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     return /[\u0600-\u06FF]/.test(text);
   }
 
-  function appendMessage(role, text, persist = true, animate = true) {
+  
+
+  // ===== Pro helpers (safe patches) =====
+  function hexToRgb(hex){
+    try{
+      const h = (hex||'').replace('#','').trim();
+      const full = h.length === 3 ? h.split('').map(c=>c+c).join('') : h;
+      const int = parseInt(full, 16);
+      return { r: (int >> 16) & 255, g: (int >> 8) & 255, b: int & 255 };
+    }catch(e){ return {r:0,g:0,b:0}; }
+  }
+  function relLuminance(rgb){
+    const srgb = [rgb.r,rgb.g,rgb.b].map(v => {
+      const c = v/255;
+      return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4);
+    });
+    return 0.2126*srgb[0] + 0.7152*srgb[1] + 0.0722*srgb[2];
+  }
+  function contrastRatio(hex1, hex2){
+    const L1 = relLuminance(hexToRgb(hex1));
+    const L2 = relLuminance(hexToRgb(hex2));
+    const lighter = Math.max(L1,L2);
+    const darker  = Math.min(L1,L2);
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+  function setWarn(msg){
+    const el = document.getElementById('fontColorWarn');
+    if(!el) return;
+    if(!msg){ el.textContent=''; el.classList.add('hidden'); return; }
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+  function makeTitleFromText(text){
+    const clean = (text || '').replace(/\s+/g,' ').trim();
+    if(!clean) return null;
+    const words = clean.split(' ');
+    const slice = words.slice(0, 7).join(' ');
+    return slice.length > 50 ? slice.slice(0, 50) : slice;
+  }
+  let _chatListRaf = null;
+  function scheduleRenderChatList(){
+    if (_chatListRaf) return;
+    _chatListRaf = requestAnimationFrame(() => {
+      _chatListRaf = null;
+      try{ scheduleRenderChatList(); } catch(e){}
+    });
+  }
+  let _navScrollT = null;
+  function bindNavListAutohide(){
+    const nav = document.getElementById('chatList');
+    if(!nav) return;
+    nav.addEventListener('scroll', () => {
+      nav.classList.add('scrolling');
+      clearTimeout(_navScrollT);
+      _navScrollT = setTimeout(() => nav.classList.remove('scrolling'), 700);
+    }, { passive: true });
+  }
+  function applyFontColorByTheme(){
+    const isLight = document.body.classList.contains('theme-light');
+    const current = isLight ? (settings.fontColorLight || '#111827') : (settings.fontColorDark || '#ffffff');
+    document.body.style.setProperty('--chat-text', current);
+    document.body.style.color = current;
+    const inp = document.getElementById('fontColorInput');
+    if(inp) inp.value = current;
+
+    const bg = isLight ? '#E6E3DF' : '#0b0b0f';
+    const ratio = contrastRatio(current, bg);
+    if (ratio < 3.0) setWarn(isLight ? 'تنبيه: لون الخط قريب جدًا من خلفية الثيم الفاتح.' : 'Warning: very low contrast on dark theme.');
+    else if (ratio < 4.5) setWarn(isLight ? 'ملاحظة: التباين منخفض؛ قد يصعب قراءة النص.' : 'Note: contrast is a bit low.');
+    else setWarn('');
+  }
+
+function appendMessage(role, text, persist = true, animate = true) {
     if (!currentChatId) {
       createConversation("New chat");
     }
@@ -1893,8 +1931,8 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     if (persist) {
       conv.messages.push({ role, text });
       if (role === "user" && conv.title === "New chat") {
-        conv.title = text.slice(0, 30) || "New chat";
-        renderChatList();
+        conv.title = makeTitleFromText(text) || "New chat";
+        scheduleRenderChatList();
       }
       saveConversations();
     }
@@ -1918,7 +1956,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     chatLogEl.appendChild(row);
     
     if (settings.autoScroll) {
-      chatLogEl.scrollTop = chatLogEl.scrollHeight;
+      requestAnimationFrame(() => { chatLogEl.scrollTop = chatLogEl.scrollHeight; });
     }
 
     if (role === "bot" && animate) {
@@ -2100,15 +2138,19 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
 
   // ===== Event Listeners =====
   sendBtn.addEventListener("click", () => {
+    const now = Date.now();
+    const raw = (userInputEl.value || "").trim();
+    if (!raw) { return; }
+    if ((now - _lastSendAt) < 450 && raw === _lastSendText) { return; }
+    _lastSendAt = now; _lastSendText = raw;
+
     const mode = sendBtn.dataset.mode || "send";
     if (mode === "stop" && abortController) {
       abortController.abort();
       abortController = null;
       setSendMode("send");
       clearThinking();
-    } else {
-      if (sendBtn.disabled) return;
-      sendMessage();
+    } else {      sendMessage();
     }
   });
 
@@ -2122,7 +2164,6 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
         setSendMode("send");
         clearThinking();
       } else {
-        if (sendBtn.disabled) return;
         sendMessage();
       }
     }
@@ -2261,7 +2302,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
         currentChatId = null;
       }
       saveConversations();
-      renderChatList();
+      scheduleRenderChatList();
     }
     deleteModal.style.display = "none";
     window.__chatToDelete = null;
@@ -2286,7 +2327,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     if (chatId && newTitle.length > 0) {
       conversations[chatId].title = newTitle;
       saveConversations();
-      renderChatList();
+      scheduleRenderChatList();
     }
     renameModal.style.display = "none";
     window.__chatToRename = null;
