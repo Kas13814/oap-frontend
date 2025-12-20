@@ -932,6 +932,11 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
   margin-right: auto !important;
 }
 
+
+/* ===== Patch: Remove right-edge shadow until Settings Drawer opens ===== */
+.settings-drawer{ box-shadow: none !important; }
+body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !important; }
+
 </style>
 </head>
 
