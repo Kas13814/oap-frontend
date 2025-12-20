@@ -1053,121 +1053,64 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ===== Require Login for index.html (Stable) =====
-   حل رجوع الصفحة إلى Login بعد نجاح الدخول:
-   - نعيد الفحص مرتين مع انتظار بسيط قبل التحويل
-   - ونستمع لتغير حالة الدخول لإلغاء التحويل إذا تم استرجاع الـ Session
+/* ===== OAP Stable Gate (NO Supabase Auth dependency) =====
+   هذه الصفحة لا تُفتح إلا بعد تسجيل دخول ناجح من Login.html
+   نعتمد على جلسة النظام التي تُنشأ في Login.html:
+   - sessionStorage: oap_session_v1  (مُفضل)
+   - أو localStorage: isLoggedIn=1  (احتياطي)
 */
-(function(){
-  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
-  if(!window.supabase) return;
+(function () {
+  function safeJsonParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
 
-  const client = window.__sbClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.__sbClient = client;
-
-  let redirectTimer = null;
-
-  function cancelRedirect(){
-    if(redirectTimer){ clearTimeout(redirectTimer); redirectTimer = null; }
-  }
-
-  function scheduleRedirect(){
-    if(redirectTimer) return;
-    redirectTimer = setTimeout(() => {
-      window.location.replace("Login.html");
-    }, 800);
-  }
-
-  async function enforce(){
-    // فحص أول
-    const { data: { session } } = await client.auth.getSession();
-    if(session){ cancelRedirect(); return; }
-
-    // فحص ثاني بعد انتظار بسيط
-    await new Promise(r => setTimeout(r, 400));
-    const { data: { session: session2 } } = await client.auth.getSession();
-    if(session2){ cancelRedirect(); return; }
-
-    scheduleRedirect();
-  }
-
-  try{
-    client.auth.onAuthStateChange((event) => {
-      if(event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED'){
-        cancelRedirect();
+  function getOapSession(){
+    const ss = sessionStorage.getItem("oap_session_v1");
+    if (ss) {
+      const obj = safeJsonParse(ss);
+      if (obj && obj.expires_at && Date.now() > Number(obj.expires_at)) {
+        // انتهت الجلسة
+        sessionStorage.removeItem("oap_session_v1");
+        sessionStorage.removeItem("oap_home_gate_v1");
+        sessionStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("isLoggedIn");
+        return null;
       }
-    });
-  }catch(e){}
-
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', enforce);
-  }else{
-    enforce();
+      return obj || { v: 1 };
+    }
+    // fallback (أضعف): isLoggedIn
+    if (localStorage.getItem("isLoggedIn") === "1" || sessionStorage.getItem("isLoggedIn") === "1") {
+      return { v: 1, role: localStorage.getItem("oap_role") || null };
+    }
+    return null;
   }
-})();
-</script>
 
-<script>
-/* ===== Auth + Permissions (Admin pages) — minimal patch =====
-   يعتمد على Supabase Auth + دالة can_access_page الموجودة في قاعدة البيانات.
-   - إذا لا يوجد Session: نخفي Settings/AI/Dashboard
-   - إذا يوجد Session: نتحقق من الصلاحيات ونخفي ما لا تملك صلاحية له
-   ملاحظة: ضع بيانات مشروعك في SUPABASE_URL و SUPABASE_ANON_KEY
-*/
-(function(){
-  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
-
-  // عناصر القائمة العلوية
-  const elDashboard = document.getElementById('openDashboard');
-  const elSettings  = document.getElementById('openSettings');
-  const elAI        = document.getElementById('navAI');
-
-  function hide(el){ if(el) el.style.display = 'none'; }
-  function show(el){ if(el) el.style.display = ''; }
-
-  // إذا لم يتم وضع مفاتيح Supabase بعد، لا نكسر الصفحة — فقط نخفي العناصر الحساسة
-  if(!window.supabase || SUPABASE_URL.indexOf('https://inuqlhkoaoeiycefvjyj.supabase.co') !== -1 || SUPABASE_ANON_KEY.indexOf('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow') !== -1){
-    hide(elDashboard); hide(elSettings); hide(elAI);
+  const sess = getOapSession();
+  if (!sess) {
+    // تحويل فوري وثابت
+    window.location.replace("Login.html");
     return;
   }
 
-  const client = window.__sbClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  window.__sbClient = client;
+  // ===== Menu permissions (minimal + stable) =====
+  // NOTE: طالما تسجيل الدخول لا يستخدم Supabase Auth، لا يمكن استخدام auth.uid() هنا.
+  // لذلك نستخدم role القادمة من Login RPC (مثال: Administrator / Manager / Supervisor / Employee).
+  const role = (sess && sess.role) ? String(sess.role) : (localStorage.getItem("oap_role") || "");
 
-  async function canAccess(pageKey){
-    const { data, error } = await client.rpc('can_access_page', { p_page_key: pageKey });
-    if(error) return false;
-    return data === true;
-  }
+  const elDashboard = document.getElementById("openDashboard");
+  const elSettings  = document.getElementById("openSettings");
+  const elAI        = document.getElementById("navAI");
 
-  async function apply(){
-    // افتراضيًا نخفي الثلاثة إلى أن نتأكد
-    hide(elDashboard); hide(elSettings); hide(elAI);
+  function hide(el){ if(el) el.style.display = "none"; }
+  function show(el){ if(el) el.style.display = ""; }
 
-    const { data: { session } } = await client.auth.getSession();
-    if(!session) return;
+  // افتراضيًا نخفي
+  hide(elDashboard); hide(elSettings); hide(elAI);
 
-    // صلاحيات الصفحات
-    const [okDash, okSettings, okAI] = await Promise.all([
-      canAccess('dashboard'),
-      canAccess('settings'),
-      canAccess('ai')
-    ]);
+  // سياسة صارمة: فقط Administrator يظهر له (Settings/AI/Dashboard)
+  const isAdmin = role.toLowerCase() === "administrator" || role.toLowerCase() === "admin";
 
-    if(okDash) show(elDashboard);
-    if(okSettings) show(elSettings);
-    if(okAI) show(elAI);
-  }
-
-  // شغّل بعد تحميل DOM
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', apply);
-  }else{
-    apply();
+  if (isAdmin) {
+    show(elDashboard); show(elSettings); show(elAI);
   }
 })();
 </script>
