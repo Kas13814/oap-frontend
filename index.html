@@ -1053,6 +1053,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ===== OAP Stable Gate (NO Supabase Auth dependency) =====
    هذه الصفحة لا تُفتح إلا بعد تسجيل دخول ناجح من Login.html
@@ -1433,6 +1434,88 @@ setInterval(updateTime,60000);
     </div>
   </div>
 </div>
+
+
+<script>
+/* ===== Admin permissions UI (calls DB RPC) =====
+   يعتمد على RPC: public.admin_set_page_access
+   ويتطلب أن يكون المستخدم الحالي Admin داخل public.users (app_role='admin') ومُسجّل عبر Supabase Auth.
+*/
+(function(){
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+
+  if(!window.supabase) return;
+  const sb = window.__sbClient || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  window.__sbClient = sb;
+
+  const box = document.getElementById('adminPermBox');
+  const emailEl = document.getElementById('permEmail');
+  const sEl = document.getElementById('permSettings');
+  const aEl = document.getElementById('permAI');
+  const dEl = document.getElementById('permDashboard');
+  const btn = document.getElementById('permSaveBtn');
+  const status = document.getElementById('permStatus');
+
+  function setMsg(msg, ok){
+    if(!status) return;
+    status.textContent = msg || "";
+    status.style.color = ok ? "#22c55e" : "#ef4444";
+  }
+
+  async function ensureAuth(){
+    const { data: { session } } = await sb.auth.getSession();
+    return session;
+  }
+
+  async function isAdmin(){
+    const { data, error } = await sb.rpc('is_admin');
+    if(error) return false;
+    return data === true;
+  }
+
+  async function setOne(pageKey, canAccess){
+    const { error } = await sb.rpc('admin_set_page_access', {
+      p_target_email: (emailEl.value || "").trim(),
+      p_page_key: pageKey,
+      p_can_access: !!canAccess
+    });
+    if(error) throw error;
+  }
+
+  async function init(){
+    const session = await ensureAuth();
+    if(!session){ if(box) box.style.display='none'; return; }
+    const ok = await isAdmin();
+    if(!ok){ if(box) box.style.display='none'; return; }
+
+    if(btn){
+      btn.addEventListener('click', async () => {
+        const email = ((emailEl && emailEl.value) || "").trim();
+        if(!email) { setMsg("أدخل البريد الإلكتروني أولاً.", false); return; }
+
+        btn.disabled = true;
+        setMsg("جارٍ حفظ الصلاحيات...", true);
+
+        try {
+          await setOne('settings', sEl && sEl.checked);
+          await setOne('ai', aEl && aEl.checked);
+          await setOne('dashboard', dEl && dEl.checked);
+          setMsg("تم حفظ الصلاحيات بنجاح ✅", true);
+        } catch(e) {
+          console.error(e);
+          setMsg("فشل الحفظ. تأكد من البريد وأنك Admin.", false);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+    }
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
 
 </body>
 </html>
