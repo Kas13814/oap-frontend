@@ -906,6 +906,35 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
   .settings-drawer{ border-left:none; }
 }
 
+
+/* ===== Patch: Settings hover (no shadow) + Drawer solid ===== */
+.nav-settings-btn:hover{
+  box-shadow: none !important;
+}
+/* keep consistent hover without shadow */
+.nav-settings-btn:hover{
+  transform: none !important;
+}
+
+.settings-drawer{
+  background: #0b0f14 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.settings-drawer__head{
+  background: #0b0f14 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+
+/* ===== Patch: Left align Analytics/Performance ===== */
+.left-align-title{
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
 </style>
 </head>
 
@@ -1044,8 +1073,8 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
       <header class="hero" id="hero" aria-label="OPERATIONS hero">
         <div class="hero__brand">OPERATIONS</div>
         <div class="hero__ghosts" aria-hidden="true">
-          <span class="ghost-1">ANALYTICS</span>
-          <span class="ghost-2">PERFORMANCE</span>
+          <span class="ghost-1" class="left-align-title">ANALYTICS</span>
+          <span class="ghost-2" class="left-align-title">PERFORMANCE</span>
         </div>
 
         <!-- الشريط -->
