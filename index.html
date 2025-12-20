@@ -743,18 +743,29 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 }
 
 
-/* ===== Settings button UX fix (hover + clickability) ===== */
-.divider__nav .nav-settings{
-  cursor: pointer;
-  pointer-events: auto;
-  position: relative;
-  z-index: 20;
-}
 .divider__nav .nav-settings:hover{
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(0,0,0,.18);
 }
 .divider__nav .nav-settings:active{
+  transform: translateY(0px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.14);
+}
+
+
+/* ===== Settings button UX + Click fix (final) ===== */
+.form-like.nav-settings-btn{
+  cursor:pointer;
+  pointer-events:auto !important;
+  position:relative;
+  z-index:9999;
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.form-like.nav-settings-btn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+}
+.form-like.nav-settings-btn:active{
   transform: translateY(0px);
   box-shadow: 0 6px 16px rgba(0,0,0,.14);
 }
