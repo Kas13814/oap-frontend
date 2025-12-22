@@ -943,8 +943,8 @@
       text-align: left;
       font-size: 13px;
       cursor: pointer;
-      color: var(--text-main);
-    }
+      color: #ffffff !important;
+      }
 
     .chat-menu button:hover {
       background: rgba(255,255,255,0.05);
@@ -1192,6 +1192,278 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
 .setting-warning{ margin-top:6px; font-size:12px; opacity:0.8; }
 .setting-warning.hidden{ display:none; }
 
+
+    /* ===== Capabilities Card ===== */
+    .cap-card{
+      margin: 12px auto 14px;
+      width: min(980px, 100%);
+      background: var(--bg-card);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    }
+    body.theme-light .cap-card{
+      border-color: rgba(0,0,0,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    }
+    .cap-toggle{
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px 16px;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    .cap-title{ font-size: 14px; }
+    .cap-chev{ opacity:.8; transition: transform .18s ease; }
+    .cap-card[data-open="true"] .cap-chev{ transform: rotate(180deg); }
+    .cap-body{
+      padding: 0 16px 14px;
+    }
+    .cap-grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      padding-top: 6px;
+    }
+    @media (max-width: 860px){
+      .cap-grid{ grid-template-columns: 1fr; }
+    }
+    .cap-col h3{
+      margin: 10px 0 8px;
+      font-size: 13px;
+      opacity: .92;
+    }
+    .cap-col ul{
+      margin: 0;
+      padding: 0 18px 0 0;
+      line-height: 1.85;
+      font-size: 13px;
+      opacity: .92;
+    }
+    .cap-col li{ margin: 4px 0; }
+
+
+    /* ===== Sidebar search ===== */
+    .chat-search-wrap{
+      margin: 2px 6px 2px;
+      padding: 0;
+    }
+    .chat-search{
+      width: 100%;
+      border: 1px solid var(--border-subtle);
+      background: transparent;
+      color: var(--text-main);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    .chat-search::placeholder{ color: var(--text-muted); }
+    .chat-search:focus{
+      border-color: rgba(74,136,255,.55);
+      box-shadow: 0 0 0 1px rgba(74,136,255,.35);
+    }
+
+
+    /* ===== Disable page vertical scroll (keep chat log scroll only) ===== */
+    html, body {
+      height: 100%;
+      overflow: hidden !important;
+      overscroll-behavior: none;
+      touch-action: pan-x; /* prevent page vertical scroll on touch */
+    }
+
+
+    /* ===== Patch: Always show chat menu dots (⋯) + proper contrast in light theme ===== */
+    .nav-item:hover .chat-dots { opacity: 1 !important; }
+    body.theme-light .chat-menu button { color: #111827 !important; }
+
+    /* ===== Patch: Voice active state ===== */
+    .icon-btn.voice-active { background: var(--accent-soft); color: var(--text-main); }
+
+
+    /* ===== Chat dots: show only on hover ===== */
+    .nav-item .chat-dots{
+      opacity: 0;
+      pointer-events: auto;
+      transition: opacity .15s ease;
+    }
+    .nav-item:hover .chat-dots{
+      opacity: 1;
+    }
+
+    /* ===== Voice button: bigger, outline icon (black) ===== */
+    #voiceBtn{
+      width: 44px;
+      height: 44px;
+    }
+    #voiceBtn .mic-icon{
+      width: 22px;
+      height: 22px;
+      display: block;
+    }
+    body.theme-light #voiceBtn{
+      color: #000; /* outline black */
+    }
+    body.theme-dark #voiceBtn{
+      color: #fff; /* keep visible on dark */
+    }
+
+    /* ===== Chat menu panel background in light theme ===== */
+    body.theme-light .chat-menu .menu-panel,
+    body.theme-light .chat-menu .menu,
+    body.theme-light .chat-menu .dropdown{
+      background: #fff !important;
+    }
+
+    /* ===== Delete (English) in red on both themes ===== */
+    .chat-menu button[data-action="delete"],
+    .chat-menu .menu-panel button[data-action="delete"],
+    .chat-menu .menu button[data-action="delete"]{
+      color: #ef4444 !important;
+    }
+
+
+    /* ===== OVERRIDE: chat dots only on hover ===== */
+    .nav-item .chat-dots{
+      opacity: 0 !important;
+      pointer-events: auto;
+      transition: opacity .15s ease;
+    }
+    .nav-item:hover .chat-dots{
+      opacity: 1 !important;
+    }
+
+    /* ===== OVERRIDE: light theme chat menu background must be white ===== */
+    body.theme-light .chat-menu{
+      background: #ffffff !important;
+    }
+
+    /* ===== OVERRIDE: Delete (English label) red in both themes ===== */
+    .chat-menu button.danger,
+    .chat-menu button.delete-option{
+      color: #ef4444 !important;
+    }
+
+    /* ===== OVERRIDE: bigger mic button + outline icon ===== */
+    #voiceBtn{
+      width: 48px !important;
+      height: 48px !important;
+    }
+    #voiceBtn .mic-icon{
+      width: 24px !important;
+      height: 24px !important;
+    }
+    body.theme-light #voiceBtn{ color:#000 !important; }
+    body.theme-dark  #voiceBtn{ color:#fff !important; }
+
+
+    /* ===== OVERRIDE: chat options hover effect in light theme ===== */
+    body.theme-light .chat-menu button{
+      transition: background .12s ease, color .12s ease, transform .12s ease;
+      border-radius: 10px;
+    }
+    body.theme-light .chat-menu button:hover{
+      background: #f3f4f6 !important; /* subtle light hover */
+      color: #111827 !important;
+      transform: translateY(-1px);
+    }
+    body.theme-light .chat-menu button.danger:hover,
+    body.theme-light .chat-menu button.delete-option:hover{
+      background: #fee2e2 !important; /* soft red hover for delete */
+      color: #b91c1c !important;
+    }
+
+
+    /* ===== Outline nav icons (home/settings) ===== */
+    .nav-icon{
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+
+    /* ===== Mic icon: gray, hover black (light theme) ===== */
+    body.theme-light #voiceBtn{
+      color: #6b7280 !important; /* gray */
+    }
+    body.theme-light #voiceBtn:hover{
+      color: #000000 !important; /* black on hover */
+    }
+
+    /* ===== Home + Settings: scale on hover ===== */
+    .home-btn, #settingsBtn{
+      transition: transform .12s ease, color .12s ease, background .12s ease;
+    }
+    .home-btn:hover, #settingsBtn:hover{
+      transform: scale(1.12);
+    }
+
+    /* ===== Align voice button with send button + slightly smaller ===== */
+    #voiceBtn{
+      width: 40px !important;
+      height: 40px !important;
+      align-self: center !important;
+      margin-bottom: 0 !important;
+    }
+    #voiceBtn .mic-icon{
+      width: 20px !important;
+      height: 20px !important;
+    }
+    /* Ensure actions row centers items */
+    .composer-actions{
+      align-items: center !important;
+    }
+
+
+/* ===== PATCH: sidebar user avatar/name ===== */
+.user-pill{ display:flex; align-items:center; gap:8px; }
+.user-avatar{
+  background:#16a34a !important;
+  color:#ffffff !important;
+  width:34px !important;
+  height:34px !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  border-radius:999px !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  flex: 0 0 34px !important;
+}
+#sidebarUserName{ line-height:1.2; }
+
+
+/* ===== PATCH: chat menu positioning + z-index ===== */
+.nav-list{ overflow-x: visible; } /* prevent horizontal clipping */
+.nav-item{ position: relative; }  /* anchor for absolute menu */
+.chat-menu{
+  position: absolute;
+  right: 0;
+  top: 32px;
+  z-index: 9999;
+}
+.confirm-modal{ z-index: 10000; } /* delete confirm always above menus */
+
+
+/* ===== PATCH: voice button align ===== */
+#voiceBtn{ transform: translateY(6px); }
+
+
+/* ===== PATCH: tighter top icons ===== */
+.home-btn{ right: 88px; }
+.settings-btn{ right: 56px; }
+body[dir="rtl"] .home-btn{ left: 88px; right:auto; }
+body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
+
 </style>
 </head>
 <body>
@@ -1209,13 +1481,19 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
       + New chat
     </button>
 
+    <!-- Search -->
+    <div class="chat-search-wrap">
+      <input id="chatSearch" class="chat-search" type="text" placeholder="Search chats…" autocomplete="off" />
+    </div>
+
+
     <div class="nav-section-title">Chats</div>
     <div id="chatList" class="nav-list"></div>
 
     <div class="sidebar-footer">
       <div class="user-pill">
-        <div class="user-avatar">KA</div>
-        <span>Khaled Ahmed</span>
+        <div class="user-avatar" id="sidebarUserAvatar">KA</div>
+        <span id="sidebarUserName">Loading...</span>
       </div>
       <span>Plus</span>
     </div>
@@ -1231,17 +1509,18 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
   <div class="theme-toggle">
     <!-- Home Button -->
     <a href="index.html" class="home-btn" title="Home">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="1.6"
-           stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 10.5L12 3l9 7.5"/>
-        <path d="M5.5 10v9a2 2 0 002 2h9a2 2 0 002-2v-9"/>
-        <path d="M10 21v-4.5a2 2 0 012-2h0a2 2 0 012 2V21"/>
-      </svg>
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M5.5 10.5V21h13V10.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9.5 21v-7h5v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
     </a>
 
     <!-- Settings Button -->
-    <button id="settingsBtn" class="settings-btn" title="Settings">⚙️</button>
+    <button id="settingsBtn" class="settings-btn" title="Settings"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19.4 15a7.7 7.7 0 0 0 .0-6l2.0-1.2-2-3.4-2.3.5a7.9 7.9 0 0 0-2.6-1.5L14.6 1h-5.2L8.5 3.4a7.9 7.9 0 0 0-2.6 1.5l-2.3-.5-2 3.4L3.6 9a7.7 7.7 0 0 0 0 6l-2 1.2 2 3.4 2.3-.5a7.9 7.9 0 0 0 2.6 1.5L9.4 23h5.2l.9-2.4a7.9 7.9 0 0 0 2.6-1.5l2.3.5 2-3.4-2-1.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg></button>
     <div id="settingsMenu" class="settings-menu" aria-hidden="true">
       <!-- Appearance Section -->
       <div class="settings-section">
@@ -1353,9 +1632,8 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
   <!-- Main -->
   <main class="main">
     <div class="center-wrap">
-      <h1 class="hero-title">What would you like to start with?</h1>
-
-      <!-- Chat log -->
+      <h1 class="hero-title" dir="rtl">بماذا ترغب أن نبدأ؟</h1>
+<!-- Chat log -->
       <section id="chatLog" class="chat-log"></section>
 
       <!-- Input card -->
@@ -1374,7 +1652,12 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
                     placeholder="Ask anything about OAP operations…" autocomplete="off"></textarea>
         </div>
 
-        <button class="icon-btn" type="button" title="Voice">🎙</button>
+        <button id="voiceBtn" class="icon-btn" type="button" title="Voice"><svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 11a7 7 0 0 1-14 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <path d="M12 18v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  <path d="M8 21h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg></button>
         <button id="sendBtn" class="send-btn" type="button" title="Send">
           <svg id="sendIconArrow" viewBox="0 0 24 24" fill="none">
             <path d="M4 4L20 12L4 20L7 12L4 4Z"
@@ -1389,6 +1672,9 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
 </div>
 
 <input id="fileInput" type="file" multiple style="display:none" />
+
+<!-- Toast -->
+<div id="toast" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 14px;border-radius:12px;background:rgba(0,0,0,0.75);color:#fff;font-size:13px;z-index:250;display:none;max-width:min(520px,calc(100% - 24px));text-align:center;backdrop-filter: blur(6px);"></div>
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteConfirmModal" class="confirm-modal">
@@ -1430,6 +1716,29 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
   // ===== Configuration & State =====
   const API_BASE = "https://oap-backend-875458188350.europe-west1.run.app";
 
+/* ===== PATCH: populate sidebar user from oap_session_v1 ===== */
+  (function(){
+    function safeParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
+    function initials(name){
+      const s = String(name || "").trim();
+      if(!s) return "--";
+      const parts = s.split(/\s+/);
+      const a = parts[0]?.[0] || "";
+      const b = parts[1]?.[0] || parts[0]?.[1] || "";
+      return (a + b).toUpperCase() || "--";
+    }
+    const avatarEl = document.getElementById("sidebarUserAvatar");
+    const nameEl = document.getElementById("sidebarUserName");
+    if(!avatarEl || !nameEl) return;
+
+    const sess = safeParse(sessionStorage.getItem("oap_session_v1"));
+    const displayName = sess?.employee_name || sess?.employeeName || "";
+    const email = sess?.email || localStorage.getItem("oap_email") || "";
+    const finalName = displayName || email || "User";
+    avatarEl.textContent = initials(finalName);
+    nameEl.textContent = finalName;
+  })();
+
 async function sendToNXS(userText) {
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
@@ -1445,6 +1754,7 @@ async function sendToNXS(userText) {
   const sidebarToggleOpenEl = document.getElementById("sidebarToggleOpen");
   const sidebarToggleCloseEl = document.getElementById("sidebarToggleClose");
   const chatListEl = document.getElementById("chatList");
+  const chatSearchEl = document.getElementById("chatSearch");
   const chatLogEl = document.getElementById("chatLog");
   const heroTitleEl = document.querySelector(".hero-title");
   const userInputEl = document.getElementById("userInput");
@@ -1458,7 +1768,84 @@ async function sendToNXS(userText) {
   const themeToggleInput = document.getElementById("themeToggle");
   const promptCardEl = document.querySelector(".prompt-card");
 
+  const voiceBtn = document.getElementById("voiceBtn");
+
+  // ===== Patch: Voice Input (Web Speech API) =====
+  let _sr = null;
+  let _srActive = false;
+
+  function supportsSpeech(){
+    return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  }
+
+  function initSpeech(){
+    if (_sr) return _sr;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return null;
+    _sr = new SR();
+    _sr.continuous = false;
+    _sr.interimResults = true;
+    _sr.maxAlternatives = 1;
+
+    _sr.onstart = () => {
+      _srActive = true;
+      if (voiceBtn) voiceBtn.classList.add("voice-active");
+    };
+
+    _sr.onresult = (event) => {
+      let finalText = "";
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const txt = event.results[i][0]?.transcript || "";
+        if (event.results[i].isFinal) finalText += txt;
+        else interim += txt;
+      }
+      const combined = (finalText || interim).trim();
+      if (combined) {
+        const cur = (userInputEl.value || "").trim();
+        userInputEl.value = cur ? (cur + " " + combined) : combined;
+        autoResizeTextarea();
+        userInputEl.focus();
+      }
+    };
+
+    _sr.onerror = (e) => {
+      _srActive = false;
+      if (voiceBtn) voiceBtn.classList.remove("voice-active");
+    };
+
+    _sr.onend = () => {
+      _srActive = false;
+      if (voiceBtn) voiceBtn.classList.remove("voice-active");
+    };
+
+    return _sr;
+  }
+
+  function startVoice(){
+    const sr = initSpeech();
+    if (!sr) {
+      toast((settings.language === "ar") ? "المتصفح لا يدعم الإملاء الصوتي." : "Browser does not support voice dictation.");
+      return;
+    }
+    sr.lang = (settings.language === "ar") ? "ar-SA" : "en-US";
+    try { sr.start(); } catch (e) { console.warn(e); }
+  }
+
+  function stopVoice(){
+    try { if (_sr) _sr.stop(); } catch (e) { console.warn(e); }
+  }
+
+
   const MAX_TEXTAREA_HEIGHT = 140;
+
+  // Sidebar chat search
+  if (chatSearchEl) {
+    chatSearchEl.addEventListener('input', () => {
+      scheduleRenderChatList();
+    });
+  }
+
 
   // Settings State with Enhanced Features
   let settings = {
@@ -1620,10 +2007,14 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
       userInputEl.placeholder = 'Ask anything about OAP operations…';
     }
 
+    if (chatSearchEl) {
+      chatSearchEl.placeholder = isArabic ? 'بحث في المحادثات…' : 'Search chats…';
+    }
+
     
     // Localize hero title and New chat buttons
     if (heroTitleEl) {
-      heroTitleEl.textContent = isArabic ? 'بماذا تريد أن تبدأ؟' : 'What would you like to start with?';
+      heroTitleEl.textContent = isArabic ? 'بماذا تريد أن تبدأ؟' : '?What would you like to start with';
     }
     if (newChatSidebarBtn) {
       newChatSidebarBtn.textContent = isArabic ? '+ محادثة جديدة' : '+ New chat';
@@ -1714,7 +2105,18 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     shellEl.classList.add("sidebar-collapsed");
   });
 
-  // ===== Theme Toggle =====
+  
+  // ===== Patch: Voice Button =====
+  if (voiceBtn) {
+    voiceBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (_srActive) stopVoice();
+      else startVoice();
+    });
+  }
+
+// ===== Theme Toggle =====
   themeToggleInput.addEventListener("change", () => {
     const isLight = themeToggleInput.checked;
     document.body.classList.toggle("theme-light", isLight);
@@ -1733,9 +2135,61 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     // Apply initial font color after theme load
   applyFontColorByTheme();
 // ===== Conversation Management =====
+  // --- Prevent saving empty chats (drafts) ---
+  function isEmptyConversation(c){
+    if(!c) return true;
+    const msgs = Array.isArray(c.messages) ? c.messages : [];
+    const title = (c.title || '').trim();
+    return msgs.length === 0 && title === '';
+  }
+
+  function inferTitleFromMessages(c){
+    const msgs = Array.isArray(c.messages) ? c.messages : [];
+    const firstUser = msgs.find(m => (m.role === 'user' || m.type === 'user') && (m.content || m.text));
+    const raw = (firstUser && (firstUser.content || firstUser.text)) ? String(firstUser.content || firstUser.text).trim() : '';
+    if(!raw) return 'New chat';
+    return raw.length > 32 ? raw.slice(0, 32) + '…' : raw;
+  }
+
+  function cleanupEmptyConversations(){
+    try{
+      Object.keys(conversations).forEach(id => {
+        const c = conversations[id];
+        const msgs = Array.isArray(c?.messages) ? c.messages : [];
+        const title = (c?.title || '').trim();
+        // Remove chats with no messages (true empty drafts)
+        if(msgs.length === 0){
+          // Keep only if it's the active chat AND the user is currently typing/using it
+          if(id !== currentChatId){
+            delete conversations[id];
+          } else {
+            // keep active but do not allow blank title in UI
+            if(title === '') c.title = 'New chat';
+          }
+        } else {
+          // Ensure title is not blank once messages exist
+          if(title === '') c.title = inferTitleFromMessages(c);
+        }
+      });
+    }catch(e){ console.warn('cleanupEmptyConversations failed', e); }
+  }
+
   function saveConversations() {
     try {
-      localStorage.setItem("conversations", JSON.stringify(conversations));
+      cleanupEmptyConversations();
+      // Persist only chats that have content
+      const toSave = {};
+      Object.keys(conversations).forEach(id => {
+        const c = conversations[id];
+        const msgs = Array.isArray(c?.messages) ? c.messages : [];
+        if(msgs.length > 0) {
+          // make sure title isn't empty
+          const t = (c.title || '').trim();
+          if(!t) c.title = inferTitleFromMessages(c);
+          toSave[id] = c;
+        }
+      });
+      localStorage.setItem("conversations", JSON.stringify(toSave));
       localStorage.setItem("currentChatId", currentChatId || "");
       localStorage.setItem("chatCounter", String(chatCounter));
     } catch (e) {
@@ -1763,10 +2217,16 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
 
   function createConversation(title) {
     const id = "chat-" + chatCounter++;
+    const num = parseInt(String(id).split("-")[1], 10) || 1;
+    const baseTitle = (settings && settings.language === "ar") ? "محادثة جديدة" : "New chat";
+    const safeTitle = (title || "").trim() || (baseTitle + " " + num);
     conversations[id] = {
       id,
-      title: title || "New chat",
-      messages: []
+      title: safeTitle,
+      messages: [],
+      updatedAt: Date.now(),
+      archived: false,
+      draft: true
     };
     scheduleRenderChatList();
     setActiveChat(id);
@@ -1776,18 +2236,32 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
 
   function renderChatList() {
     chatListEl.innerHTML = "";
-    Object.values(conversations).forEach(conv => {
-      if (!conv.messages || conv.messages.length === 0) return;
 
+    const q = (chatSearchEl && chatSearchEl.value ? chatSearchEl.value : "").trim().toLowerCase();
+
+    const items = Object.values(conversations)
+      .filter(c => !c.archived)
+      .filter(c => (Array.isArray(c.messages) && c.messages.length > 0) || c.id === currentChatId)
+      // hide empty drafts by default
+      .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+    items.forEach(conv => {
+      if (q) {
+        const t = String(conv.title || '').toLowerCase();
+        if (!t.includes(q)) return;
+      }
       const item = document.createElement("button");
+      item.type = "button";
       item.className = "nav-item" + (conv.id === currentChatId ? " active" : "");
       item.dataset.chatId = conv.id;
 
       const label = document.createElement("span");
-      label.textContent = conv.title;
+      label.textContent = conv.title || "New chat";
 
       const dots = document.createElement("button");
+      dots.type = "button";
       dots.className = "chat-dots";
+      dots.setAttribute("aria-label", "Chat options");
       dots.innerHTML = "⋯";
 
       const menu = document.createElement("div");
@@ -1795,13 +2269,15 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
       menu.dataset.chatId = conv.id;
 
       const btnShare = document.createElement("button");
-      btnShare.textContent = "Share";
+      btnShare.textContent = (settings.language === "ar") ? "مشاركة" : "Share";
+      btnShare.classList.add("share-option");
 
       const btnGroup = document.createElement("button");
-      btnGroup.textContent = "Start group chat";
+      btnGroup.textContent = (settings.language === "ar") ? "بدء محادثة جماعية" : "Start group chat";
+      btnGroup.classList.add("group-option");
 
       const btnRename = document.createElement("button");
-      btnRename.textContent = "Rename";
+      btnRename.textContent = (settings.language === "ar") ? "إعادة تسمية" : "Rename";
       btnRename.classList.add("rename-option");
 
       const line = document.createElement("hr");
@@ -1811,10 +2287,11 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
       line.style.margin = "4px 0";
 
       const btnArchive = document.createElement("button");
-      btnArchive.textContent = "Archive";
+      btnArchive.textContent = (settings.language === "ar") ? "أرشفة" : "Archive";
+      btnArchive.classList.add("archive-option");
 
       const btnDelete = document.createElement("button");
-      btnDelete.textContent = "Delete";
+      btnDelete.textContent = (settings.language === "ar") ? "حذف" : "Delete";
       btnDelete.classList.add("danger", "delete-option");
 
       menu.appendChild(btnShare);
@@ -1895,7 +2372,7 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     if (_chatListRaf) return;
     _chatListRaf = requestAnimationFrame(() => {
       _chatListRaf = null;
-      try{ scheduleRenderChatList(); } catch(e){}
+      renderChatList();
     });
   }
   let _navScrollT = null;
@@ -1923,6 +2400,15 @@ document.getElementById('languageSelect').addEventListener('change', (e) => {
     else setWarn('');
   }
 
+  function toast(message){
+    const el = document.getElementById('toast');
+    if(!el) return;
+    el.textContent = message || '';
+    el.style.display = 'block';
+    clearTimeout(window.__toastT);
+    window.__toastT = setTimeout(() => { el.style.display = 'none'; }, 1800);
+  }
+
 function appendMessage(role, text, persist = true, animate = true) {
     if (!currentChatId) {
       createConversation("New chat");
@@ -1930,9 +2416,14 @@ function appendMessage(role, text, persist = true, animate = true) {
     const conv = conversations[currentChatId];
     if (persist) {
       conv.messages.push({ role, text });
-      if (role === "user" && conv.title === "New chat") {
-        conv.title = makeTitleFromText(text) || "New chat";
-        scheduleRenderChatList();
+      conv.updatedAt = Date.now();
+      if (role === "user") {
+        // First real message => lock-in title and stop treating as draft
+        if (conv.draft || !(conv.title || '').trim() || conv.title === "New chat") {
+          conv.title = makeTitleFromText(text) || (conv.title && conv.title.trim()) || "New chat";
+          conv.draft = false;
+          scheduleRenderChatList();
+        }
       }
       saveConversations();
     }
@@ -2255,6 +2746,49 @@ function appendMessage(role, text, persist = true, animate = true) {
       return;
     }
 
+    
+    const shareBtn = e.target.closest(".share-option");
+    if (shareBtn) {
+      const menu = shareBtn.closest(".chat-menu");
+      const chatId = menu.dataset.chatId;
+      try {
+        const payload = conversations[chatId] || {};
+        const txt = JSON.stringify(payload, null, 2);
+        navigator.clipboard?.writeText(txt);
+        toast(settings.language === "ar" ? "تم نسخ بيانات المحادثة." : "Chat data copied.");
+      } catch (e) {
+        toast(settings.language === "ar" ? "تعذر النسخ." : "Copy failed.");
+      }
+      menu.classList.remove("open");
+      return;
+    }
+
+    const groupBtn = e.target.closest(".group-option");
+    if (groupBtn) {
+      toast(settings.language === "ar" ? "ميزة المحادثة الجماعية ستتوفر قريبًا." : "Group chat is coming soon.");
+      const menu = groupBtn.closest(".chat-menu");
+      menu.classList.remove("open");
+      return;
+    }
+
+    const archiveBtn = e.target.closest(".archive-option");
+    if (archiveBtn) {
+      const menu = archiveBtn.closest(".chat-menu");
+      const chatId = menu.dataset.chatId;
+      if (conversations[chatId]) {
+        conversations[chatId].archived = true;
+        saveConversations();
+        scheduleRenderChatList();
+        toast(settings.language === "ar" ? "تمت أرشفة المحادثة." : "Chat archived.");
+        if (currentChatId === chatId) {
+          currentChatId = null;
+          chatLogEl.innerHTML = "";
+        }
+      }
+      menu.classList.remove("open");
+      return;
+    }
+
     const deleteBtn = e.target.closest(".delete-option");
     if (deleteBtn) {
       const menu = deleteBtn.closest(".chat-menu");
@@ -2358,8 +2892,21 @@ function appendMessage(role, text, persist = true, animate = true) {
 
   // ===== Initialize =====
   loadSettings();
+  applyLanguage();
+  bindNavListAutohide();
   loadConversations();
-  createConversation("New chat");
+  if (Object.keys(conversations).length === 0) {
+    createConversation("New chat");
+  } else {
+    // restore last active chat if any
+    const storedActive = localStorage.getItem("currentChatId");
+    if (storedActive && conversations[storedActive]) setActiveChat(storedActive);
+    else {
+      // pick most recent
+      const latest = Object.values(conversations).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0];
+      if (latest) setActiveChat(latest.id);
+    }
+  }
   autoResizeTextarea();
   window.addEventListener("resize", adjustPromptShape);
   window.addEventListener("beforeunload", saveConversations);
