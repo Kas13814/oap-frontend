@@ -937,6 +937,95 @@ body.settings-open .settings-drawer{ transform: translateX(0); }
 .settings-drawer{ box-shadow: none !important; }
 body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !important; }
 
+
+/* ===== Patch: User badge + dropdown (no layout changes) ===== */
+.user-widget{
+  position:fixed;
+  top:16px;
+  right:76px; /* بجانب زر الثيم */
+  z-index:3801;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  cursor:pointer;
+  user-select:none;
+}
+.user-badge{
+  width:32px;height:32px;border-radius:999px;
+  background:rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.18);
+  display:grid;place-items:center;
+  font:800 12px/1 Inter;
+  color:var(--ink);
+}
+:root[data-theme="light"] .user-badge{
+  background:rgba(0,0,0,.06);
+  border:1px solid rgba(0,0,0,.12);
+  color:#1d1e26;
+}
+.user-name{
+  font:600 13px/1.2 Inter;
+  color:var(--ink);
+  opacity:.95;
+  max-width:220px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+:root[data-theme="light"] .user-name{ color:#1d1e26; }
+
+.user-menu{
+  position:fixed;
+  top:56px;
+  right:16px;
+  z-index:3802;
+  width:260px;
+  border-radius:14px;
+  padding:10px;
+  background:rgba(15,15,26,.96);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+  display:none;
+}
+:root[data-theme="light"] .user-menu{
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(0,0,0,.10);
+  box-shadow:0 18px 40px rgba(0,0,0,.18);
+}
+.user-menu.open{ display:block; }
+.user-menu .email{
+  font:600 12px/1.2 Inter;
+  opacity:.9;
+  padding:8px 10px 10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+}
+:root[data-theme="light"] .user-menu .email{ border-bottom:1px solid rgba(0,0,0,.10); }
+.user-menu a, .user-menu button{
+  width:100%;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  padding:10px 10px;
+  border-radius:12px;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-decoration:none;
+  cursor:pointer;
+  font:700 12px/1 Inter;
+  opacity:.92;
+}
+.user-menu a:hover, .user-menu button:hover{
+  background:rgba(255,255,255,.08);
+  opacity:1;
+}
+:root[data-theme="light"] .user-menu a:hover,
+:root[data-theme="light"] .user-menu button:hover{
+  background:rgba(0,0,0,.06);
+}
+
+
 </style>
 </head>
 
@@ -1069,6 +1158,21 @@ body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !i
             <span class="cloud two"></span>
           </div>
         </label>
+      
+</div>
+
+      <!-- ===== User badge (top-right) ===== -->
+      <div class="user-widget clickable" id="userWidget" aria-label="User menu">
+        <div class="user-badge" id="userBadge">--</div>
+        <div class="user-name" id="userName">Loading...</div>
+      </div>
+
+      <div class="user-menu" id="userMenu" aria-hidden="true">
+        <div class="email" id="userEmail">...</div>
+        <a href="Login.html" id="userMenuLogin"><span>🔐</span><span>Login</span></a>
+        <a href="#" id="userMenuSettings"><span>⚙️</span><span>Settings</span></a>
+        <a href="AI.html" id="userMenuAI"><span>🤖</span><span>AI</span></a>
+        <button type="button" id="userMenuLogout"><span>🚪</span><span>Logout</span></button>
       </div>
 
       <!-- Hero -->
@@ -1326,6 +1430,144 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   }
 })();
 </script>
+
+
+<script>
+/* ===== Patch: Show employee name + dropdown menu (uses existing OAP session) ===== */
+(function(){
+  function safeJsonParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
+  function initials(name){
+    const s = String(name || "").trim();
+    if(!s) return "--";
+    const parts = s.split(/\s+/);
+    const a = parts[0] && parts[0][0] ? parts[0][0] : "";
+    const b = parts[1] && parts[1][0] ? parts[1][0] : (parts[0] && parts[0][1] ? parts[0][1] : "");
+    return ((a + b).toUpperCase()) || "--";
+  }
+
+  const w = document.getElementById('userWidget');
+  const badge = document.getElementById('userBadge');
+  const nameEl = document.getElementById('userName');
+  const menu = document.getElementById('userMenu');
+  const emailEl = document.getElementById('userEmail');
+  const btnLogout = document.getElementById('userMenuLogout');
+  const btnSettings = document.getElementById('userMenuSettings');
+
+  if(!w || !badge || !nameEl || !menu || !emailEl) return;
+
+  const sessRaw = sessionStorage.getItem('oap_session_v1');
+  const sess = sessRaw ? safeJsonParse(sessRaw) : null;
+
+  const fallbackEmail = (sess && sess.email) ? String(sess.email) : (localStorage.getItem('oap_email') || '');
+  const fallbackName  = (sess && (sess.employee_name || sess.employeeName)) ? (sess.employee_name || sess.employeeName) : '';
+  const userId        = (sess && (sess.user_id || sess.userId)) ? String(sess.user_id || sess.userId) : '';
+  const employeeId    = (sess && (sess.employee_id || sess.employeeId)) ? String(sess.employee_id || sess.employeeId) : (localStorage.getItem('oap_employee_id') || '');
+
+  function setUI(displayName, email){
+    nameEl.textContent = displayName || email || 'User';
+    badge.textContent = initials(displayName || email);
+    emailEl.textContent = email || '—';
+  }
+
+  function openMenu(){
+    menu.classList.add('open');
+    menu.setAttribute('aria-hidden','false');
+  }
+  function closeMenu(){
+    menu.classList.remove('open');
+    menu.setAttribute('aria-hidden','true');
+  }
+
+  w.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(menu.classList.contains('open')) closeMenu(); else openMenu();
+  });
+  document.addEventListener('click', function(){ closeMenu(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeMenu(); });
+
+  if(btnSettings){
+    btnSettings.addEventListener('click', function(e){
+      e.preventDefault();
+      closeMenu();
+      const openBtn = document.getElementById('openSettingsDrawer');
+      if(openBtn){ openBtn.click(); return; }
+    });
+  }
+
+  if(btnLogout){
+    btnLogout.addEventListener('click', function(){
+      try{
+        sessionStorage.removeItem('oap_session_v1');
+        sessionStorage.removeItem('oap_home_gate_v1');
+        sessionStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('oap_role');
+        localStorage.removeItem('oap_employee_id');
+        localStorage.removeItem('oap_email');
+      }catch(err){}
+      window.location.replace('Login.html');
+    });
+  }
+
+  if(fallbackName || fallbackEmail){
+    setUI(fallbackName, fallbackEmail);
+  } else {
+    setUI('Loading...', '');
+  }
+
+  const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
+
+  function getClient(){
+    if(window.__sbClient) return window.__sbClient;
+    if(window.supabase && window.supabase.createClient){
+      const c = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      window.__sbClient = c;
+      return c;
+    }
+    return null;
+  }
+
+  async function loadProfile(){
+    const sb = getClient();
+    if(!sb) return;
+
+    try{
+      let q = sb.from('users_with_employee_view').select('user_id,email,"Employee Name"');
+
+      if(fallbackEmail){
+        q = q.eq('email', fallbackEmail);
+      } else if(userId){
+        q = q.eq('user_id', userId);
+      } else if(employeeId){
+        q = q.eq('employee_id', employeeId);
+      } else {
+        return;
+      }
+
+      const { data } = await q.maybeSingle();
+      if(!data) return;
+
+      const dn = data["Employee Name"] || fallbackName || data.email || fallbackEmail;
+      const em = data.email || fallbackEmail;
+
+      try{
+        const newSess = Object.assign({}, sess || {});
+        if(em) newSess.email = em;
+        if(dn) newSess.employee_name = dn;
+        if(data.user_id) newSess.user_id = data.user_id;
+        sessionStorage.setItem('oap_session_v1', JSON.stringify(newSess));
+      }catch(err){}
+
+      setUI(dn, em);
+    }catch(err){}
+  }
+
+  setTimeout(loadProfile, 0);
+})();
+</script>
+
+
 
 
 <script>
