@@ -434,6 +434,27 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
+        // Create secure auth cookie for Cloudflare Worker
+        (async () => {
+          const user = employee_login;
+          const timestamp = Date.now();
+          const data = `${user}.${timestamp}`;
+
+          const res = await fetch("/oap_access_api.js", {
+            method: "POST",
+            body: JSON.stringify({ data }),
+            headers: { "Content-Type": "application/json" }
+          });
+
+          if (res.ok) {
+            window.location.href = "/app/index.html";
+          } else {
+            setStatus("Session creation failed.", "error");
+          }
+        })();
+        return;
+
+
         // ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
         // - When opened locally (file://): go to index.html in the same folder
