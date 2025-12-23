@@ -434,26 +434,29 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // Create secure auth cookie for Cloudflare Worker
-        (async () => {
-          const user = employee_login;
-          const timestamp = Date.now();
-          const data = `${user}.${timestamp}`;
-
-          const res = await fetch("/oap_access_api.js", {
+        // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
+        try {
+          const issueRes = await fetch("/auth/issue", {
             method: "POST",
-            body: JSON.stringify({ data }),
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ employee_id: String(employee_login) })
           });
 
-          if (res.ok) {
-            window.location.href = "/app/index.html";
-          } else {
-            setStatus("Session creation failed.", "error");
+          if (!issueRes.ok) {
+            const t = await issueRes.text().catch(() => "");
+            console.error("Auth issue failed:", issueRes.status, t);
+            setStatus("Login ok, but session creation failed.", "error");
+            return;
           }
-        })();
-        return;
 
+          // After cookie is set, go to protected area
+          window.location.replace("/app/");
+          return;
+        } catch (e) {
+          console.error(e);
+          setStatus("Login ok, but session creation failed.", "error");
+          return;
+        }
 
         // ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
