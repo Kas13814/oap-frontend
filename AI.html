@@ -306,11 +306,11 @@
       align-items: center;
       gap: 6px;
     }
-    .user-avatar {
-      width: 20px;
+    /* ===== PATCH: green user avatar ===== */
+    ^px;
       height: 20px;
       border-radius: 999px;
-      background: #f97316;
+      background: var(--accent);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -526,7 +526,7 @@
 
     .thinking-text {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 400;
       background: linear-gradient(120deg, rgba(255,255,255,0.25) 0%, #ffffff 50%, rgba(255,255,255,0.25) 100%);
       background-size: 200% 100%;
       -webkit-background-clip: text;
@@ -534,6 +534,16 @@
       color: transparent;
       animation: shimmer 2.0s infinite linear;
     }
+
+    body.theme-light .thinking-text{
+      color:#000000 !important;
+      background:none !important;
+      -webkit-background-clip: initial !important;
+      background-clip: initial !important;
+      -webkit-text-fill-color:#000000 !important;
+      animation:none !important;
+    }
+
 
     @keyframes shimmer {
       0% { background-position: 200% 0; }
@@ -715,7 +725,12 @@
       color: #f9fafb;
     }
 
-    .send-btn:disabled {
+    
+    .send-btn.stop-mode {
+      background: #ffffff !important;
+      color: #111827 !important;
+    }
+.send-btn:disabled {
       opacity: 0.5;
       cursor: default;
     }
@@ -1424,45 +1439,155 @@ body.theme-light .nav-list.scrolling { scrollbar-color: rgba(0,0,0,0.12) transpa
     }
 
 
-/* ===== PATCH: sidebar user avatar/name ===== */
-.user-pill{ display:flex; align-items:center; gap:8px; }
+/* ===== PATCH: menu z-index on top ===== */
+.dropdown-menu,
+.context-menu,
+.menu-popover,
+.popover,
+.menu {
+  z-index: 99999 !important;
+  position: relative;
+}
+
+
+/* ===== PATCH: align voice button with send ===== */
+#voiceBtn.icon-btn{
+  width: 36px;
+  height: 36px;
+}
+
+
+
+
+/* ===== PATCH: pin footer without visual changes ===== */
+aside{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  /* لا نغيّر الألوان أو الخلفيات */
+}
+#chatList.nav-list{
+  flex:1;
+  overflow-y:auto;
+  max-height:none;
+}
+.sidebar-footer{
+  position:sticky;
+  bottom:0;
+  z-index:5000;
+  background:transparent !important; /* لا خلفية بيضاء */
+  border-top: 1px solid #000; /* كما كان */
+}
+
+
+/* ===== PATCH: sidebar avatar green + softer radii ===== */
+/* 1) الدائرة بجانب اسم الموظف خضراء */
 .user-avatar{
-  background:#16a34a !important;
-  color:#ffffff !important;
-  width:34px !important;
-  height:34px !important;
-  font-size:13px !important;
-  font-weight:700 !important;
-  border-radius:999px !important;
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  flex: 0 0 34px !important;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  background:#22c55e;
+  color:#ffffff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font:800 13px/1 Inter;
 }
-#sidebarUserName{ line-height:1.2; }
+
+/* 2) تخفيف تقويس المرور على عناوين المحادثات */
+.nav-item{
+  border-radius:14px !important;
+}
+
+/* 3) تخفيف تقويس البحث */
+.chat-search{
+  border-radius:14px !important;
+}
+
+/* 4) قائمة الثلاث نقاط تظهر فوق اسم المستخدم (تخرج من نطاق الـ scroll) */
+.dropdown-menu,
+.context-menu,
+.menu-popover,
+.popover,
+.menu{
+  z-index: 99999 !important;
+  position: fixed !important;
+}
 
 
-/* ===== PATCH: chat menu positioning + z-index ===== */
-.nav-list{ overflow-x: visible; } /* prevent horizontal clipping */
-.nav-item{ position: relative; }  /* anchor for absolute menu */
+/* ===== PATCH: adjust rounding + avatar weight + mic position ===== */
+/* 1) تقليل التقويس (أقل من السابق) */
+.nav-item{ border-radius:10px !important; }
+.chat-search{ border-radius:10px !important; }
+
+/* 2) إزالة الخط العريض داخل الدائرة */
+.user-avatar{ font-weight:500 !important; }
+
+/* 3) إنزال أيقونة الميكروفون للأسفل كما كانت (إرجاع حجمها الأصلي) */
+#voiceBtn.icon-btn{
+  width:32px !important;
+  height:32px !important;
+}
+
+
+/* ===== PATCH: mic fixed position + chat menu above footer ===== */
+/* 1) إنزال زر الميكروفون وتثبيته (لا يتحرك مع تمدد مربع الكتابة) */
+#voiceBtn{
+  align-self: flex-end !important;
+  margin-top: auto !important;
+  margin-bottom: -2px !important; /* ينزل بسيط بمحاذاة زر الإرسال */
+  flex: 0 0 auto !important;
+}
+
+/* 2) قائمة الثلاث نقاط فوق مربع اسم المستخدم */
 .chat-menu{
-  position: absolute;
-  right: 0;
-  top: 32px;
-  z-index: 9999;
+  z-index: 6000 !important; /* أعلى من .sidebar-footer (5000) */
 }
-.confirm-modal{ z-index: 10000; } /* delete confirm always above menus */
 
 
-/* ===== PATCH: voice button align ===== */
-#voiceBtn{ transform: translateY(6px); }
+/* ===== PATCH: align brand label with arrow ===== */
+.brand-outside-label{
+  position: relative;
+  top: 2px; /* انزال الاسم ليحاذي السهم */
+}
 
 
-/* ===== PATCH: tighter top icons ===== */
-.home-btn{ right: 88px; }
-.settings-btn{ right: 56px; }
-body[dir="rtl"] .home-btn{ left: 88px; right:auto; }
-body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
+/* ===== PATCH: align brand label with arrow v2 ===== */
+.brand-outside-label{
+  top: 6px !important; /* انزال إضافي ليطابق السهم */
+}
+
+
+/* ===== PATCH: brand label down+right+bold ===== */
+.brand-outside-label{
+  top: 8px !important;
+  left: 4px !important;
+  font-weight: 800 !important;
+}
+
+
+/* ===== PATCH: brand label down+right+bold v2 ===== */
+.brand-outside-label{
+  top: 10px !important;
+  left: 6px !important;
+  font-weight: 900 !important;
+}
+
+
+/* ===== PATCH: brand label position + bold + collapsed alignment ===== */
+/* تحريك OAP AI للأسفل قليلًا ولليمين قليلًا + بولد */
+.brand-outside-label{
+  position: relative;
+  top: 10px !important;
+  left: 10px !important;
+  font-weight: 800 !important;
+}
+
+/* عند إغلاق اللوحة: اجعل OAP AI بجانب سهم الفتح في الأعلى */
+.sidebar-collapsed .brand-outside{
+  left: 14px !important;
+  top: 12px !important;
+}
 
 </style>
 </head>
@@ -1510,16 +1635,22 @@ body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
     <!-- Home Button -->
     <a href="index.html" class="home-btn" title="Home">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-  <path d="M3 10.5 12 3l9 7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M5.5 10.5V21h13V10.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M9.5 21v-7h5v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
+        <path d="M3 10.5 12 3l9 7.5v9.5a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-6H11v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9.5Z"
+              fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </a>
 
     <!-- Settings Button -->
     <button id="settingsBtn" class="settings-btn" title="Settings"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-  <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M19.4 15a7.7 7.7 0 0 0 .0-6l2.0-1.2-2-3.4-2.3.5a7.9 7.9 0 0 0-2.6-1.5L14.6 1h-5.2L8.5 3.4a7.9 7.9 0 0 0-2.6 1.5l-2.3-.5-2 3.4L3.6 9a7.7 7.7 0 0 0 0 6l-2 1.2 2 3.4 2.3-.5a7.9 7.9 0 0 0 2.6 1.5L9.4 23h5.2l.9-2.4a7.9 7.9 0 0 0 2.6-1.5l2.3.5 2-3.4-2-1.2Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21 4H14" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M10 4H3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M21 12H12" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M8 12H3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M21 20H16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M13 20H3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M14 2v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M8 10v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
+  <path d="M16 18v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
 </svg></button>
     <div id="settingsMenu" class="settings-menu" aria-hidden="true">
       <!-- Appearance Section -->
@@ -1716,7 +1847,8 @@ body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
   // ===== Configuration & State =====
   const API_BASE = "https://oap-backend-875458188350.europe-west1.run.app";
 
-/* ===== PATCH: populate sidebar user from oap_session_v1 ===== */
+/* ===== PATCH: sidebar user name from oap_session_v1 ===== */
+  // Populate sidebar footer user info from sessionStorage (set at login)
   (function(){
     function safeParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
     function initials(name){
@@ -1727,6 +1859,7 @@ body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
       const b = parts[1]?.[0] || parts[0]?.[1] || "";
       return (a + b).toUpperCase() || "--";
     }
+
     const avatarEl = document.getElementById("sidebarUserAvatar");
     const nameEl = document.getElementById("sidebarUserName");
     if(!avatarEl || !nameEl) return;
@@ -1734,23 +1867,34 @@ body[dir="rtl"] .settings-btn{ left: 56px; right:auto; }
     const sess = safeParse(sessionStorage.getItem("oap_session_v1"));
     const displayName = sess?.employee_name || sess?.employeeName || "";
     const email = sess?.email || localStorage.getItem("oap_email") || "";
+
     const finalName = displayName || email || "User";
     avatarEl.textContent = initials(finalName);
     nameEl.textContent = finalName;
   })();
 
 async function sendToNXS(userText) {
+  // Use AbortController so the "Stop" button can actually cancel the request.
   const res = await fetch(`${API_BASE}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: abortController ? abortController.signal : undefined,
     body: JSON.stringify({ message: userText })
   });
+
+  if (!res.ok) {
+    // Try to surface useful error info
+    let t = "";
+    try { t = await res.text(); } catch (e) {}
+    const err = new Error(`HTTP ${res.status} ${res.statusText}${t ? " - " + t : ""}`);
+    err.name = "NetworkError";
+    throw err;
+  }
 
   const data = await res.json();
   return data;
 }
-
-  const shellEl = document.getElementById("shell");
+const shellEl = document.getElementById("shell");
   const sidebarToggleOpenEl = document.getElementById("sidebarToggleOpen");
   const sidebarToggleCloseEl = document.getElementById("sidebarToggleClose");
   const chatListEl = document.getElementById("chatList");
@@ -1865,8 +2009,10 @@ async function sendToNXS(userText) {
   let chatCounter = 1;
   let thinkingRow = null;
   let abortController = null;
+  let typingActive = false;
+  let typingAbort = false;
+  let lastTypingPromise = Promise.resolve();
 
-  
   let _lastSendAt = 0;
   let _lastSendText = "";
 // ===== Load/Save Settings =====
@@ -2451,22 +2597,40 @@ function appendMessage(role, text, persist = true, animate = true) {
     }
 
     if (role === "bot" && animate) {
+      // Keep the Stop button visible while the assistant is "typing" the reply (ChatGPT-like).
+      typingActive = true;
+      typingAbort = false;
+
       let i = 0;
       const full = text;
       const speed = settings.speed;
-      function typeNext() {
-        body.textContent = full.slice(0, i);
-        i++;
-        if (settings.autoScroll) {
-          chatLogEl.scrollTop = chatLogEl.scrollHeight;
+
+      lastTypingPromise = new Promise((resolve) => {
+        function done() {
+          typingActive = false;
+          resolve();
         }
-        if (i <= full.length && !abortController) {
-          setTimeout(typeNext, speed);
+        function typeNext() {
+          if (typingAbort) {
+            done();
+            return;
+          }
+          body.textContent = full.slice(0, i);
+          i++;
+          if (settings.autoScroll) {
+            chatLogEl.scrollTop = chatLogEl.scrollHeight;
+          }
+          if (i <= full.length && !typingAbort) {
+            setTimeout(typeNext, speed);
+          } else {
+            done();
+          }
         }
-      }
-      typeNext();
+        typeNext();
+      });
     } else {
       body.textContent = text;
+      lastTypingPromise = Promise.resolve();
     }
 
     return row;
@@ -2509,26 +2673,31 @@ function appendMessage(role, text, persist = true, animate = true) {
 
   function setSendMode(mode) {
     if (mode === "stop") {
-      sendBtn.title = "Stop generating";
+      sendBtn.title = (settings.language === "ar" ? "إيقاف الإجابة" : "Stop generating");
       sendBtn.dataset.mode = "stop";
-      sendBtn.innerHTML = "<span style='font-size:14px;font-weight:700;'>■</span>";
+      sendBtn.innerHTML = "<svg viewBox='0 0 24 24' aria-hidden='true'><rect x='7' y='7' width='10' height='10' rx='1.6' fill='#000000'/></svg>";
       sendBtn.disabled = false;
       sendBtn.classList.add("ready");
+      sendBtn.classList.add("stop-mode");
     } else {
-      sendBtn.title = "Send";
+      sendBtn.title = (settings.language === "ar" ? "إرسال" : "Send");
       sendBtn.dataset.mode = "send";
       sendBtn.innerHTML =
         "<svg viewBox='0 0 24 24' fill='none'><path d='M4 4L20 12L4 20L7 12L4 4Z' stroke='currentColor' stroke-width='1.7' stroke-linejoin='round'/></svg>";
+      sendBtn.classList.remove("stop-mode");
       refreshSendButtonState();
     }
   }
 
   function refreshSendButtonState() {
-    if (abortController) {
+    // Keep the Stop button clickable while a response is generating/typing
+    const mode = sendBtn.dataset.mode || "send";
+    if (mode === "stop" || abortController || typingActive) {
       sendBtn.disabled = false;
       sendBtn.classList.add("ready");
       return;
     }
+
     const hasText = userInputEl.value.trim().length > 0;
     sendBtn.disabled = !hasText;
     if (hasText) {
@@ -2594,6 +2763,7 @@ function appendMessage(role, text, persist = true, animate = true) {
 
       abortController = null;
     } finally {
+      try { await lastTypingPromise; } catch (e) {}
       setSendMode("send");
       userInputEl.focus();
     }
@@ -2629,29 +2799,44 @@ function appendMessage(role, text, persist = true, animate = true) {
 
   // ===== Event Listeners =====
   sendBtn.addEventListener("click", () => {
+    const mode = sendBtn.dataset.mode || "send";
+    // Allow stopping even if the input is empty (because we clear it after sending)
+    if (mode === "stop") {
+      // Stop streaming/request (if any)
+      if (abortController) {
+        abortController.abort();
+        abortController = null;
+      }
+      // Stop the typewriter animation (if it is running)
+      if (typingActive) {
+        typingAbort = true;
+      }
+      setSendMode("send");
+      clearThinking();
+      return;
+    }
+
     const now = Date.now();
     const raw = (userInputEl.value || "").trim();
     if (!raw) { return; }
     if ((now - _lastSendAt) < 450 && raw === _lastSendText) { return; }
     _lastSendAt = now; _lastSendText = raw;
 
-    const mode = sendBtn.dataset.mode || "send";
-    if (mode === "stop" && abortController) {
-      abortController.abort();
-      abortController = null;
-      setSendMode("send");
-      clearThinking();
-    } else {      sendMessage();
-    }
+    sendMessage();
   });
 
   userInputEl.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       const mode = sendBtn.dataset.mode || "send";
-      if (mode === "stop" && abortController) {
-        abortController.abort();
-        abortController = null;
+      if (mode === "stop") {
+        if (abortController) {
+          abortController.abort();
+          abortController = null;
+        }
+        if (typingActive) {
+          typingAbort = true;
+        }
         setSendMode("send");
         clearThinking();
       } else {
@@ -2719,7 +2904,42 @@ function appendMessage(role, text, persist = true, animate = true) {
     e.stopPropagation();
   });
 
-  // Chat menu logic
+  
+  /* ===== PATCH: smart chat-menu positioning ===== */
+  function placeChatMenu(dotsEl, menuEl){
+    if(!dotsEl || !menuEl) return;
+    // make menu fixed to avoid clipping inside scroll container
+    menuEl.style.position = "fixed";
+    menuEl.style.right = "auto";
+    menuEl.style.left = "0px";
+    menuEl.style.top = "0px";
+
+    // temporarily show to measure
+    const wasOpen = menuEl.classList.contains("open");
+    if(!wasOpen) menuEl.classList.add("open");
+    const rect = dotsEl.getBoundingClientRect();
+    const mw = menuEl.offsetWidth || 180;
+    const mh = menuEl.offsetHeight || 220;
+
+    const pad = 8;
+    let left = rect.right - mw; // align right edges
+    left = Math.max(pad, Math.min(left, window.innerWidth - mw - pad));
+
+    // default open downward
+    let top = rect.bottom + 6;
+    // if overflow bottom, open upward
+    if(top + mh > window.innerHeight - pad){
+      top = rect.top - mh - 6;
+    }
+    top = Math.max(pad, Math.min(top, window.innerHeight - mh - pad));
+
+    menuEl.style.left = left + "px";
+    menuEl.style.top  = top + "px";
+
+    if(!wasOpen) menuEl.classList.remove("open");
+  }
+
+// Chat menu logic
   document.addEventListener("click", (e) => {
     const dots = e.target.closest(".chat-dots");
     if (dots) {
@@ -2729,7 +2949,9 @@ function appendMessage(role, text, persist = true, animate = true) {
       document.querySelectorAll(".chat-menu.open").forEach(m => {
         if (m !== menu) m.classList.remove("open");
       });
+      const willOpen = !menu.classList.contains("open");
       menu.classList.toggle("open");
+      if (willOpen) { placeChatMenu(dots, menu); }
       return;
     }
 
