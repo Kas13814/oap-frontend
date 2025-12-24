@@ -1097,29 +1097,14 @@ body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !i
             <!-- Dashboard يفتح ملف -->
             <a class="divider__center" id="openDashboard" href="nxs_dashboard.html" style="color:var(--ink);opacity:.62;">Dashboard</a>
 
-<!-- قائمة علوية: حذف Fleet + إعادة التسمية -->
-<nav class="divider__nav" aria-label="Primary">
-  <ul>
-    <li>
-      <a class="active" href="/app/Navigation%20panel.html">
-        <span class="nav-ico" aria-hidden="true">📝</span><span>Form</span>
-      </a>
-    </li>
-
-    <li>
-      <a id="openSettingsDrawer" class="form-like nav-settings-btn" href="#" title="Settings">
-        <span class="nav-ico" aria-hidden="true">⚙️</span><span>Settings</span>
-      </a>
-    </li>
-
-    <li>
-      <a class="form-like" href="/app/AI.html" id="navAI">
-        <span class="nav-ico" aria-hidden="true">🤖</span><span>AI</span>
-      </a>
-    </li>
-  </ul>
-</nav>
-
+            <!-- قائمة علوية: حذف Fleet + إعادة التسمية -->
+            <nav class="divider__nav" aria-label="Primary">
+              <ul>
+                <li><a class="active" href="Navigation panel.html"><span class="nav-ico" aria-hidden="true">📝</span><span>Form</span></a></li>
+                <li><a id="openSettingsDrawer" class="form-like nav-settings-btn" href="#" title="Settings"><span class="nav-ico" aria-hidden="true">⚙️</span><span>Settings</span></a></li>
+                <li><a class="form-like" href="AI.html" id="navAI"><span class="nav-ico" aria-hidden="true">🤖</span><span>AI</span></a></li>
+</ul>
+            </nav>
 
             <!-- سهم قائمة الجوال (يظهر فقط على الهاتف) -->
             <button class="divider__mobile-arrow m-arrow" id="dividerMobileArrow" aria-label="Toggle navigation" aria-expanded="false">
@@ -1127,7 +1112,7 @@ body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !i
             </button>
 
             <!-- الهاتف: Home فقط (أزلنا قائمة الهاتف الأخرى) -->
-            <a href="/Login.html" class="m-home clickable" aria-label="Home" style="display:none">Login</a>
+            <a href="Login.html" class="m-home clickable" aria-label="Home" style="display:none">Login</a>
           </div>
         </div>
       </header>
@@ -1298,7 +1283,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   const sess = getOapSession();
   if (!sess) {
     // تحويل فوري وثابت
-    window.location.replace("/Login.html");
+    window.location.replace("Login.html");
     return;
   }
 
