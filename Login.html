@@ -443,6 +443,15 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
+        // Frontend auth flag for protected pages
+        try {
+          sessionStorage.setItem("auth", "true");
+        } catch (_) {}
+
+        // Redirect to home page after successful login
+        window.location.href = "/index.html";
+        return;
+
         // ✅ Create auth cookie via Worker endpoint, then go to protected app
         // IMPORTANT: Worker will verify credentials server-side via Supabase RPC (oap_login)
         try {
