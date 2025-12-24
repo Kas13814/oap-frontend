@@ -434,19 +434,18 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
+        // ✅ Create auth cookie via Worker endpoint, then go to protected app
+        // IMPORTANT: Worker will verify credentials server-side via Supabase RPC (oap_login)
         try {
-          const user = employee_login;
-          const timestamp = Date.now();
-          const data = `${user}.${timestamp}`;
-
           const issueRes = await fetch("/auth/issue", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data })
+            body: JSON.stringify({
+              employee_id: Number(employee_login),
+              password: password
+            })
           });
-
-          if (!issueRes.ok) {
+if (!issueRes.ok) {
             const t = await issueRes.text().catch(() => "");
             console.error("Auth issue failed:", issueRes.status, t);
             setStatus("Login ok, but session creation failed.", "error");
