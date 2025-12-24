@@ -436,10 +436,14 @@ setStatus("Login successful. Welcome to OAP.", "ok");
 
         // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
         try {
+          const user = employee_login;
+          const timestamp = Date.now();
+          const data = `${user}.${timestamp}`;
+
           const issueRes = await fetch("/auth/issue", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ employee_id: String(employee_login) })
+            body: JSON.stringify({ data })
           });
 
           if (!issueRes.ok) {
