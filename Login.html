@@ -400,22 +400,7 @@
           return;
         }
 
-        // ✅ Accept multiple valid RPC return shapes (without changing backend):
-        // - { ok: true, ... }
-        // - true
-        // - [{ ok: true, ... }]  (some RPCs return an array)
-                // Consider RPC successful if it returned any non-empty value
-        let loginOk = false;
-        if (data === true) {
-          loginOk = true;
-        } else if (Array.isArray(data)) {
-          loginOk = data.length > 0;
-        } else if (data) {
-          // any non-null / non-false object or primitive
-          loginOk = true;
-        }
-
-        if (!loginOk) {
+        if (!data || data.ok !== true) {
           setStatus("Invalid Employee ID or password.", "error");
           return;
         }
@@ -449,27 +434,19 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // Frontend auth flag for protected pages
+        // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
         try {
-          sessionStorage.setItem("auth", "true");
-        } catch (_) {}
+          const user = employee_login;
+          const timestamp = Date.now();
+          const data = `${user}.${timestamp}`;
 
-        // Redirect to home page after successful login
-        window.location.href = "https://oap-kas.com/index.html";
-        return;
-
-        // ✅ Create auth cookie via Worker endpoint, then go to protected app
-        // IMPORTANT: Worker will verify credentials server-side via Supabase RPC (oap_login)
-        try {
           const issueRes = await fetch("/auth/issue", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              employee_id: Number(employee_login),
-              password: password
-            })
+            body: JSON.stringify({ data })
           });
-if (!issueRes.ok) {
+
+          if (!issueRes.ok) {
             const t = await issueRes.text().catch(() => "");
             console.error("Auth issue failed:", issueRes.status, t);
             setStatus("Login ok, but session creation failed.", "error");
@@ -488,7 +465,7 @@ if (!issueRes.ok) {
         // ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
         // - When opened locally (file://): go to index.html in the same folder
-        const homeUrl = "https://oap-kas.com/index.html?home=1";
+        const homeUrl = "/index.html";
         // Try multiple navigation methods for maximum compatibility
         setTimeout(() => {
           try { window.location.replace(homeUrl); return; } catch (_) {}
