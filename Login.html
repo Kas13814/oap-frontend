@@ -434,35 +434,9 @@
         } catch (_) {}
 setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
-        try {
-          const user = employee_login;
-          const timestamp = Date.now();
-          const data = `${user}.${timestamp}`;
+                setStatus("Login successful. Redirecting...", "ok");
 
-          const issueRes = await fetch("/auth/issue", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data })
-          });
-
-          if (!issueRes.ok) {
-            const t = await issueRes.text().catch(() => "");
-            console.error("Auth issue failed:", issueRes.status, t);
-            setStatus("Login ok, but session creation failed.", "error");
-            return;
-          }
-
-          // After cookie is set, go to protected area
-          window.location.replace("/app/");
-          return;
-        } catch (e) {
-          console.error(e);
-          setStatus("Login ok, but session creation failed.", "error");
-          return;
-        }
-
-        // ✅ Redirect to the home page (index.html)
+// ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
         // - When opened locally (file://): go to index.html in the same folder
         const homeUrl = "/index.html";
