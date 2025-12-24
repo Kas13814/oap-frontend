@@ -404,10 +404,16 @@
         // - { ok: true, ... }
         // - true
         // - [{ ok: true, ... }]  (some RPCs return an array)
-        const loginOk =
-          data === true ||
-          (data && data.ok === true) ||
-          (Array.isArray(data) && data.length > 0 && data[0] && data[0].ok === true);
+                // Consider RPC successful if it returned any non-empty value
+        let loginOk = false;
+        if (data === true) {
+          loginOk = true;
+        } else if (Array.isArray(data)) {
+          loginOk = data.length > 0;
+        } else if (data) {
+          // any non-null / non-false object or primitive
+          loginOk = true;
+        }
 
         if (!loginOk) {
           setStatus("Invalid Employee ID or password.", "error");
