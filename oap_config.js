@@ -57,3 +57,46 @@
   global.SUPABASE_URL = global.NXS_SUPABASE_URL;
   global.SUPABASE_ANON_KEY = global.NXS_SUPABASE_ANON_KEY;
 })(window);
+
+
+// ---- NXS auth helpers (added) ----
+// Call NXS_LOGIN_SUCCESS() after successful login.
+// Call NXS_LOGOUT() when the user logs out.
+
+(function (global) {
+  'use strict';
+
+  function safeSetAuth(value) {
+    try {
+      if (typeof sessionStorage !== 'undefined') {
+        if (value) {
+          sessionStorage.setItem('auth', 'true');
+        } else {
+          sessionStorage.removeItem('auth');
+        }
+      }
+    } catch (e) {
+      // ignore storage errors (private mode, etc.)
+    }
+  }
+
+  global.NXS_LOGIN_SUCCESS = function () {
+    safeSetAuth(true);
+    try {
+      global.location.href = "/index.html";
+    } catch (e) {
+      // as a fallback, try root
+      try { global.location.href = "/"; } catch (_) {}
+    }
+  };
+
+  global.NXS_LOGOUT = function () {
+    safeSetAuth(false);
+    try {
+      global.location.href = "/Login.html";
+    } catch (e) {
+      try { global.location.href = "/"; } catch (_) {}
+    }
+  };
+})(window);
+
