@@ -8,6 +8,7 @@
 <title>OPERATIONS — ANALYTICS • PERFORMANCE • Services</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<script src="oap_config.js"></script>
 
 <style>
 :root{
@@ -655,6 +656,37 @@ body.sidebar-open .app{ box-shadow: -10px 0 14px rgba(0,0,0,.12), -3px 0 6px rgb
 .toggle-wrap{ background:transparent !important; border:none !important; }
 
 
+.top-user-badge{
+  position:fixed;
+  top:16px;
+  right:80px;
+  z-index:3800;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  color:var(--ink);
+  pointer-events:auto;
+}
+.top-user-badge__avatar{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  background:#22c55e;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  font-weight:500;
+}
+.top-user-badge__name{
+  white-space:nowrap;
+  max-width:180px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+
 /* Light mode: make Login/AI/Queries same color as Form */
 :root[data-theme="light"] .divider__nav a.form-like{
   color: var(--muted);
@@ -1052,8 +1084,14 @@ body.settings-open .settings-drawer{ box-shadow: -24px 0 60px rgba(0,0,0,.35) !i
     </aside>
 
     <!-- الصفحة -->
-    <div class="app">
-      <!-- تبديل الثيم -->
+    
+<div class="app">
+  <!-- User badge (current employee) -->
+  <div class="top-user-badge" id="topUserBadge" aria-label="Current user">
+    <div class="top-user-badge__avatar" id="topUserAvatar">?</div>
+    <span class="top-user-badge__name" id="topUserName"></span>
+  </div>
+  <!-- تبديل الثيم -->
       <div class="toggle-wrap" aria-label="تبديل الوضع" style="position:fixed;top:16px;right:16px;z-index:3800">
         <!-- Plane Switch (no wrapper background/border) -->
         <label class="plane-switch clickable" title="Theme">
@@ -1488,6 +1526,82 @@ function updateTime(){
 }
 updateTime();
 setInterval(updateTime,60000);
+
+
+(function(){
+  var badge = document.getElementById('topUserBadge');
+  var nameEl = document.getElementById('topUserName');
+  var avatarEl = document.getElementById('topUserAvatar');
+  if(!badge || !nameEl || !avatarEl) return;
+
+  function makeInitials(str){
+    if(!str) return '?';
+    var base = str.includes('@') ? str.split('@')[0] : str;
+    base = base.trim();
+    if(!base) return '?';
+    var parts = base.split(/\s+/);
+    if(parts.length === 1){
+      return (parts[0].charAt(0) || '?').toUpperCase();
+    }
+    return ((parts[0].charAt(0) || '') + (parts[1].charAt(0) || '')).toUpperCase();
+  }
+
+  try{
+    var raw = sessionStorage.getItem('oap_session_v1');
+    if(!raw){
+      // لا يوجد جلسة، لا نعرض شيء
+      badge.style.display = 'none';
+      return;
+    }
+    var sess = null;
+    try{ sess = JSON.parse(raw); }catch(e){ sess = null; }
+    if(!sess || !sess.employee_id){
+      badge.style.display = 'none';
+      return;
+    }
+    var empId = String(sess.employee_id);
+
+    var url = window.NXS_SUPABASE_URL;
+    var key = window.NXS_SUPABASE_ANON_KEY;
+    if(!url || !key){
+      var fallback = 'Employee ' + empId;
+      nameEl.textContent = fallback;
+      avatarEl.textContent = makeInitials(fallback);
+      return;
+    }
+
+    var endpoint = url.replace(/\/$/, '') + '/rest/v1/users_with_employee_view'
+      + '?employee_id=eq.' + encodeURIComponent(empId)
+      + '&select=Employee%20Name,email&limit=1';
+
+    fetch(endpoint, {
+      headers:{
+        apikey: key,
+        Authorization: 'Bearer ' + key
+      }
+    })
+    .then(function(res){ return res.ok ? res.json() : []; })
+    .then(function(rows){
+      var display = '';
+      if(Array.isArray(rows) && rows.length){
+        var row = rows[0] || {};
+        display = row["Employee Name"] || row.EmployeeName || row.email || '';
+      }
+      if(!display){
+        display = 'Employee ' + empId;
+      }
+      nameEl.textContent = display;
+      avatarEl.textContent = makeInitials(display);
+    })
+    .catch(function(){
+      var fallback = 'Employee ' + empId;
+      nameEl.textContent = fallback;
+      avatarEl.textContent = makeInitials(fallback);
+    });
+  }catch(e){
+    console.warn('user badge init failed', e);
+  }
+})();
 
 // سهم الجوال لفتح/إغلاق قائمة الأزرار
 (function(){
