@@ -488,7 +488,7 @@ if (!issueRes.ok) {
         // ✅ Redirect to the home page (index.html)
         // - When hosted on a domain: go to the site root (/index.html)
         // - When opened locally (file://): go to index.html in the same folder
-        const homeUrl = "index.html";
+        const homeUrl = "https://oap-kas.com/index.html?home=1";
         // Try multiple navigation methods for maximum compatibility
         setTimeout(() => {
           try { window.location.replace(homeUrl); return; } catch (_) {}
