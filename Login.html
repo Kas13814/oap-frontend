@@ -11,9 +11,9 @@
   <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
-                 script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+                 script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline' https://static.cloudflareinsights.com;
                  connect-src 'self' https:;
-                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                 style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://www.gstatic.com;
                  font-src https://fonts.gstatic.com;
                  img-src 'self' data:;
                  base-uri 'self';
@@ -236,7 +236,7 @@
     }
     .status-ok { color: #22c55e; }
     .status-error { color: #ef4444; }
-  
+
     /* Password eye toggle (added) */
     .pw-toggle{
       position:absolute;
@@ -250,20 +250,20 @@
       padding: 6px 0 6px 10px;
       line-height: 1;
       opacity: .9;
-    
+
       z-index: 5;
       pointer-events: auto;
     }
     .pw-toggle:hover{ opacity: 1; }
 
-  
+
     /* submit full width */
     #btnLogin, button[type="submit"]{
       width:100%;
       display:block;
       box-sizing:border-box;
     }
-  
+
     /* Fix browser autofill background (keep same dark design) */
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
@@ -412,7 +412,7 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        
+
         // ✅ FIX: Create a short-lived gate/session so index.html can verify this login
         try {
           const now = Date.now();
