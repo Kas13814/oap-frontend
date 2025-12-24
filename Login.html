@@ -255,7 +255,6 @@
       pointer-events: auto;
     }
     .pw-toggle:hover{ opacity: 1; }
-
   
     /* submit full width */
     #btnLogin, button[type="submit"]{
@@ -412,8 +411,7 @@
           if (data.role != null) localStorage.setItem("oap_role", String(data.role));
         } catch (_) {}
 
-        
-        // ✅ FIX: Create a short-lived gate/session so index.html can verify this login
+        // ✅ Create short-lived session info so index.html can verify
         try {
           const now = Date.now();
           const ttlMs = 8 * 60 * 60 * 1000; // 8 hours
@@ -432,40 +430,13 @@
           sessionStorage.setItem("isLoggedIn", "1");
           localStorage.setItem("isLoggedIn", "1");
         } catch (_) {}
-setStatus("Login successful. Welcome to OAP.", "ok");
 
-        // ✅ Create signed auth cookie via Worker endpoint, then go to protected app
-        try {
-          const user = employee_login;
-          const timestamp = Date.now();
-          const data = `${user}.${timestamp}`;
+        setStatus("Login successful. Welcome to OAP.", "ok");
+        setStatus("Login successful. Redirecting...", "ok");
 
-          const issueRes = await fetch("/auth/issue", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ data })
-          });
+        // ✅ Redirect to the home page inside /app
+        const homeUrl = "/app/index.html";
 
-          if (!issueRes.ok) {
-            const t = await issueRes.text().catch(() => "");
-            console.error("Auth issue failed:", issueRes.status, t);
-            setStatus("Login ok, but session creation failed.", "error");
-            return;
-          }
-
-          // After cookie is set, go to protected area
-          window.location.replace("/app/");
-          return;
-        } catch (e) {
-          console.error(e);
-          setStatus("Login ok, but session creation failed.", "error");
-          return;
-        }
-
-        // ✅ Redirect to the home page (index.html)
-        // - When hosted on a domain: go to the site root (/index.html)
-        // - When opened locally (file://): go to index.html in the same folder
-        const homeUrl = "index.html";
         // Try multiple navigation methods for maximum compatibility
         setTimeout(() => {
           try { window.location.replace(homeUrl); return; } catch (_) {}
@@ -496,41 +467,6 @@ setStatus("Login successful. Welcome to OAP.", "ok");
       e.preventDefault();
       callLogin();
     });
-</script>
-
-    <script>
-    (function () {
-      const form = document.getElementById('loginForm');
-      const empInput = document.getElementById('employee-id');
-      const passInput = document.getElementById('password');
-      const messageEl = document.getElementById('message');
-      if (!form || !empInput || !passInput || !messageEl) return;
-
-      form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-
-        const empId = empInput.value.trim();
-        const password = passInput.value;
-
-        // هنا فقط من أجل الاختبار — عدّل البيانات كما تريد
-        const isValid = empId && password;
-
-        if (!isValid) {
-          messageEl.textContent = 'Invalid Employee ID or password.';
-          messageEl.style.color = '#ff4b4b';
-          return;
-        }
-
-        try {
-          sessionStorage.setItem('auth', 'true');
-        } catch (err) {
-          console.error('sessionStorage error', err);
-        }
-
-        window.location.href = '/index.html';
-      });
-    })();
-    </script>
+  </script>
 </body>
 </html>
