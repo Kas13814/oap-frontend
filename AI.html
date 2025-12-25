@@ -1804,6 +1804,22 @@ aside{
 
 <input id="fileInput" type="file" multiple style="display:none" />
 
+
+<!-- NXS Inline Dashboard Drawer (hidden by default) -->
+<div id="nxsDashboardDrawer" class="nxs-drawer nxs-hidden">
+  <div class="nxs-drawer-header">
+    <div class="nxs-drawer-title">NXS • Analytics Panel</div>
+    <button id="nxsDrawerClose" class="nxs-drawer-close" type="button" aria-label="Close analytics">×</button>
+  </div>
+  <div class="nxs-drawer-body">
+    <div class="nxs-drawer-chart-wrap">
+      <div id="nxsDrawerChart" class="nxs-chart-area"></div>
+      <img id="nxsDrawerFallbackImg" class="nxs-chart-fallback" alt="Analytics chart" style="display:none;"/>
+    </div>
+    <div id="nxsDrawerTable" class="nxs-table-area"></div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div id="toast" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 14px;border-radius:12px;background:rgba(0,0,0,0.75);color:#fff;font-size:13px;z-index:250;display:none;max-width:min(520px,calc(100% - 24px));text-align:center;backdrop-filter: blur(6px);"></div>
 
@@ -1872,6 +1888,70 @@ aside{
     avatarEl.textContent = initials(finalName);
     nameEl.textContent = finalName;
   })();
+
+
+// === NXS Analytics: render server-side charts/tables inside inline drawer ===
+function nxsEnsureDrawer() {
+  const drawer = document.getElementById("nxsDashboardDrawer");
+  const chartDiv = document.getElementById("nxsDrawerChart");
+  const img = document.getElementById("nxsDrawerFallbackImg");
+  const tableDiv = document.getElementById("nxsDrawerTable");
+  const closeBtn = document.getElementById("nxsDrawerClose");
+  if (!drawer || !chartDiv || !img || !tableDiv || !closeBtn) return null;
+  if (!closeBtn.__nxsBound) {
+    closeBtn.__nxsBound = true;
+    closeBtn.addEventListener("click", () => {
+      drawer.classList.add("nxs-hidden");
+    });
+  }
+  return { drawer, chartDiv, img, tableDiv };
+}
+
+function nxsRenderAnalyticsFromMeta(meta) {
+  if (!meta || !meta.viz) return false;
+  const viz = meta.viz;
+  if (!viz.ok) return false;
+
+  const ctx = nxsEnsureDrawer();
+  if (!ctx) return false;
+
+  const { drawer, chartDiv, img, tableDiv } = ctx;
+
+  // Reset previous state
+  if (window.Plotly && chartDiv) {
+    try { Plotly.purge(chartDiv); } catch (e) {}
+  }
+  if (chartDiv) chartDiv.innerHTML = "";
+  if (tableDiv) tableDiv.innerHTML = "";
+  if (img) {
+    img.style.display = "none";
+    img.removeAttribute("src");
+  }
+
+  // Prefer Plotly figure if available
+  if (window.Plotly && viz.figure) {
+    try {
+      const fig = viz.figure;
+      const data = fig.data || [];
+      const layout = fig.layout || {};
+      const config = { responsive: true, displaylogo: false };
+      Plotly.newPlot(chartDiv, data, layout, config);
+    } catch (e) {
+      console.error("Plotly render error:", e);
+    }
+  } else if (viz.png_base64 && img) {
+    img.src = "data:image/png;base64," + viz.png_base64;
+    img.style.display = "block";
+  }
+
+  // Inject table HTML if present
+  if (viz.table_html && tableDiv) {
+    tableDiv.innerHTML = viz.table_html;
+  }
+
+  drawer.classList.remove("nxs-hidden");
+  return true;
+}
 
 async function sendToNXS(userText) {
   // Use AbortController so the "Stop" button can actually cancel the request.
@@ -2734,6 +2814,7 @@ function appendMessage(role, text, persist = true, animate = true) {
     try {
       const data = await sendToNXS(text);
       clearThinking();
+      if (data && data.meta) { try { nxsRenderAnalyticsFromMeta(data.meta); } catch (e) { console.warn('viz render error', e); } }
       abortController = null;
 
       const reply =
@@ -3136,5 +3217,8 @@ function appendMessage(role, text, persist = true, animate = true) {
   userInputEl.focus();
 </script>
 
+
+<!-- NXS Dashboard: Plotly core (primary chart engine) -->
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 </body>
 </html>
