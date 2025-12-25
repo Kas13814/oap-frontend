@@ -1652,6 +1652,12 @@ aside{
   <path d="M8 10v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
   <path d="M16 18v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>
 </svg></button>
+
+<!-- Dashboard Toggle Button -->
+<button id="oapDashboardBtn" class="settings-btn" title="إظهار آخر Dashboard" style="right: 140px;">
+📊
+</button>
+
     <div id="settingsMenu" class="settings-menu" aria-hidden="true">
       <!-- Appearance Section -->
       <div class="settings-section">
@@ -3215,6 +3221,18 @@ function appendMessage(role, text, persist = true, animate = true) {
   window.addEventListener("beforeunload", saveConversations);
   setSendMode("send");
   userInputEl.focus();
+
+// === OAP Dashboard Toggle ===
+(function(){
+  const btn = document.getElementById("oapDashboardBtn");
+  const drawer = document.getElementById("nxsDashboardDrawer");
+  if(btn && drawer){
+    btn.addEventListener("click", ()=>{
+      drawer.classList.toggle("nxs-hidden");
+    });
+  }
+})();
+
 </script>
 
 
