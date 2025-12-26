@@ -3,7 +3,45 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>TCC • Shift Summary</title>
+<title>Employee Delay</title>
+
+<!-- Boot: الثيم موحد مع index.html -->
+<script>
+(function(){
+  try{
+    var KEY = 'theme';
+    var LEGACIES = ['pref-theme','sgs_theme','tcc_theme'];
+
+    function resolveSystem(){
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
+    function readTheme(){
+      var t = localStorage.getItem(KEY);
+      if(!t){
+        for(var i=0;i<LEGACIES.length && !t;i++) {
+          t = localStorage.getItem(LEGACIES[i]);
+        }
+      }
+      return t || 'light';
+    }
+
+    function applyTheme(v){
+      var t = v || readTheme();
+      if(t === 'system') t = resolveSystem();
+      document.documentElement.setAttribute('data-theme', t);
+    }
+
+    applyTheme();
+
+    window.addEventListener('storage', function(e){
+      if(e.key === KEY || LEGACIES.indexOf(e.key) !== -1){
+        applyTheme(e.newValue);
+      }
+    });
+  }catch(err){}
+})();
+</script>
 
 <style>
 :root{
@@ -11,339 +49,471 @@
   --brand:#22D3A6; --accent:#6D28D9; --ring:#E8E8E8;
   --shadow:0 10px 30px rgba(2,8,23,.12); --radius:22px;
 }
-html[data-theme="dark"]{
-  --bg:#000; --card:#141414; --text:#E6E7EB; --muted:#A0A6AE;
-  --ring:#2A2A2A; --brand:#1A1A1A; --accent:#1A1A1A;
+
+/* Dark theme */
+[data-theme="dark"]{
+  --bg:#0B0B0C;
+  --card:#111213;
+  --text:#E5E7EB;
+  --muted:#94A3B8;
+  --brand:#22D3A6;
+  --accent:#8B5CF6;
+  --ring:#2A2B2C;
   --shadow:0 10px 30px rgba(0,0,0,.35);
 }
 
 *{box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
 
-/* الصفحة ثابتة بلا تمرير */
-html,body{
-  height:100%;
+body{
   margin:0;
-  overflow:hidden; /* يمنع تمرير الصفحة */
-  font:14px/1.5 "Segoe UI",Inter,Roboto,system-ui,-apple-system,sans-serif;
-  color:var(--text);
   background:
     radial-gradient(1200px 800px at 85% -10%, color-mix(in oklab, var(--brand) 20%, transparent), transparent 60%),
     radial-gradient(1000px 700px at -10% 100%, color-mix(in oklab, var(--brand) 20%, transparent), transparent 55%),
     var(--bg);
+  color:var(--text);
+  font:14px/1.5 "Segoe UI",Inter,Roboto,system-ui,-apple-system,sans-serif;
 }
 
 .container{max-width:1120px;margin:32px auto;padding:0 16px}
-.header{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-bottom:18px}
+.header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header .actions{display:flex;gap:8px;align-items:center}
+
 .btn{
-  padding:9px 14px;border-radius:12px;cursor:pointer;
-  border:1px solid var(--ring);background:var(--card);color:var(--text);
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--ring);
+  background:var(--card);
+  color:var(--text);
+  padding:9px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  text-decoration:none;
+  font-size:13px;
+  transition:
+    background-color .15s ease,
+    box-shadow .15s ease,
+    transform .12s ease;
 }
-.btn[data-variant="primary"]{background:#22D3A6;color:#fff;border:0}
-.btn.small{padding:6px 10px;font-size:12px;border-radius:10px}
-.btn.group{background:#F3F4F6}
-html[data-theme="dark"] .btn.group{background:#1c1c1c}
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  border-color:transparent;
+}
+.btn-ghost{
+  background:transparent;
+}
+.btn:hover{
+  background-color:rgba(15,23,42,0.06);
+  box-shadow:0 2px 6px rgba(15,23,42,0.18);
+  transform:translateY(-1px);
+}
+.btn:active{
+  transform:translateY(0);
+  box-shadow:none;
+}
 
 .panel{
   background:var(--card);
   border:1px solid var(--ring);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
-  display:flex;
-  flex-direction:column;
-  height:80vh;
-}
-.toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-bottom:1px solid var(--ring)}
-.btn-row{display:flex;gap:10px;flex-wrap:wrap}
-
-/* التمرير داخل النموذج */
-.form-wrapper{
   padding:18px;
-  overflow:auto;
-  flex:1;
 }
-.form-wrapper::-webkit-scrollbar { width: 4px; }
-.form-wrapper::-webkit-scrollbar-thumb { background:#D5D5D5; border-radius:8px; }
-.form-wrapper::-webkit-scrollbar-thumb:hover { background:#555555; }
-
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar-actions{display:flex;gap:8px;align-items:center}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form .full{grid-column:1/-1}
-
-.section{
-  grid-column:1/-1; display:flex;align-items:center;gap:10px;
-  margin:8px 0 4px; font-weight:700; color:var(--text);
-}
-.section .line{flex:1;height:1px;background:var(--ring);border-radius:1px}
-
-.controls-row{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
-
 label{display:block;color:var(--muted);font-size:12px;margin:7px 0 6px}
-.input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--ring);background:var(--card);color:var(--text)}
-textarea.input{min-height:90px;resize:vertical}
+input,select,textarea{
+  width:100%; padding:10px 12px; border-radius:12px;
+  border:1px solid var(--ring); outline:none;
+  background:var(--card); color:var(--text);
+}
+textarea{min-height:90px; resize:vertical}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.3px}
 
-.hidden{display:none !important;}
+input:focus, select:focus, textarea:focus{
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.toast{
+  position:fixed; right:16px; bottom:16px; background:#111827; color:#F9FAFB;
+  padding:12px 14px; border-radius:12px; box-shadow:var(--shadow); display:none;
+}
+.toast.ok{background:linear-gradient(135deg,#16A34A,#22D3A6)}
+.toast.err{background:linear-gradient(135deg,#EF4444,#F14668)}
+
+#formTitle{font-weight:700;font-size:16px}
+#formDesc{color:var(--muted);font-size:12px}
 </style>
-<script src="/auth.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <a href="../index.html" class="btn">⟵ Back</a>
-    <a href="../index.html" class="btn">🏠 Home</a>
+    <div class="title" id="pageTitle">📋 Shift Report</div>
+    <div class="actions">
+      <a href="Navigation panel.html" class="btn btn-ghost" title="Back" aria-label="Back">⟵ Back</a>
+      <a href="index.html" class="btn btn-ghost" title="Home" aria-label="Home">🏠</a>
+    </div>
   </div>
-
   <div class="panel">
     <div class="toolbar">
-      <div><b>TCC • Shift Summary</b></div>
-      <div class="btn-row">
-        <button type="button" id="clearBtn" class="btn">Clear</button>
-        <button type="button" id="submitBtn" class="btn" data-variant="primary">Submit</button>
+      <div>
+        <div id="formTitle"></div>
+        <div id="formDesc"></div>
+      </div>
+      <div class="toolbar-actions">
+        <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+        <button id="submitBtn" class="btn btn-primary" type="button">Submit</button>
       </div>
     </div>
-
-    <div class="form-wrapper">
-      <form class="form" id="form">
-
-        <!-- General -->
-        <div class="section"><span>General Information</span><div class="line"></div></div>
-        <div>
-          <label>Date</label>
-          <input class="input" type="text" placeholder="DD-MM-YYYY">
-        </div>
-        <div>
-          <label>Shift</label>
-          <select class="input">
-            <option>Shift A</option><option>Shift B</option><option>Shift C</option>
-          </select>
-        </div>
-        <div>
-          <label>Department</label>
-          <select class="input">
-            <option>TCC</option><option>FIC Saudia</option><option>FIC Nas</option><option>LC Saudia</option><option>LC Foreign</option>
-          </select>
-        </div>
-
-        <!-- Control -->
-        <div class="section"><span>Control Team</span><div class="line"></div></div>
-        <div class="controls-row">
-          <button type="button" id="toggleControl2" class="btn small group">Show/Hide Control 2</button>
-        </div>
-        <div data-field="Control1ID">
-          <label>Control 1 ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="Control1Start">
-          <label>Control 1 Start Time</label>
-          <input class="input" type="text" placeholder="HH:mm">
-        </div>
-        <div data-field="Control1End">
-          <label>Control 1 End Time</label>
-          <input class="input" type="text" placeholder="HH:mm">
-        </div>
-
-        <!-- Control 2 (مخفي افتراضياً) -->
-        <div data-field="Control2ID" class="hidden">
-          <label>Control 2 ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="Control2Start" class="hidden">
-          <label>Control 2 Start Time</label>
-          <input class="input" type="text" placeholder="HH:mm">
-        </div>
-        <div data-field="Control2End" class="hidden">
-          <label>Control 2 End Time</label>
-          <input class="input" type="text" placeholder="HH:mm">
-        </div>
-
-        <!-- Duty Managers -->
-        <div class="section"><span>Duty Managers</span><div class="line"></div></div>
-        <div class="controls-row">
-          <button type="button" id="dmShowAllHalls" class="btn small group">Show All Halls (hide others)</button>
-          <button type="button" id="dmShowSplit" class="btn small group">Show Domestic + Int/Foreign</button>
-        </div>
-        <div data-field="DM_Domestic_ID">
-          <label>Duty Manager Domestic ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="DM_IntFor_ID">
-          <label>Duty Manager International+Foreign ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="DM_AllHalls_ID" class="hidden">
-          <label>Duty Manager All Halls ID</label>
-          <input class="input" type="text">
-        </div>
-
-        <!-- Supervisors -->
-        <div class="section"><span>Supervisors</span><div class="line"></div></div>
-        <div class="controls-row">
-          <button type="button" id="supShowAllHalls" class="btn small group">Show All Halls (hide others)</button>
-          <button type="button" id="supShowSplit" class="btn small group">Show Domestic + Int/Foreign</button>
-        </div>
-        <div data-field="Sup_Domestic_ID">
-          <label>Supervisor Domestic ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="Sup_IntFor_ID">
-          <label>Supervisor International+Foreign ID</label>
-          <input class="input" type="text">
-        </div>
-        <div data-field="Sup_AllHalls_ID" class="hidden">
-          <label>Supervisor All Halls ID</label>
-          <input class="input" type="text">
-        </div>
-
-        <!-- Staffing -->
-        <div class="section"><span>Staffing</span><div class="line"></div></div>
-        <div>
-          <label>On Duty</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>No Show</label>
-          <input class="input" type="number">
-        </div>
-
-        <!-- Equipment -->
-        <div class="section"><span>Equipment Status</span><div class="line"></div></div>
-        <div>
-          <label>Cars In Service</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Cars Out Of Service</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Wireless Devices In Service</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Wireless Devices Out Of Service</label>
-          <input class="input" type="number">
-        </div>
-
-        <!-- Arrivals -->
-        <div class="section"><span>Flight Stats — Arrivals</span><div class="line"></div></div>
-        <div>
-          <label>Arrivals Domestic</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Delayed Arrivals Domestic</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Arrivals International+Foreign</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Delayed Arrivals International+Foreign</label>
-          <input class="input" type="number">
-        </div>
-
-        <!-- Departures -->
-        <div class="section"><span>Flight Stats — Departures</span><div class="line"></div></div>
-        <div>
-          <label>Departures Domestic</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Delayed Departures Domestic</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Departures International+Foreign</label>
-          <input class="input" type="number">
-        </div>
-        <div>
-          <label>Delayed Departures International+Foreign</label>
-          <input class="input" type="number">
-        </div>
-
-        <!-- Comments -->
-        <div class="section"><span>Comments</span><div class="line"></div></div>
-        <div class="full">
-          <label>Comments Domestic</label>
-          <textarea class="input"></textarea>
-        </div>
-        <div class="full">
-          <label>Comments International+Foreign</label>
-          <textarea class="input"></textarea>
-        </div>
-
-      </form>
-    </div>
+    <form id="dynForm" class="form" autocomplete="off"></form>
   </div>
 </div>
+<div id="toast" class="toast">Saved</div>
 
 <script>
-/* أدوات صغيرة */
-const $ = (sel,root=document)=>root.querySelector(sel);
-const $$ = (sel,root=document)=>Array.from(root.querySelectorAll(sel));
-const hide = (el)=>el.classList.add('hidden');
-const show = (el)=>el.classList.remove('hidden');
-const byField = (name)=>document.querySelector(`[data-field="${name}"]`);
+// ===== Supabase config =====
+const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
 
-/* —— Control 2 toggle —— */
-$('#toggleControl2').addEventListener('click', ()=>{
-  ['Control2ID','Control2Start','Control2End'].forEach(f=>{
-    const el = byField(f);
-    el.classList.toggle('hidden');
+// ===== Helpers =====
+const DATE_FMT = 'DD-MM-YYYY';
+const TIME_FMT = 'HH:mm';
+
+function normalizeDigits(s){
+  if(s == null) return s;
+  const map = {
+    '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+    '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+  };
+  return String(s).replace(/[٠-٩]/g, ch => map[ch] ?? ch);
+}
+
+function toDDMMYYYY(s){
+  s = normalizeDigits(s);
+  if(!s) return '';
+  if(/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    const y = s.slice(0,4), m = s.slice(5,7), d = s.slice(8,10);
+    return d + '-' + m + '-' + y;
+  }
+  return s;
+}
+
+function to24h(t){
+  t = normalizeDigits(t);
+  const m = String(t||'').match(/(\d{1,2}):(\d{2})/);
+  if(!m) return '';
+  let hh = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+  let mm = Math.max(0, Math.min(59, parseInt(m[2],10) || 0));
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
+
+function getTodayISO(){
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth()+1).padStart(2,'0');
+  const d = String(today.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + d;
+}
+
+function getTodayLabel(){
+  const today = new Date();
+  return today.toLocaleDateString('en-GB', {
+    day:'2-digit',
+    month:'long',
+    year:'numeric'
   });
-});
+}
 
-/* —— Duty Managers logic —— 
-   - Show All Halls (hide others)
-   - Show Domestic + Int/Foreign (hide All Halls)
-*/
-const dmDom = byField('DM_Domestic_ID');
-const dmIF  = byField('DM_IntFor_ID');
-const dmAll = byField('DM_AllHalls_ID');
+function attachMasks(root){
+  root.querySelectorAll('input[data-mask="time"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2);
+      el.value = v;
+    });
+    el.addEventListener('blur', () => {
+      if(/^(\d{1,2}):(\d{2})$/.test(el.value)) el.value = to24h(el.value);
+    });
+  });
+  root.querySelectorAll('input[data-mask="date"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
+      if(v.length >= 5) v = v.slice(0,2) + '-' + v.slice(2,4) + '-' + v.slice(4);
+      else if(v.length >= 3) v = v.slice(0,2) + '-' + v.slice(2);
+      el.value = v;
+    });
+  });
+}
 
-$('#dmShowAllHalls').addEventListener('click', ()=>{
-  hide(dmDom); hide(dmIF);
-  show(dmAll); // عند إخفاء الحقلين الآخرين يتم إظهار All Halls
-});
+function showToast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (isError ? 'err' : 'ok');
+  el.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    el.style.display = 'none';
+  }, 2800);
+}
 
-$('#dmShowSplit').addEventListener('click', ()=>{
-  show(dmDom); show(dmIF);
-  hide(dmAll);
-});
+// ===== Supabase request =====
+async function insertEmployeeDelay(record){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/shift_report', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(record)
+  });
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(text || ('HTTP ' + res.status));
+  }
+  return await res.json();
+}
 
-/* —— Supervisors logic —— 
-   - Show All Halls (hide others)
-   - Show Domestic + Int/Foreign (hide All Halls)
-*/
-const supDom = byField('Sup_Domestic_ID');
-const supIF  = byField('Sup_IntFor_ID');
-const supAll = byField('Sup_AllHalls_ID');
+// ===== Dynamic form =====
+const COLUMN_MAP = {
+  Date: 'Date',
+  Shift: 'Shift',
+  Department: 'Department',
+  Control1ID: 'Control 1 ID',
+  Control1Name: 'Control 1 Name',
+  Control1StartTime: 'Control 1 Start Time',
+  Control1EndTime: 'Control 1 End Time',
+  Control2ID: 'Control 2 ID',
+  Control2Name: 'Control 2 Name',
+  Control2StartTime: 'Control 2 Start Time',
+  Control2EndTime: 'Control 2 End Time',
+  DutyManagerDomesticID: 'Duty Manager Domestic ID',
+  DutyManagerDomesticName: 'Duty Manager Domestic Name',
+  DutyManagerInternationalForeignID: 'Duty Manager International+Foreign ID',
+  DutyManagerInternationalForeignName: 'Duty Manager International+Foreign Name',
+  DutyManagerAllHallsID: 'Duty Manager All Halls ID',
+  DutyManagerAllHallsName: 'Duty Manager All Halls Name',
+  SupervisorDomesticID: 'Supervisor Domestic ID',
+  SupervisorDomesticName: 'Supervisor Domestic Name',
+  SupervisorInternationalForeignID: 'Supervisor International+Foreign ID',
+  SupervisorInternationalForeignName: 'Supervisor International+Foreign Name',
+  SupervisorAllHallsID: 'Supervisor All Halls ID',
+  SupervisorAllHallsName: 'Supervisor All Halls Name',
+  OnDuty: 'On Duty',
+  NoShow: 'No Show',
+  CarsInService: 'Cars In Service',
+  CarsOutOfService: 'Cars Out Of Service',
+  WirelessDevicesInService: 'Wireless Devices In Service',
+  WirelessDevicesOutOfService: 'Wireless Devices Out Of Service',
+  ArrivalsDomestic: 'Arrivals Domestic',
+  DelayedArrivalsDomestic: 'Delayed Arrivals Domestic',
+  ArrivalsInternationalForeign: 'Arrivals International+Foreign',
+  DelayedArrivalsInternationalForeign: 'Delayed Arrivals International+Foreign',
+  DeparturesDomestic: 'Departures Domestic',
+  DelayedDeparturesDomestic: 'Delayed Departures Domestic',
+  DeparturesInternationalForeign: 'Departures International+Foreign',
+  DelayedDeparturesInternationalForeign: 'Delayed Departures International+Foreign',
+  CommentsDomestic: 'Comments Domestic',
+  CommentsInternationalForeign: 'Comments International+Foreign',
+  CommentsAllHalls: 'Comments All Halls'
+};
 
-$('#supShowAllHalls').addEventListener('click', ()=>{
-  hide(supDom); hide(supIF);
-  show(supAll); // عند إخفاء الحقلين الآخرين يتم إظهار All Halls
-});
+function boot(formDef){
+  document.title = formDef.title;
+  document.getElementById('pageTitle').textContent = '📋 ' + formDef.title;
+  document.getElementById('formTitle').textContent = formDef.title;
+  document.getElementById('formDesc').textContent = formDef.description || '';
 
-$('#supShowSplit').addEventListener('click', ()=>{
-  show(supDom); show(supIF);
-  hide(supAll);
-});
+  const dyn = document.getElementById('dynForm');
+  dyn.innerHTML = '';
 
-/* أزرار أعلى النموذج */
-$('#clearBtn').addEventListener('click', ()=>{
-  const form = $('#form');
-  form.reset?.();
-  // ارجاع الوضع الافتراضي: Control2 مخفي، Duty/Sup على وضع Split
-  ['Control2ID','Control2Start','Control2End'].forEach(f=>hide(byField(f)));
-  show(dmDom); show(dmIF); hide(dmAll);
-  show(supDom); show(supIF); hide(supAll);
-  // ارجاع التمرير لأعلى
-  $('.form-wrapper').scrollTop = 0;
-});
+  formDef.fields.forEach(f => {
+    const w = document.createElement('div');
+    if(f.type === 'textarea') w.className = 'full';
+    const id = formDef.id + '_' + f.name;
+    const reqAttr = f.required ? 'required' : '';
+    let c = '';
 
-$('#submitBtn').addEventListener('click', ()=>{
-  // هنا تضع منطق الإرسال الخاص بك (Power Automate إلخ)
-  alert('Saved ✓');
-});
+    if(f.type === 'select'){
+      c = `<select id="${id}" ${reqAttr}>${(f.options||[]).map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
+    } else if(f.type === 'textarea'){
+      c = `<textarea id="${id}" ${reqAttr}></textarea>`;
+    } else if(f.type === 'time'){
+      c = `<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" ${reqAttr}/>`;
+    } else if(f.type === 'date'){
+      if(f.name === 'Date'){
+        const label = getTodayLabel();
+        c = `<input id="${id}" type="text" class="mono" value="${label}" readonly aria-readonly="true"/>`;
+      } else {
+        c = `<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" ${reqAttr}/>`;
+      }
+    } else if(f.type === 'number'){
+      c = `<input id="${id}" type="number" step="any" ${reqAttr}/>`;
+    } else {
+      c = `<input id="${id}" type="text" ${reqAttr}/>`;
+    }
+
+    w.innerHTML = `<label for="${id}">${f.label || f.name}${f.required ? ' *' : ''}</label>` + c;
+    dyn.appendChild(w);
+  });
+
+  attachMasks(dyn);
+
+  document.getElementById('clearBtn').onclick = () => {
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      if(f.name === 'Date'){
+        el.value = getTodayLabel();
+      } else if(f.type === 'select'){
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
+      }
+      el.style.borderColor = 'var(--ring)';
+    });
+  };
+
+  document.getElementById('submitBtn').onclick = async () => {
+    const payload = {};
+    let ok = true;
+    const todayISO = getTodayISO();
+    const nowISO = new Date().toISOString();
+
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      let v = (el.value || '').trim();
+      v = normalizeDigits(v);
+
+      if(f.name === 'Date'){
+        v = todayISO; // تاريخ اليوم فقط
+      } else if(f.type === 'date'){
+        v = toDDMMYYYY(v);
+      } else if(f.type === 'time'){
+        v = to24h(v);
+      }
+
+      if(f.required && !v){
+        el.style.borderColor = 'crimson';
+        ok = false;
+      } else {
+        el.style.borderColor = 'var(--ring)';
+      }
+
+      const columnName = COLUMN_MAP[f.name];
+      if(columnName){
+        const numericFields = [
+          'EmployeeID',
+          'Control1ID','Control2ID',
+          'DutyManagerDomesticID','DutyManagerInternationalForeignID',
+          'SupervisorDomesticID','SupervisorInternationalForeignID',
+          'OnDuty','NoShow',
+          'CarsInService','CarsOutOfService',
+          'WirelessDevicesInService','WirelessDevicesOutOfService',
+          'ArrivalsDomestic','DelayedArrivalsDomestic',
+          'DeparturesDomestic','DelayedDeparturesDomestic',
+          'DeparturesInternationalForeign','DelayedDeparturesInternationalForeign'
+        ];
+        if(numericFields.includes(f.name) && v){
+          const n = parseInt(v, 10);
+          payload[columnName] = Number.isFinite(n) ? n : null;
+        } else if(f.name === 'Date'){
+          payload[columnName] = v; // YYYY-MM-DD
+        } else {
+          payload[columnName] = v || null;
+        }
+      }
+    });
+
+    if(!ok){
+      showToast('الرجاء تعبئة الحقول المطلوبة بشكل صحيح', true);
+      return;
+    }
+
+    // Title + meta
+    const title = Date.now();
+    payload['Title'] = title;
+    payload['Item Type'] = 'Form';
+    payload['Path'] = '/shift_report';
+    payload['Last Update'] = nowISO;
+
+    try{
+      await insertEmployeeDelay(payload);
+      showToast('تم الحفظ بنجاح ✓', false);
+      document.getElementById('clearBtn').click();
+    }catch(err){
+      console.error(err);
+      showToast('خطأ في الحفظ: ' + (err.message || 'Failed'), true);
+    }
+  };
+}
+
+// ===== Form Definition =====
+const FORM_DEF = {
+  id: 'shift_report',
+  title: 'Shift Report',
+  description: 'Shift report for the TCC and related halls.',
+  fields: [
+    {name:'Date',label:'Date',type:'date',required:true},
+    {name:'Shift',label:'Shift',type:'select',options:['Shift A','Shift B','Shift C'],required:true},
+    {name:'Department',label:'Department',type:'select',options:['TCC','FIC Saudia','FIC Nas','LC Saudia','LC Foreign'],required:true},
+
+    {name:'Control1ID',label:'Control 1 ID',type:'text'},
+    {name:'Control1Name',label:'Control 1 Name',type:'text'},
+    {name:'Control1StartTime',label:'Control 1 Start Time',type:'time'},
+    {name:'Control1EndTime',label:'Control 1 End Time',type:'time'},
+
+    {name:'Control2ID',label:'Control 2 ID',type:'text'},
+    {name:'Control2Name',label:'Control 2 Name',type:'text'},
+    {name:'Control2StartTime',label:'Control 2 Start Time',type:'time'},
+    {name:'Control2EndTime',label:'Control 2 End Time',type:'time'},
+
+    {name:'DutyManagerDomesticID',label:'Duty Manager Domestic ID',type:'text'},
+    {name:'DutyManagerDomesticName',label:'Duty Manager Domestic Name',type:'text'},
+    {name:'DutyManagerInternationalForeignID',label:'Duty Manager International+Foreign ID',type:'text'},
+    {name:'DutyManagerInternationalForeignName',label:'Duty Manager International+Foreign Name',type:'text'},
+    {name:'DutyManagerAllHallsID',label:'Duty Manager All Halls ID',type:'text'},
+    {name:'DutyManagerAllHallsName',label:'Duty Manager All Halls Name',type:'text'},
+
+    {name:'SupervisorDomesticID',label:'Supervisor Domestic ID',type:'text'},
+    {name:'SupervisorDomesticName',label:'Supervisor Domestic Name',type:'text'},
+    {name:'SupervisorInternationalForeignID',label:'Supervisor International+Foreign ID',type:'text'},
+    {name:'SupervisorInternationalForeignName',label:'Supervisor International+Foreign Name',type:'text'},
+    {name:'SupervisorAllHallsID',label:'Supervisor All Halls ID',type:'text'},
+    {name:'SupervisorAllHallsName',label:'Supervisor All Halls Name',type:'text'},
+
+    {name:'OnDuty',label:'On Duty',type:'number'},
+    {name:'NoShow',label:'No Show',type:'number'},
+    {name:'CarsInService',label:'Cars In Service',type:'number'},
+    {name:'CarsOutOfService',label:'Cars Out Of Service',type:'number'},
+    {name:'WirelessDevicesInService',label:'Wireless Devices In Service',type:'number'},
+    {name:'WirelessDevicesOutOfService',label:'Wireless Devices Out Of Service',type:'number'},
+
+    {name:'ArrivalsDomestic',label:'Arrivals Domestic',type:'number'},
+    {name:'DelayedArrivalsDomestic',label:'Delayed Arrivals Domestic',type:'number'},
+    {name:'ArrivalsInternationalForeign',label:'Arrivals International+Foreign',type:'text'},
+    {name:'DelayedArrivalsInternationalForeign',label:'Delayed Arrivals International+Foreign',type:'text'},
+    {name:'DeparturesDomestic',label:'Departures Domestic',type:'number'},
+    {name:'DelayedDeparturesDomestic',label:'Delayed Departures Domestic',type:'number'},
+    {name:'DeparturesInternationalForeign',label:'Departures International+Foreign',type:'number'},
+    {name:'DelayedDeparturesInternationalForeign',label:'Delayed Departures International+Foreign',type:'number'},
+
+    {name:'CommentsDomestic',label:'Comments Domestic',type:'textarea',class:'full'},
+    {name:'CommentsInternationalForeign',label:'Comments International+Foreign',type:'textarea',class:'full'},
+    {name:'CommentsAllHalls',label:'Comments All Halls',type:'textarea',class:'full'}
+  ]
+};
+
+boot(FORM_DEF);
 </script>
 </body>
 </html>
