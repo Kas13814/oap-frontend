@@ -1,39 +1,56 @@
-
 <!DOCTYPE html>
 <html lang="en-GB" dir="ltr">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Employee sick leave</title>
+<title>Employee Delay</title>
 
-<!-- Boot: theme sync with Home.html / index.html (theme + sgs_theme fallback) -->
+<!-- Boot: الثيم موحد مع index.html -->
 <script>
 (function(){
   try{
-    var KEY='pref-theme', LEGACY='sgs_theme';
+    var KEY = 'theme';
+    var LEGACIES = ['pref-theme','sgs_theme','tcc_theme'];
+
     function resolveSystem(){
-      return (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     }
+
+    function readTheme(){
+      var t = localStorage.getItem(KEY);
+      if(!t){
+        for(var i=0;i<LEGACIES.length && !t;i++) {
+          t = localStorage.getItem(LEGACIES[i]);
+        }
+      }
+      return t || 'light';
+    }
+
     function applyTheme(v){
-      var t = v || localStorage.getItem(KEY) || localStorage.getItem(LEGACY) || 'light';
-      if (t === 'system') t = resolveSystem();
+      var t = v || readTheme();
+      if(t === 'system') t = resolveSystem();
       document.documentElement.setAttribute('data-theme', t);
     }
-    applyTheme(); // before CSS load to avoid flash
+
+    applyTheme();
+
     window.addEventListener('storage', function(e){
-      if (e.key === KEY || e.key === LEGACY) applyTheme(e.newValue);
+      if(e.key === KEY || LEGACIES.indexOf(e.key) !== -1){
+        applyTheme(e.newValue);
+      }
     });
-  }catch(e){}
+  }catch(err){}
 })();
 </script>
 
 <style>
 :root{
   --bg:#F6F4F1; --card:#FAFAFA; --text:#0F1220; --muted:#6B7280;
-  --brand:#22D3A6; --accent:#6D28D9;
-  --ring:#E8E8E8;
+  --brand:#22D3A6; --accent:#6D28D9; --ring:#E8E8E8;
   --shadow:0 10px 30px rgba(2,8,23,.12); --radius:22px;
 }
+
+/* Dark theme */
 [data-theme="dark"]{
   --bg:#0B0B0C;
   --card:#111213;
@@ -46,8 +63,7 @@
 }
 
 *{box-sizing:border-box}
-html,body{height:100%}
-html,body{overflow:hidden}
+html,body{height:100%;overflow:hidden}
 
 body{
   margin:0;
@@ -60,408 +76,356 @@ body{
 }
 
 .container{max-width:1120px;margin:32px auto;padding:0 16px}
-
 .header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
-.title{font-size:18px;font-weight:700}
-.actions{display:flex;gap:10px}
+.title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header .actions{display:flex;gap:8px;align-items:center}
+
 .btn{
-  display:inline-flex;gap:8px;align-items:center;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
   border:1px solid var(--ring);
-  background:var(--card); color:var(--text);
-  padding:10px 14px; border-radius:12px;
-  cursor:pointer; text-decoration:none;
+  background:var(--card);
+  color:var(--text);
+  padding:9px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  text-decoration:none;
+  font-size:13px;
+  transition:
+    background-color .15s ease,
+    box-shadow .15s ease,
+    transform .12s ease;
 }
-.btn svg{width:18px;height:18px;fill:currentColor}
-.btn.primary{background:var(--brand);color:#fff;border-color:transparent}
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  border-color:transparent;
+}
+.btn-ghost{
+  background:transparent;
+}
+.btn:hover{
+  background-color:rgba(15,23,42,0.06);
+  box-shadow:0 2px 6px rgba(15,23,42,0.18);
+  transform:translateY(-1px);
+}
+.btn:active{
+  transform:translateY(0);
+  box-shadow:none;
+}
 
 .panel{
-  background:var(--card);border:1px solid var(--ring);
-  border-radius:var(--radius);box-shadow:var(--shadow);padding:18px
+  background:var(--card);
+  border:1px solid var(--ring);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
 }
-
 .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
-.toolbar .left{display:flex;flex-direction:column;gap:2px}
-.toolbar .right{display:flex;gap:8px;align-items:center;justify-content:flex-end}
-#formTitle{display:none;font-weight:700;font-size:16px}
-#formDesc{color:var(--muted);font-size:12px}
-
+.toolbar-actions{display:flex;gap:8px;align-items:center}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form .full{grid-column:1/-1}
 label{display:block;color:var(--muted);font-size:12px;margin:7px 0 6px}
 input,select,textarea{
-  width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--ring);
-  outline:none;background:var(--card);color:var(--text)
+  width:100%; padding:10px 12px; border-radius:12px;
+  border:1px solid var(--ring); outline:none;
+  background:var(--card); color:var(--text);
 }
-textarea{min-height:90px;resize:vertical}
+textarea{min-height:90px; resize:vertical}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.3px}
 
-input:focus,select:focus,textarea:focus{
-  border-color:var(--brand);
-  box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
+input:focus, select:focus, textarea:focus{
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
 }
 
 .toast{
-  position:fixed;right:16px;bottom:16px;background:#111827;color:#F9FAFB;
-  padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);display:none
+  position:fixed; right:16px; bottom:16px; background:#111827; color:#F9FAFB;
+  padding:12px 14px; border-radius:12px; box-shadow:var(--shadow); display:none;
 }
 .toast.ok{background:linear-gradient(135deg,#16A34A,#22D3A6)}
 .toast.err{background:linear-gradient(135deg,#EF4444,#F14668)}
 
-.header .actions .btn{
-  transition: background-color .15s ease, box-shadow .15s ease, transform .12s ease;
-}
-.header .actions .btn:hover{
-  background-color: rgba(15,23,42,0.06);
-  box-shadow: 0 2px 6px rgba(15,23,42,0.18);
-  transform: translateY(-1px);
-}
-
-.toolbar .right .btn{
-  min-width: 110px;
-  text-align: center;
-  transition: background-color .15s ease, box-shadow .15s ease, transform .12s ease;
-}
-.toolbar .right .btn:hover{
-  background-color: rgba(15,23,42,0.06);
-  box-shadow: 0 2px 6px rgba(15,23,42,0.18);
-  transform: translateY(-1px);
-}
-
-/* Extra padding for selects so arrow is not glued to the border */
-.form-row select{
-  padding-right: 2.2rem;
-}
-
-
-.form-actions .btn{
-  text-align:center;
-}
-
-
-#submitBtn:hover span{
-  color:#000000;
-}
-
+#formTitle{font-weight:700;font-size:16px}
+#formDesc{color:var(--muted);font-size:12px}
 </style>
-<script src="/auth.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <div class="title" id="pageTitle">📋 Employee sick leave</div>
+    <div class="title" id="pageTitle">📋 Employee Sick Leave</div>
     <div class="actions">
-      <a href="../Navigation panel.html" class="btn" title="Back" aria-label="Back">
-        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        <span>Back</span>
-      </a>
-      <a href="../index.html" class="btn" title="Home" aria-label="Home">
-        <svg viewBox="0 0 24 24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3z"/></svg>
-        <span>Home</span>
-      </a>
+      <a href="Navigation panel.html" class="btn btn-ghost" title="Back" aria-label="Back">⟵ Back</a>
+      <a href="index.html" class="btn btn-ghost" title="Home" aria-label="Home">🏠</a>
     </div>
   </div>
-
   <div class="panel">
     <div class="toolbar">
-      <div class="left">
+      <div>
         <div id="formTitle"></div>
         <div id="formDesc"></div>
       </div>
-      <div class="right">
-        <button id="clearBtn" class="btn" type="button">Clear</button>
-        <button id="submitBtn" class="btn primary" type="button">Submit</button>
+      <div class="toolbar-actions">
+        <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+        <button id="submitBtn" class="btn btn-primary" type="button">Submit</button>
       </div>
     </div>
-    <form id="dynForm" class="form"></form>
+    <form id="dynForm" class="form" autocomplete="off"></form>
   </div>
 </div>
 <div id="toast" class="toast">Saved</div>
 
 <script>
-/* === Supabase config (from user) === */
+// ===== Supabase config =====
 const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
 
-/* Helpers */
-const DATE_FMT='DD-MM-YYYY',TIME_FMT='HH:mm';
-
-function ensureSupabaseConfig(){
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY){
-    throw new Error("Supabase configuration is missing.");
-  }
-}
+// ===== Helpers =====
+const DATE_FMT = 'DD-MM-YYYY';
+const TIME_FMT = 'HH:mm';
 
 function normalizeDigits(s){
-  if(!s) return s;
-  const ar='٠١٢٣٤٥٦٧٨٩';
-  return String(s).replace(/[٠-٩]/g,ch=>String(ar.indexOf(ch)));
+  if(s == null) return s;
+  const map = {
+    '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+    '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+  };
+  return String(s).replace(/[٠-٩]/g, ch => map[ch] ?? ch);
 }
 
-/* keep existing DD-MM-YYYY helper (for display) */
 function toDDMMYYYY(s){
   s = normalizeDigits(s);
   if(!s) return '';
   if(/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
   if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
-    const y=s.slice(0,4),m=s.slice(5,7),d=s.slice(8,10);
-    return `${d}-${m}-${y}`;
+    const y = s.slice(0,4), m = s.slice(5,7), d = s.slice(8,10);
+    return d + '-' + m + '-' + y;
   }
   return s;
 }
 
-/* convert DD-MM-YYYY to YYYY-MM-DD for Supabase date fields */
-function ddmmyyyyToIso(s){
-  s = normalizeDigits(s || "");
-  const m = s.match(/^([0-2]\d|3[01])-(0\d|1[0-2])-(\d{4})$/);
-  if(!m) return null;
-  const d = m[1], mo = m[2], y = m[3];
-  return `${y}-${mo}-${d}`;
-}
-
 function to24h(t){
-  t=normalizeDigits(t);
-  const m=String(t||'').match(/(\d{1,2}):(\d{2})/);
-  if(!m)return'';
-  let hh=Math.max(0,Math.min(23,parseInt(m[1],10)||0));
-  const mm=m[2];
-  return String(hh).padStart(2,'0')+':'+mm;
+  t = normalizeDigits(t);
+  const m = String(t||'').match(/(\d{1,2}):(\d{2})/);
+  if(!m) return '';
+  let hh = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+  let mm = Math.max(0, Math.min(59, parseInt(m[2],10) || 0));
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
 }
 
-function showToast(msg,isErr=false){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.toggle('ok',!isErr);
-  t.classList.toggle('err',isErr);
-  t.style.display='block';
-  setTimeout(()=>t.style.display='none',2200);
+function getTodayISO(){
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth()+1).padStart(2,'0');
+  const d = String(today.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + d;
+}
+
+function getTodayLabel(){
+  const today = new Date();
+  return today.toLocaleDateString('en-GB', {
+    day:'2-digit',
+    month:'long',
+    year:'numeric'
+  });
 }
 
 function attachMasks(root){
-  root.querySelectorAll('input[data-mask="time"]').forEach(el=>{
-    el.addEventListener('input',()=>{
-      let v=normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
-      if(v.length>=3)v=v.slice(0,2)+':'+v.slice(2);
-      el.value=v;
+  root.querySelectorAll('input[data-mask="time"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2);
+      el.value = v;
     });
-    el.addEventListener('blur',()=>{
-      if(/^(\d{1,2}):(\d{2})$/.test(el.value))el.value=to24h(el.value);
-    })
+    el.addEventListener('blur', () => {
+      if(/^(\d{1,2}):(\d{2})$/.test(el.value)) el.value = to24h(el.value);
+    });
   });
-  root.querySelectorAll('input[data-mask="date"]').forEach(el=>{
-    el.addEventListener('input',()=>{
-      let v=normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
-      if(v.length>=5)v=v.slice(0,2)+'-'+v.slice(2,4)+'-'+v.slice(4);
-      else if(v.length>=3)v=v.slice(0,2)+'-'+v.slice(2);
-      el.value=v;
+  root.querySelectorAll('input[data-mask="date"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
+      if(v.length >= 5) v = v.slice(0,2) + '-' + v.slice(2,4) + '-' + v.slice(4);
+      else if(v.length >= 3) v = v.slice(0,2) + '-' + v.slice(2);
+      el.value = v;
     });
   });
 }
 
-/* fetch Employee Name from employee_master_db using Employee ID */
-async function fetchEmployeeNameById(employeeId){
-  ensureSupabaseConfig();
-  const baseUrl = SUPABASE_URL.replace(/\/$/,"");
-  const endpoint = baseUrl + "/rest/v1/employee_master_db"
-    + "?Employee%20ID=eq." + encodeURIComponent(employeeId)
-    + "&select=" + encodeURIComponent('Employee Name');
-
-  const response = await fetch(endpoint,{
-    method:"GET",
-    headers:{
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY
-    }
-  });
-
-  const data = await response.json().catch(()=>null);
-
-  if(!response.ok){
-    const msg = (data && (data.message || JSON.stringify(data))) || response.statusText;
-    throw new Error("Failed to fetch employee name from employee_master_db: " + msg);
-  }
-  if(!Array.isArray(data) || data.length === 0){
-    return null; // not found
-  }
-  const row = data[0];
-  const name = row && row["Employee Name"] ? row["Employee Name"] : null;
-  return name;
+function showToast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (isError ? 'err' : 'ok');
+  el.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    el.style.display = 'none';
+  }, 2800);
 }
 
-/* insert row into public.employee_sick_leave */
-async function insertSickLeaveRecord(payload){
-  ensureSupabaseConfig();
-  const endpoint = SUPABASE_URL.replace(/\/$/,"") + "/rest/v1/employee_sick_leave";
-
-  const response = await fetch(endpoint,{
-    method:"POST",
+// ===== Supabase request =====
+async function insertEmployeeDelay(record){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/employee_sick_leave', {
+    method:'POST',
     headers:{
-      "Content-Type":"application/json",
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization":"Bearer " + SUPABASE_ANON_KEY,
-      "Prefer":"return=representation"
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Prefer': 'return=representation'
     },
-    body: JSON.stringify([payload])
+    body: JSON.stringify(record)
   });
-
-  const data = await response.json().catch(()=>null);
-
-  if(!response.ok){
-    const msg = (data && (data.message || JSON.stringify(data))) || response.statusText;
-    throw new Error("Insert into Supabase failed: " + msg);
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(text || ('HTTP ' + res.status));
   }
-  return data;
+  return await res.json();
 }
+
+// ===== Dynamic form =====
+const COLUMN_MAP = {
+  Date: 'Date',
+  Shift: 'Shift',
+  Department: 'Department',
+  SickLeaveStartDate: 'Sick leave start date',
+  SickLeaveEndDate: 'Sick leave end date',
+  EmployeeID: 'Employee ID'
+};
 
 function boot(formDef){
-  document.title=formDef.title;
-  document.getElementById('pageTitle').textContent=formDef.title;
-  document.getElementById('formTitle').textContent=formDef.title;
-  document.getElementById('formDesc').textContent=formDef.description||'';
-  const dyn=document.getElementById('dynForm');dyn.innerHTML='';
-  formDef.fields.forEach(f=>{
-    const w=document.createElement('div');
-    if(f.type==='textarea')w.className='full';
-    const id=formDef.id+'_'+f.name;
-    const req=f.required?'required':'';
-    let c='';
-    if(f.type==='select'){
-      c=`<select id="${id}" ${req}><option value="" selected disabled hidden></option>${(f.options||[]).map(v=>`<option>${v}</option>`).join('')}</select>`;
-    }
-    else if(f.type==='textarea'){c=`<textarea id="${id}" ${req}></textarea>`}
-    else if(f.type==='time'){c=`<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" pattern="^([01]\d|2[0-3]):[0-5]\d$" ${req}/>`}
-    else if(f.type==='date'){
-      if(f.name==="Date"){
-        c=`<input id="${id}" type="text" class="mono" readonly ${req}/>`;
-      }else{
-        c=`<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" pattern="^([0-2]\d|3[01])-(0\d|1[0-2])-\d{4}$" ${req}/>`;
+  document.title = formDef.title;
+  document.getElementById('pageTitle').textContent = '📋 ' + formDef.title;
+  document.getElementById('formTitle').textContent = formDef.title;
+  document.getElementById('formDesc').textContent = formDef.description || '';
+
+  const dyn = document.getElementById('dynForm');
+  dyn.innerHTML = '';
+
+  formDef.fields.forEach(f => {
+    const w = document.createElement('div');
+    if(f.type === 'textarea') w.className = 'full';
+    const id = formDef.id + '_' + f.name;
+    const reqAttr = f.required ? 'required' : '';
+    let c = '';
+
+    if(f.type === 'select'){
+      c = `<select id="${id}" ${reqAttr}>${(f.options||[]).map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
+    } else if(f.type === 'textarea'){
+      c = `<textarea id="${id}" ${reqAttr}></textarea>`;
+    } else if(f.type === 'time'){
+      c = `<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" ${reqAttr}/>`;
+    } else if(f.type === 'date'){
+      if(f.name === 'Date'){
+        const label = getTodayLabel();
+        c = `<input id="${id}" type="text" class="mono" value="${label}" readonly aria-readonly="true"/>`;
+      } else {
+        c = `<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" ${reqAttr}/>`;
       }
+    } else if(f.type === 'number'){
+      c = `<input id="${id}" type="number" step="any" ${reqAttr}/>`;
+    } else {
+      c = `<input id="${id}" type="text" ${reqAttr}/>`;
     }
-    else if(f.type==='number'){c=`<input id="${id}" type="number" step="any" ${req}/>`}
-    else{c=`<input id="${id}" type="text" ${req}/>`}
-    w.innerHTML=`<label for="${id}">${f.label||f.name}${f.required?' *':''}</label>${c}`;
+
+    w.innerHTML = `<label for="${id}">${f.label || f.name}${f.required ? ' *' : ''}</label>` + c;
     dyn.appendChild(w);
   });
+
   attachMasks(dyn);
 
-  const dateEl = document.getElementById(formDef.id + "_Date");
-  function fillTodayDisplayDate(){
-    if(!dateEl) return;
-    const today = new Date();
-    const dd = String(today.getDate()).padStart(2,'0');
-    const monthName = today.toLocaleString('en-GB',{month:'long'});
-    const yyyy = today.getFullYear();
-    dateEl.value = `${dd} ${monthName} ${yyyy}`;
-  }
-  fillTodayDisplayDate();
-
-  document.getElementById('clearBtn').onclick=()=>{
-    document.getElementById('dynForm').reset?.();
-    fillTodayDisplayDate();
+  document.getElementById('clearBtn').onclick = () => {
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      if(f.name === 'Date'){
+        el.value = getTodayLabel();
+      } else if(f.type === 'select'){
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
+      }
+      el.style.borderColor = 'var(--ring)';
+    });
   };
 
-  document.getElementById('submitBtn').onclick=async()=>{
-    const payload={};let ok=true;
-    formDef.fields.forEach(f=>{
-      const el=document.getElementById(formDef.id+'_'+f.name);
-      let v=(el.value||'').trim();
-      v=normalizeDigits(v);
-      if(f.type==='date')v=toDDMMYYYY(v);
-      if(f.type==='time')v=to24h(v);
-      if(f.required&&!v){
-        el.style.borderColor='crimson';
-        ok=false;
-      } else if(el.hasAttribute('pattern')&&v){
-        const rx=new RegExp(el.getAttribute('pattern'));
-        if(!rx.test(v)){
-          el.style.borderColor='crimson';
-          ok=false;
-        }else{
-          el.style.borderColor='var(--ring)';
-        }
-      } else {
-        el.style.borderColor='var(--ring)';
+  document.getElementById('submitBtn').onclick = async () => {
+    const payload = {};
+    let ok = true;
+    const todayISO = getTodayISO();
+    const nowISO = new Date().toISOString();
+
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      let v = (el.value || '').trim();
+      v = normalizeDigits(v);
+
+      if(f.name === 'Date'){
+        v = todayISO; // تاريخ اليوم فقط
+      } else if(f.type === 'date'){
+        v = toDDMMYYYY(v);
+      } else if(f.type === 'time'){
+        v = to24h(v);
       }
-      payload[f.name]=v;
+
+      if(f.required && !v){
+        el.style.borderColor = 'crimson';
+        ok = false;
+      } else {
+        el.style.borderColor = 'var(--ring)';
+      }
+
+      const columnName = COLUMN_MAP[f.name];
+      if(columnName){
+        if(f.name === 'EmployeeID' && v){
+          const n = parseInt(v, 10);
+          payload[columnName] = Number.isFinite(n) ? n : null;
+        } else if(f.name === 'Date'){
+          payload[columnName] = v; // YYYY-MM-DD
+        } else if(f.name === 'SickLeaveStartDate' || f.name === 'SickLeaveEndDate'){
+          const iso = toISOFromDDMMYYYY(v);
+          payload[columnName] = iso || null;
+        } else {
+          payload[columnName] = v || null;
+        }
+      }
     });
 
     if(!ok){
-      showToast('Please fill/format required fields (HH:mm, DD-MM-YYYY)',true);
+      showToast('الرجاء تعبئة الحقول المطلوبة بشكل صحيح', true);
       return;
     }
 
+    // Title + meta
+    const title = Date.now();
+    payload['Title'] = title;
+    payload['Item Type'] = 'Form';
+    payload['Path'] = '/employee_sick_leave';
+    payload['Last Update'] = nowISO;
+
     try{
-      /* Build final payload for Supabase */
-      const titleValue = Date.now(); // hidden Title bigint
-
-      const dateDD = payload["Date"]; // display only
-      const startDD = payload["SickLeaveStartDate"];
-      const endDD = payload["SickLeaveEndDate"];
-      const empIdStr = payload["EmployeeID"];
-
-      /* Date is always today in ISO (record date); start/end from DD-MM-YYYY */
-      const todayObj = new Date();
-      const isoDate = todayObj.toISOString().slice(0,10);
-      const isoStart = startDD ? ddmmyyyyToIso(startDD) : null;
-      const isoEnd = endDD ? ddmmyyyyToIso(endDD) : null;
-
-      if (!empIdStr){
-        throw new Error('"Employee ID" is required.');
-      }
-
-      const empIdNum = Number(empIdStr);
-      if (!Number.isFinite(empIdNum)){
-        throw new Error('"Employee ID" must be a valid number.');
-      }
-
-      if (isoStart && isoEnd && isoEnd < isoStart){
-        throw new Error('Sick leave end date must be greater than or equal to start date.');
-      }
-
-      /* fetch employee name from employee_master_db */
-      const employeeName = await fetchEmployeeNameById(empIdNum);
-      if (!employeeName){
-        throw new Error('Employee ID not found in employee_master_db. Please check the ID.');
-      }
-
-      const supabasePayload = {
-        "Title": titleValue,
-        "Date": isoDate,
-        "Shift": payload["Shift"] || null,
-        "Department": payload["Department"] || null,
-        "Sick leave start date": isoStart,
-        "Sick leave end date": isoEnd,
-        "Employee ID": empIdNum,
-        "Employee Name": employeeName
-      };
-
-      await insertSickLeaveRecord(supabasePayload);
-
-      showToast('Saved successfully ✓');
-      document.getElementById('dynForm').reset?.();
-      if (dateEl){
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2,'0');
-        const mm = String(today.getMonth()+1).padStart(2,'0');
-        const yyyy = today.getFullYear();
-        dateEl.value = `${dd}-${mm}-${yyyy}`;
-      }
-    }catch(e){
-      showToast('Error: ' + (e.message || 'Failed'), true);
+      await insertEmployeeDelay(payload);
+      showToast('تم الحفظ بنجاح ✓', false);
+      document.getElementById('clearBtn').click();
+    }catch(err){
+      console.error(err);
+      showToast('خطأ في الحفظ: ' + (err.message || 'Failed'), true);
     }
   };
 }
 
-const FORM_DEF={
-  id:"employee_sick_leave",
-  title:"Employee sick leave",
-  description:"Sick leave periods per employee.",
-  fields:[
-    {name:"Date",label:"Date",type:"date",required:true},
-    {name:"Shift",label:"Shift",type:"select",required:true,options:["Shift A","Shift B","Shift C"]},
-    {name:"Department",label:"Department",type:"select",required:true,options:["TCC","FIC Saudia","FIC Nas","LC Saudia","LC Foreign"]},
-    {name:"SickLeaveStartDate",label:"Sick leave start date",type:"date",required:true},
-    {name:"EmployeeID",label:"Employee ID",type:"text",required:true},
-    {name:"SickLeaveEndDate",label:"Sick leave end date",type:"date"}
+// ===== Form Definition =====
+const FORM_DEF = {
+  id: 'employee_sick_leave',
+  title: 'Employee Sick Leave',
+  description: 'Employee sick leave records',
+  fields: [
+    {name:'Date',label:'Date',type:'date',required:true},
+    {name:'Shift',label:'Shift',type:'select',options:['Shift A','Shift B','Shift C'],required:true},
+    {name:'Department',label:'Department',type:'select',options:['TCC','FIC Saudia','FIC Nas','LC Saudia','LC Foreign'],required:true},
+    {name:'SickLeaveStartDate',label:'Sick leave start date',type:'date',required:true},
+    {name:'SickLeaveEndDate',label:'Sick leave end date',type:'date',required:false},
+    {name:'EmployeeID',label:'Employee ID',type:'text',required:true}
   ]
 };
 
