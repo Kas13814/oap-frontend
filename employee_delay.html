@@ -5,24 +5,41 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Employee Delay</title>
 
-<!-- Boot: طبّق الثيم مبكراً وتزامن مع Home.html (theme + sgs_theme fallback) -->
+<!-- Boot: الثيم موحد مع index.html -->
 <script>
 (function(){
   try{
-    var KEY='theme', LEGACY='sgs_theme';
+    var KEY = 'theme';
+    var LEGACIES = ['pref-theme','sgs_theme','tcc_theme'];
+
     function resolveSystem(){
-      return (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
     }
+
+    function readTheme(){
+      var t = localStorage.getItem(KEY);
+      if(!t){
+        for(var i=0;i<LEGACIES.length && !t;i++) {
+          t = localStorage.getItem(LEGACIES[i]);
+        }
+      }
+      return t || 'light';
+    }
+
     function applyTheme(v){
-      var t = v || localStorage.getItem(KEY) || localStorage.getItem(LEGACY) || 'light';
-      if (t === 'system') t = resolveSystem();
+      var t = v || readTheme();
+      if(t === 'system') t = resolveSystem();
       document.documentElement.setAttribute('data-theme', t);
     }
-    applyTheme(); // تطبيق فوري قبل تحميل الـ CSS
+
+    applyTheme();
+
     window.addEventListener('storage', function(e){
-      if (e.key === KEY || e.key === LEGACY) applyTheme(e.newValue);
+      if(e.key === KEY || LEGACIES.indexOf(e.key) !== -1){
+        applyTheme(e.newValue);
+      }
     });
-  }catch(e){}
+  }catch(err){}
 })();
 </script>
 
@@ -33,24 +50,20 @@
   --shadow:0 10px 30px rgba(2,8,23,.12); --radius:22px;
 }
 
-/* === Dark theme (متوافق مع طلبك، والحقول لا تختفي) === */
+/* Dark theme */
 [data-theme="dark"]{
-  --bg:#0B0B0C;     /* خلفية الصفحة */
-  --card:#111213;   /* خلفية اللوحة والحقول */
+  --bg:#0B0B0C;
+  --card:#111213;
   --text:#E5E7EB;
   --muted:#94A3B8;
   --brand:#22D3A6;
   --accent:#8B5CF6;
-  --ring:#2A2B2C;   /* حدود أوضح حتى لا تختفي الحقول */
+  --ring:#2A2B2C;
   --shadow:0 10px 30px rgba(0,0,0,.35);
 }
-*{box-sizing:border-box}
-html,body{height:100%}
-/* تثبيت الصفحة (منع التمرير) */
-html,body{overflow:hidden}
 
 *{box-sizing:border-box}
-html,body{height:100%}
+html,body{height:100%;overflow:hidden}
 
 body{
   margin:0;
@@ -62,20 +75,46 @@ body{
   font:14px/1.5 "Segoe UI",Inter,Roboto,system-ui,-apple-system,sans-serif;
 }
 
-/* لو تريد خلفية صافية في الغامق فقط:
-// html[data-theme="dark"] body{ background: var(--bg); }
-*/
-
 .container{max-width:1120px;margin:32px auto;padding:0 16px}
 .header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
-.title{font-size:18px;font-weight:700}
+.title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header .actions{display:flex;gap:8px;align-items:center}
+
 .btn{
-  display:inline-flex;gap:8px;align-items:center;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
   border:1px solid var(--ring);
-  background:var(--card); color:var(--text);
-  padding:10px 14px; border-radius:12px;
-  cursor:pointer; text-decoration:none;
+  background:var(--card);
+  color:var(--text);
+  padding:9px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  text-decoration:none;
+  font-size:13px;
+  transition:
+    background-color .15s ease,
+    box-shadow .15s ease,
+    transform .12s ease;
 }
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  border-color:transparent;
+}
+.btn-ghost{
+  background:transparent;
+}
+.btn:hover{
+  background-color:rgba(15,23,42,0.06);
+  box-shadow:0 2px 6px rgba(15,23,42,0.18);
+  transform:translateY(-1px);
+}
+.btn:active{
+  transform:translateY(0);
+  box-shadow:none;
+}
+
 .panel{
   background:var(--card);
   border:1px solid var(--ring);
@@ -84,6 +123,7 @@ body{
   padding:18px;
 }
 .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar-actions{display:flex;gap:8px;align-items:center}
 .form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form .full{grid-column:1/-1}
 label{display:block;color:var(--muted);font-size:12px;margin:7px 0 6px}
@@ -95,7 +135,6 @@ input,select,textarea{
 textarea{min-height:90px; resize:vertical}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.3px}
 
-/* لمسة تركيز واضحة */
 input:focus, select:focus, textarea:focus{
   border-color: var(--brand);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
@@ -108,175 +147,287 @@ input:focus, select:focus, textarea:focus{
 .toast.ok{background:linear-gradient(135deg,#16A34A,#22D3A6)}
 .toast.err{background:linear-gradient(135deg,#EF4444,#F14668)}
 
-#formTitle{display:none;}
-
-#formDesc{display:none;}
+#formTitle{font-weight:700;font-size:16px}
+#formDesc{color:var(--muted);font-size:12px}
 </style>
-<script src="/auth.js"></script>
 </head>
 <body>
 <div class="container">
   <div class="header">
     <div class="title" id="pageTitle">📋 Employee Delay</div>
-    <a href="../index.html" class="btn">⟵ Back</a>
+    <div class="actions">
+      <a href="Navigation panel.html" class="btn btn-ghost" title="Back" aria-label="Back">⟵ Back</a>
+      <a href="index.html" class="btn btn-ghost" title="Home" aria-label="Home">🏠</a>
+    </div>
   </div>
   <div class="panel">
     <div class="toolbar">
       <div>
-        <div id="formTitle" style="font-weight:700;font-size:16px"></div>
-        <div id="formDesc" style="color:var(--muted);font-size:12px"></div>
+        <div id="formTitle"></div>
+        <div id="formDesc"></div>
       </div>
-      <div><button id="submitBtn" class="btn" style="background:var(--brand);color:#fff;border-color:transparent">Submit</button></div>
+      <div class="toolbar-actions">
+        <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+        <button id="submitBtn" class="btn btn-primary" type="button">Submit</button>
+      </div>
     </div>
-    <form id="dynForm" class="form"></form>
+    <form id="dynForm" class="form" autocomplete="off"></form>
   </div>
 </div>
 <div id="toast" class="toast">Saved</div>
 
 <script>
-/* ===== Helpers ===== */
-const API_KEY="", DEFAULT_FLOW_URL="";
-const DATE_FMT='DD-MM-YYYY', TIME_FMT='HH:mm';
+// ===== Supabase config =====
+const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
 
-function normalizeDigits(s){ if(!s) return s; const ar='٠١٢٣٤٥٦٧٨٩'; return String(s).replace(/[٠-٩]/g, ch => String(ar.indexOf(ch))) }
+// ===== Helpers =====
+const DATE_FMT = 'DD-MM-YYYY';
+const TIME_FMT = 'HH:mm';
+
+function normalizeDigits(s){
+  if(s == null) return s;
+  const map = {
+    '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+    '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+  };
+  return String(s).replace(/[٠-٩]/g, ch => map[ch] ?? ch);
+}
+
 function toDDMMYYYY(s){
-  s=normalizeDigits(s); if(!s) return '';
+  s = normalizeDigits(s);
+  if(!s) return '';
   if(/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
-  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){ const y=s.slice(0,4),m=s.slice(5,7),d=s.slice(8,10); return `${d}-${m}-${y}` }
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    const y = s.slice(0,4), m = s.slice(5,7), d = s.slice(8,10);
+    return d + '-' + m + '-' + y;
+  }
   return s;
 }
+
 function to24h(t){
-  t=normalizeDigits(t);
-  const m=String(t||'').match(/(\d{1,2}):(\d{2})/);
+  t = normalizeDigits(t);
+  const m = String(t||'').match(/(\d{1,2}):(\d{2})/);
   if(!m) return '';
-  let hh=Math.max(0,Math.min(23,parseInt(m[1],10)||0));
-  const mm=m[2];
-  return String(hh).padStart(2,'0')+':'+mm;
+  let hh = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+  let mm = Math.max(0, Math.min(59, parseInt(m[2],10) || 0));
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
 }
-function showToast(msg,isErr=false){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.toggle('ok',!isErr);
-  t.classList.toggle('err',isErr);
-  t.style.display='block';
-  setTimeout(()=>t.style.display='none',2200);
+
+function getTodayISO(){
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth()+1).padStart(2,'0');
+  const d = String(today.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + d;
 }
+
+function getTodayLabel(){
+  const today = new Date();
+  return today.toLocaleDateString('en-GB', {
+    day:'2-digit',
+    month:'long',
+    year:'numeric'
+  });
+}
+
 function attachMasks(root){
-  root.querySelectorAll('input[data-mask="time"]').forEach(el=>{
-    el.addEventListener('input',()=>{
-      let v=normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
-      if(v.length>=3) v=v.slice(0,2)+':'+v.slice(2);
-      el.value=v;
+  root.querySelectorAll('input[data-mask="time"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2);
+      el.value = v;
     });
-    el.addEventListener('blur',()=>{
-      if(/^(\d{1,2}):(\d{2})$/.test(el.value)) el.value=to24h(el.value);
+    el.addEventListener('blur', () => {
+      if(/^(\d{1,2}):(\d{2})$/.test(el.value)) el.value = to24h(el.value);
     });
   });
-  root.querySelectorAll('input[data-mask="date"]').forEach(el=>{
-    el.addEventListener('input',()=>{
-      let v=normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
-      if(v.length>=5) v=v.slice(0,2)+'-'+v.slice(2,4)+'-'+v.slice(4);
-      else if(v.length>=3) v=v.slice(0,2)+'-'+v.slice(2);
-      el.value=v;
+  root.querySelectorAll('input[data-mask="date"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
+      if(v.length >= 5) v = v.slice(0,2) + '-' + v.slice(2,4) + '-' + v.slice(4);
+      else if(v.length >= 3) v = v.slice(0,2) + '-' + v.slice(2);
+      el.value = v;
     });
   });
 }
 
-/* ===== Dynamic form ===== */
+function showToast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (isError ? 'err' : 'ok');
+  el.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    el.style.display = 'none';
+  }, 2800);
+}
+
+// ===== Supabase request =====
+async function insertEmployeeDelay(record){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/employee_delay', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(record)
+  });
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(text || ('HTTP ' + res.status));
+  }
+  return await res.json();
+}
+
+// ===== Dynamic form =====
+const COLUMN_MAP = {
+  Date: 'Date',
+  Shift: 'Shift',
+  Department: 'Department',
+  EmployeeID: 'Employee ID',
+  DelayMinutes: 'Delay Minutes',
+  ReasonForDelay: 'Reason for Delay',
+  DelayNotificationStatus: 'Delay Notification Status'
+};
+
 function boot(formDef){
-  document.title=formDef.title;
-  document.getElementById('pageTitle').textContent=formDef.title;
-  document.getElementById('formTitle').textContent=formDef.title;
-  document.getElementById('formDesc').textContent=formDef.description||'';
+  document.title = formDef.title;
+  document.getElementById('pageTitle').textContent = '📋 ' + formDef.title;
+  document.getElementById('formTitle').textContent = formDef.title;
+  document.getElementById('formDesc').textContent = formDef.description || '';
 
-  const dyn=document.getElementById('dynForm');
-  dyn.innerHTML='';
+  const dyn = document.getElementById('dynForm');
+  dyn.innerHTML = '';
 
-  formDef.fields.forEach(f=>{
-    const w=document.createElement('div');
-    if(f.type==='textarea') w.className='full';
-    const id=formDef.id+'_'+f.name;
-    const req=f.required?'required':'';
-    let c='';
-    if(f.type==='select'){
-      c=`<select id="${id}" ${req}>${(f.options||[]).map(v=>`<option>${v}</option>`).join('')}</select>`;
-    }else if(f.type==='textarea'){
-      c=`<textarea id="${id}" ${req}></textarea>`;
-    }else if(f.type==='time'){
-      c=`<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" pattern="^([01]\\d|2[0-3]):[0-5]\\d$" ${req}/>`;
-    }else if(f.type==='date'){
-      c=`<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" pattern="^([0-2]\\d|3[01])-(0\\d|1[0-2])-\\d{4}$" ${req}/>`;
-    }else if(f.type==='number'){
-      c=`<input id="${id}" type="number" step="any" ${req}/>`;
-    }else{
-      c=`<input id="${id}" type="text" ${req}/>`;
+  formDef.fields.forEach(f => {
+    const w = document.createElement('div');
+    if(f.type === 'textarea') w.className = 'full';
+    const id = formDef.id + '_' + f.name;
+    const reqAttr = f.required ? 'required' : '';
+    let c = '';
+
+    if(f.type === 'select'){
+      c = `<select id="${id}" ${reqAttr}>${(f.options||[]).map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
+    } else if(f.type === 'textarea'){
+      c = `<textarea id="${id}" ${reqAttr}></textarea>`;
+    } else if(f.type === 'time'){
+      c = `<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" ${reqAttr}/>`;
+    } else if(f.type === 'date'){
+      if(f.name === 'Date'){
+        const label = getTodayLabel();
+        c = `<input id="${id}" type="text" class="mono" value="${label}" readonly aria-readonly="true"/>`;
+      } else {
+        c = `<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" ${reqAttr}/>`;
+      }
+    } else if(f.type === 'number'){
+      c = `<input id="${id}" type="number" step="any" ${reqAttr}/>`;
+    } else {
+      c = `<input id="${id}" type="text" ${reqAttr}/>`;
     }
-    w.innerHTML=`<label for="${id}">${f.label||f.name}${f.required?' *':''}</label>${c}`;
+
+    w.innerHTML = `<label for="${id}">${f.label || f.name}${f.required ? ' *' : ''}</label>` + c;
     dyn.appendChild(w);
   });
 
   attachMasks(dyn);
 
-  document.getElementById('submitBtn').onclick=async()=>{
-    const payload={}; let ok=true;
-    formDef.fields.forEach(f=>{
-      const el=document.getElementById(formDef.id+'_'+f.name);
-      let v=(el.value||'').trim();
-      v=normalizeDigits(v);
-      if(f.type==='date') v=toDDMMYYYY(v);
-      if(f.type==='time') v=to24h(v);
-
-      if(f.required && !v){ el.style.borderColor='crimson'; ok=false; }
-      else if(el.hasAttribute('pattern') && v){
-        const rx=new RegExp(el.getAttribute('pattern'));
-        if(!rx.test(v)){ el.style.borderColor='crimson'; ok=false; }
-        else el.style.borderColor='var(--ring)';
-      }else{
-        el.style.borderColor='var(--ring)';
+  document.getElementById('clearBtn').onclick = () => {
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      if(f.name === 'Date'){
+        el.value = getTodayLabel();
+      } else if(f.type === 'select'){
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
       }
-      payload[f.name]=v;
+      el.style.borderColor = 'var(--ring)';
+    });
+  };
+
+  document.getElementById('submitBtn').onclick = async () => {
+    const payload = {};
+    let ok = true;
+    const todayISO = getTodayISO();
+    const nowISO = new Date().toISOString();
+
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      let v = (el.value || '').trim();
+      v = normalizeDigits(v);
+
+      if(f.name === 'Date'){
+        v = todayISO; // تاريخ اليوم فقط
+      } else if(f.type === 'date'){
+        v = toDDMMYYYY(v);
+      } else if(f.type === 'time'){
+        v = to24h(v);
+      }
+
+      if(f.required && !v){
+        el.style.borderColor = 'crimson';
+        ok = false;
+      } else {
+        el.style.borderColor = 'var(--ring)';
+      }
+
+      const columnName = COLUMN_MAP[f.name];
+      if(columnName){
+        if(f.name === 'EmployeeID' && v){
+          const n = parseInt(v, 10);
+          payload[columnName] = Number.isFinite(n) ? n : null;
+        } else if(f.name === 'Date'){
+          payload[columnName] = v; // YYYY-MM-DD
+        } else {
+          payload[columnName] = v || null;
+        }
+      }
     });
 
-    if(!ok){ showToast('Please fill/format required fields (HH:mm, DD-MM-YYYY)', true); return; }
-
-    if(!formDef.flowUrl){
-      showToast('Saved (local only)', false);
-      dyn.reset?.();
+    if(!ok){
+      showToast('الرجاء تعبئة الحقول المطلوبة بشكل صحيح', true);
       return;
     }
 
+    // Title + meta
+    const title = Date.now();
+    payload['Title'] = title;
+    payload['Item Type'] = 'Form';
+    payload['Path'] = '/employee_delay';
+    payload['Last Update'] = nowISO;
+
     try{
-      const r=await fetch(formDef.flowUrl||DEFAULT_FLOW_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':API_KEY},
-        body:JSON.stringify({formId:formDef.id,submittedAt:new Date().toISOString(),data:payload})
-      });
-      if(!r.ok) throw new Error(await r.text()||('HTTP '+r.status));
-      showToast('Saved successfully ✓');
-      dyn.reset?.();
-    }catch(e){
-      showToast('Error: '+(e.message||'Failed'), true);
+      await insertEmployeeDelay(payload);
+      showToast('تم الحفظ بنجاح ✓', false);
+      document.getElementById('clearBtn').click();
+    }catch(err){
+      console.error(err);
+      showToast('خطأ في الحفظ: ' + (err.message || 'Failed'), true);
     }
   };
 }
 
-/* ===== Form Definition ===== */
-const FORM_DEF={
-  id:"employee_delay",
-  title:"Employee Delay",
-  description:"Employee late arrivals.",
-  flowUrl:"",
-  fields:[
-    {name:"Date",label:"Date",type:"date",required:true},
-    {name:"Shift",label:"Shift",type:"select",options:["Shift A","Shift B","Shift C"]},
-    {name:"Department",label:"Department",type:"select",options:["TCC","FIC Saudia","FIC Nas","LC Saudia","LC Foreign"]},
-    {name:"EmployeeID",label:"Employee ID",type:"text",required:true},
-    {name:"EmployeeName",label:"Employee Name",type:"text"},
-    {name:"DelayMinutes",label:"Delay Minutes",type:"number"},
-    {name:"ReasonForDelay",label:"Reason for Delay",type:"textarea"},
-    {name:"DelayNotificationStatus",label:"Delay Notification Status",type:"text"}
+// ===== Form Definition =====
+const FORM_DEF = {
+  id: 'employee_delay',
+  title: 'Employee Delay',
+  description: 'Employee late arrivals.',
+  fields: [
+    {name:'Date',label:'Date',type:'date',required:true},
+    {name:'Shift',label:'Shift',type:'select',options:['Shift A','Shift B','Shift C'],required:true},
+    {name:'Department',label:'Department',type:'select',options:['TCC','FIC Saudia','FIC Nas','LC Saudia','LC Foreign'],required:true},
+    {name:'EmployeeID',label:'Employee ID',type:'text',required:true},
+    {name:'DelayMinutes',label:'Delay Minutes',type:'number'},
+    {name:'ReasonForDelay',label:'Reason for Delay',type:'textarea'},
+    {name:'DelayNotificationStatus',label:'Delay Notification Status',type:'text'}
   ]
 };
+
 boot(FORM_DEF);
 </script>
 </body>
