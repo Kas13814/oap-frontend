@@ -58,11 +58,15 @@
   position:relative;
 }
 .shell-layout .shell{
-  flex:0 0 980px;
+  flex:1 1 auto;
   position:relative;
   z-index:1;
   box-shadow:18px 0 40px rgba(15,23,42,0.35);
 }
+body.nxs-drawer-open .shell-layout .shell{
+  flex:0 0 980px;
+}
+
 
 
 
