@@ -1288,12 +1288,11 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ===== OAP Stable Gate (NO Supabase Auth dependency) =====
-   هذه الصفحة لا تُفتح إلا بعد تسجيل دخول ناجح من Login.html
-   نعتمد على جلسة النظام التي تُنشأ في Login.html:
-   - sessionStorage: oap_session_v1  (مُفضل)
-   - أو localStorage: isLoggedIn=1  (احتياطي)
+/* ===== OAP Home Gate (الصفحة الرئيسية عامة، بدون تحويل إجباري) =====
+   - الجذر https://oap-kas.com/ يبقى صفحة تعريفية عامة.
+   - نستخدم الجلسة فقط لإظهار / إخفاء روابط لوحة التحكم داخل /app/.
 */
+
 (function () {
   function safeJsonParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
 
@@ -1302,7 +1301,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
     if (ss) {
       const obj = safeJsonParse(ss);
       if (obj && obj.expires_at && Date.now() > Number(obj.expires_at)) {
-        // انتهت الجلسة
+        // انتهاء الجلسة → تنظيف فقط، بدون أي تحويل
         sessionStorage.removeItem("oap_session_v1");
         sessionStorage.removeItem("oap_home_gate_v1");
         sessionStorage.removeItem("isLoggedIn");
@@ -1311,7 +1310,7 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
       }
       return obj || { v: 1 };
     }
-    // fallback (أضعف): isLoggedIn
+    // fallback بسيط
     if (localStorage.getItem("isLoggedIn") === "1" || sessionStorage.getItem("isLoggedIn") === "1") {
       return { v: 1, role: localStorage.getItem("oap_role") || null };
     }
@@ -1319,51 +1318,28 @@ via integrated data and interactive dashboards that link OPERATIONS to results.
   }
 
   const sess = getOapSession();
+
+  // عناصر داخل الهيدر مرتبطة بالتطبيق /app/
+  const elDashboard = document.getElementById("openDashboard");
+  const elAI        = document.getElementById("navAI");
+  const elSettings  = document.getElementById("openSettingsDrawer") || document.getElementById("navSettings");
+  const topBadge    = document.getElementById("topUserBadge");
+
   if (!sess) {
-    // تحويل فوري وثابت
-    window.location.replace("Login.html");
+    // زائر عادي: الصفحة تبقى عامة، فقط نخفي روابط التطبيق المحمية
+    if (elDashboard) elDashboard.style.display = "none";
+    if (elAI)        elAI.style.display        = "none";
+    if (elSettings)  elSettings.style.display  = "none";
+    if (topBadge)    topBadge.style.display    = "none";
     return;
   }
 
-  // ===== Menu permissions (minimal + stable) =====
-  // NOTE: طالما تسجيل الدخول لا يستخدم Supabase Auth، لا يمكن استخدام auth.uid() هنا.
-  // لذلك نستخدم role القادمة من Login RPC (مثال: Administrator / Manager / Supervisor / Employee).
-  const role = (sess && sess.role) ? String(sess.role) : (localStorage.getItem("oap_role") || "");
-
-  const elDashboard = document.getElementById("openDashboard");
-  const elSettings  = document.getElementById("navSettings");
-  const elAI        = document.getElementById("navAI");
-
-  function hide(el){ if(el) el.style.display = "none"; }
-  function show(el){ if(el) el.style.display = ""; }
-
-  // افتراضيًا نخفي
-  hide(elDashboard); hide(elSettings); hide(elAI);
-
-  // صلاحيات الإظهار (مشدّدة + مرنة):
-  // 1) إذا role تُشير لأدمن (إنجليزي/عربي) → مسموح
-  // 2) أو إذا Employee ID ضمن قائمة المالك/الأدمن → مسموح
-  const normRole = String(role || "").trim().toLowerCase();
-
-  const adminRoleKeywords = [
-    "administrator", "admin", "owner", "super admin",
-    "مدير", "مدير النظام", "ادمن", "أدمن", "مشرف", "مسؤول"
-  ];
-
-  // ضع أرقام الموظفين المسموح لهم كأدمن هنا (المالك + أي أدمن آخر)
-  // مثال: const adminEmployeeIds = ["15013814", "15000654"];
-  const adminEmployeeIds = ["15013814"];
-
-  const employeeId = (sess && sess.employee_id) ? String(sess.employee_id) : (localStorage.getItem("oap_employee_id") || "");
-
-  const isAdminByRole = adminRoleKeywords.some(k => normRole.includes(k));
-  const isAdminById   = adminEmployeeIds.includes(String(employeeId).trim());
-
-  if (isAdminByRole || isAdminById) {
-    show(elDashboard); show(elSettings); show(elAI);
-  }
+  // يوجد جلسة → يمكن لاحقاً تخصيص الهيدر حسب الدور إن احتجت
+  // مثال:
+  // if (sess.role !== 'admin' && elSettings) elSettings.style.display = "none";
 })();
 </script>
+
 
 
 <script>
