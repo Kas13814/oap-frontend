@@ -9,8 +9,15 @@
 (function(){
   try{
     const root = document.documentElement;
-    const KEY = 'pref-theme';
-    const saved = localStorage.getItem(KEY);
+    const KEY = 'theme';
+    const LEGACIES = ['pref-theme'];
+    let saved = localStorage.getItem(KEY);
+    if(!saved){
+      for(const k of LEGACIES){
+        const v = localStorage.getItem(k);
+        if(v){ saved = v; break; }
+      }
+    }
     const initial = saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
     root.setAttribute('data-theme', initial);
   }catch(e){}
@@ -23,7 +30,8 @@
 (function(){
   const { createClient } = supabase;
   const sb = createClient(window.NXS_SUPABASE_URL, window.NXS_SUPABASE_ANON_KEY);
-  const KEY = 'pref-theme';
+  const KEY = 'theme';
+  const LEGACIES = ['pref-theme'];
   const root = document.documentElement;
 
   async function requireAuth(){
@@ -41,7 +49,7 @@
 
   function bindThemeSync(){
     window.addEventListener('storage', function(e){
-      if(e.key === KEY && e.newValue){
+      if((e.key === KEY || LEGACIES.includes(e.key)) && e.newValue){
         try{
           root.setAttribute('data-theme', e.newValue);
         }catch(_){}
@@ -95,7 +103,7 @@ body{
 .header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
 .brand{display:flex;gap:12px;align-items:center}
 .logo{
-  width:38px;height:38px;border-radius:12px;
+  width:38px;height:38px;border-radius:50%;
   background:linear-gradient(135deg,var(--brand),var(--accent));
   box-shadow:var(--shadow);display:grid;place-items:center
 }
@@ -119,7 +127,7 @@ body{
 @media(max-width:1024px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.grid{grid-template-columns:1fr}}
 
-.card{
+.card{text-decoration:none;color:var(--text);
   display:flex;flex-direction:column;
   background:var(--card);
   border:1px solid var(--ring);
@@ -164,10 +172,14 @@ html[data-theme="dark"] .card h3{
   <div class="header">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24"><path d="M10.18 9l-6.36 2.12a1 1 0 00.32 1.95l6.49-.33-2.62 6.16a1 1 0 001.72 1.02l4.38-5.2 4.86-.25a1 1 0 00.2-1.98l-4.1-1.09 2.13-5.34a1 1 0 00-1.76-.9l-4.09 5.24-2.37-.4z"/></svg>
+        <svg viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+          <circle cx="12" cy="12" r="4" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+          <path d="M12 3v3M21 12h-3M12 21v-3M6 12H3" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </div>
       <div>
-        <div class="title">SGS Operations – Forms Portal</div>
+        <div class="title">OAP – Forms Portal</div>
         <div class="subtitle">Unified, responsive data-entry for TCC & Operations</div>
       </div>
     </div>
@@ -211,9 +223,21 @@ const FORMS=[
 ];
 
 const grid=document.getElementById('grid');
+const ROUTES = {
+  employee_master:'employee_master.html',
+  employee_overtime:'employee_overtime.html',
+  tcc_flight_delay:'tcc_flight_delay.html',
+  operational_event:'operational_event.html',
+  sgs_flight_delay:'sgs_flight_delay.html',
+  employee_sick_leave:'Employee_sick_leave.html',
+  employee_absence:'employee_absence.html',
+  employee_delay:'employee_delay.html',
+  shift_report:'shift_report.html'
+};
 FORMS.forEach(f=>{
   const a=document.createElement('a');
-  a.href='Forms file/' + f.id + '.html';
+  const href = ROUTES[f.id] || (f.id + '.html');
+  a.href = href;
   a.className='card';
   a.innerHTML=`<span class="tile-icon">${ICON[f.icon]||ICON.report}</span><h3>${f.title}</h3><p>${f.desc||''}</p>`;
   grid.appendChild(a);
