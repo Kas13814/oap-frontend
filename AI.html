@@ -51,6 +51,30 @@
       width: 100%;
       position: relative;
     }
+.shell-layout{
+  display:flex;
+  min-height:100vh;
+  width:100%;
+  position:relative;
+}
+.shell-layout .shell{
+  flex:0 0 980px;
+  position:relative;
+  z-index:1;
+  box-shadow:18px 0 40px rgba(15,23,42,0.35);
+}
+
+
+
+body.nxs-drawer-open .shell{
+  margin-right: min(420px, 80vw);
+}
+@media (max-width: 900px){
+  body.nxs-drawer-open .shell{
+    margin-right: 0;
+  }
+}
+
 
     /* Keep sidebar on the left even when language is Arabic (RTL) */
     body[dir="rtl"] .shell {
@@ -1611,9 +1635,164 @@ aside{
   top: 12px !important;
 }
 
+
+/* === NXS Dashboard Drawer (OAP) === */
+
+.nxs-drawer{
+  flex:1 1 420px;
+  max-width:none;
+  background:var(--bg-main);
+  color:var(--text-main);
+  box-shadow:none;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  border-left:1px solid var(--border-subtle);
+}
+
+
+
+.nxs-drawer.nxs-animate{
+  transition: transform 0.28s ease-out;
+}
+.nxs-drawer.nxs-slide-in{
+  transform: translateX(0);
+}
+.nxs-drawer.nxs-slide-out{
+  transform: translateX(100%);
+}
+
+body.light-theme .nxs-drawer{
+  background:rgba(248,250,252,0.99);
+  color:#020617;
+  border-left-color:rgba(148,163,184,0.65);
+}
+.nxs-drawer.nxs-expanded{
+  width:min(840px,80vw);
+}
+.nxs-hidden{display:none!important;}
+.nxs-drawer-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid rgba(148,163,184,0.35);
+}
+.nxs-drawer-title{
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:.03em;
+}
+.nxs-drawer-close{
+  border:none;
+  background:transparent;
+  color:inherit;
+  font-size:18px;
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.nxs-drawer-close:hover{
+  background:rgba(148,163,184,0.25);
+}
+
+.nxs-drawer-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 14px;
+  border-bottom:1px solid rgba(148,163,184,0.35);
+}
+.nxs-drawer-actions{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.nxs-drawer-resize,
+.nxs-drawer-close{
+  border:none;
+  background:transparent;
+  color:inherit;
+  font-size:16px;
+  width:28px;
+  height:28px;
+  border-radius:999px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.nxs-drawer-resize:hover,
+.nxs-drawer-close:hover{
+  background:rgba(148,163,184,0.25);
+}
+body.light-theme .nxs-drawer-resize:hover,
+body.light-theme .nxs-drawer-close:hover{
+  background:rgba(15,23,42,0.06);
+}
+
+.nxs-drawer-body{
+  padding:10px 14px 12px;
+  display:grid;
+  grid-template-columns:minmax(0,2fr) minmax(0,1.2fr);
+  gap:10px;
+  align-items:stretch;
+  overflow:hidden;
+}
+@media (max-width:900px){
+  .nxs-drawer-body{
+    grid-template-columns:minmax(0,1fr);
+    max-height:42vh;
+    overflow-y:auto;
+  }
+}
+.nxs-chart-area{
+  width:100%;
+  height:100%;
+  min-height:220px;
+}
+.nxs-chart-fallback{
+  max-width:100%;
+  height:auto;
+  border-radius:10px;
+  display:block;
+}
+.nxs-table-area{
+  width:100%;
+  max-height:100%;
+  overflow:auto;
+  border-radius:10px;
+  background:rgba(15,23,42,0.35);
+  padding:6px;
+  font-size:12px;
+}
+body.light-theme .nxs-table-area{
+  background:rgba(248,250,252,0.9);
+}
+.nxs-table-area table{
+  width:100%;
+  border-collapse:collapse;
+}
+.nxs-table-area th,
+.nxs-table-area td{
+  border-bottom:1px solid rgba(148,163,184,0.28);
+  padding:4px 6px;
+}
+.nxs-table-area th{
+  font-weight:600;
+  background:rgba(15,23,42,0.14);
+}
+body.light-theme .nxs-table-area th{
+  background:rgba(226,232,240,0.85);
+}
 </style>
 </head>
 <body>
+<div class="shell-layout">
 <div class="shell" id="shell">
   <!-- Sidebar -->
   <aside class="sidebar">
@@ -1827,15 +2006,14 @@ aside{
     </div>
   </main>
 </div>
-
-<input id="fileInput" type="file" multiple style="display:none" />
-
-
-<!-- NXS Inline Dashboard Drawer (hidden by default) -->
 <div id="nxsDashboardDrawer" class="nxs-drawer nxs-hidden">
   <div class="nxs-drawer-header">
     <div class="nxs-drawer-title">لوحة تحكم OAP • التحليلات</div>
-    <button id="nxsDrawerClose" class="nxs-drawer-close" type="button" aria-label="إغلاق لوحة التحكم">×</button>
+    
+    <div class="nxs-drawer-actions">
+      <button id="nxsDrawerResize" class="nxs-drawer-resize" type="button" title="تكبير/تصغير اللوحة">⤢</button>
+      <button id="nxsDrawerClose" class="nxs-drawer-close" type="button" aria-label="إغلاق لوحة التحكم">×</button>
+    </div>
   </div>
   <div class="nxs-drawer-body">
     <div class="nxs-drawer-chart-wrap">
@@ -1845,6 +2023,13 @@ aside{
     <div id="nxsDrawerTable" class="nxs-table-area"></div>
   </div>
 </div>
+</div>
+
+<input id="fileInput" type="file" multiple style="display:none" />
+
+
+<!-- NXS Inline Dashboard Drawer (hidden by default) -->
+
 
 <!-- Toast -->
 <div id="toast" style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);padding:10px 14px;border-radius:12px;background:rgba(0,0,0,0.75);color:#fff;font-size:13px;z-index:250;display:none;max-width:min(520px,calc(100% - 24px));text-align:center;backdrop-filter: blur(6px);"></div>
@@ -1927,7 +2112,13 @@ function nxsEnsureDrawer() {
   if (!closeBtn.__nxsBound) {
     closeBtn.__nxsBound = true;
     closeBtn.addEventListener("click", () => {
-      drawer.classList.add("nxs-hidden");
+      drawer.classList.add("nxs-animate");
+      drawer.classList.remove("nxs-slide-in");
+      drawer.classList.add("nxs-slide-out");
+      setTimeout(() => {
+        drawer.classList.add("nxs-hidden");
+        document.body.classList.remove("nxs-drawer-open");
+      }, 280);
     });
   }
   return { drawer, chartDiv, img, tableDiv };
@@ -1976,6 +2167,12 @@ function nxsRenderAnalyticsFromMeta(meta) {
   }
 
   drawer.classList.remove("nxs-hidden");
+  drawer.classList.add("nxs-animate");
+  drawer.classList.add("nxs-slide-out");
+  void drawer.offsetWidth;
+  drawer.classList.remove("nxs-slide-out");
+  drawer.classList.add("nxs-slide-in");
+  document.body.classList.add("nxs-drawer-open");
   return true;
 }
 
@@ -2000,6 +2197,35 @@ async function sendToNXS(userText) {
   const data = await res.json();
   return data;
 }
+
+// فتح لوحة تحكم OAP من زر الرسم البياني مع حركة انزلاق من اليمين
+function openOapDashboardDrawer(){
+  const ctx = nxsEnsureDrawer();
+  if (!ctx) return;
+  const { drawer } = ctx;
+
+  // تجهيز الحركة
+  drawer.classList.remove("nxs-hidden");
+  drawer.classList.add("nxs-animate");
+  drawer.classList.add("nxs-slide-out");
+  // إجبار إعادة الرسم حتى يتم تفعيل الـ transition
+  void drawer.offsetWidth;
+  drawer.classList.remove("nxs-slide-out");
+  drawer.classList.add("nxs-slide-in");
+  document.body.classList.add("nxs-drawer-open");
+}
+
+// ربط زر الأيقونة 📊 بفتح لوحة الداش بورد
+document.addEventListener("DOMContentLoaded", () => {
+  const dashBtn = document.getElementById("oapDashboardBtn");
+  if (dashBtn && !dashBtn.__nxsBound) {
+    dashBtn.__nxsBound = true;
+    dashBtn.addEventListener("click", () => {
+      openOapDashboardDrawer();
+    });
+  }
+});
+
 const shellEl = document.getElementById("shell");
   const sidebarToggleOpenEl = document.getElementById("sidebarToggleOpen");
   const sidebarToggleCloseEl = document.getElementById("sidebarToggleClose");
@@ -3258,5 +3484,29 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
+<script>
+// === OAP Dashboard Toggle & Close ===
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("oapDashboardBtn");
+  const drawer = document.getElementById("nxsDashboardDrawer");
+  const closeBtn = document.getElementById("nxsDrawerClose");
+  if (btn && drawer) {
+    btn.addEventListener("click", function () {
+      drawer.classList.toggle("nxs-hidden");
+    });
+  }
+  if (closeBtn && drawer) {
+    closeBtn.addEventListener("click", function () {
+      drawer.classList.add("nxs-hidden");
+    }
+  if (resizeBtn && drawer) {
+    resizeBtn.addEventListener("click", function () {
+      drawer.classList.toggle("nxs-expanded");
+    });
+  }
+);
+  }
+});
+</script>
 </body>
 </html>
