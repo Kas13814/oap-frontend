@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OAP — Joining Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --radius-xl: 18px;
+      --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.55);
+      --shadow-chip: 0 10px 30px rgba(15, 23, 42, 0.6);
+      --ease: cubic-bezier(.22,.61,.36,1);
+    }
+
+    /* Dark theme (default look like AI.html dark mode) */
+    [data-theme="dark"] {
+      --bg: #050816;
+      --bg-elevated: #0b1020;
+      --bg-soft: #0f172a;
+      --border-subtle: rgba(148, 163, 184, 0.3);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.18);
+      --accent-strong: #0ea5e9;
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.18);
+      --ink: #e5e7eb;
+      --muted: #9ca3af;
+    }
+
+    /* Light theme to match main index.html palette */
+    [data-theme="light"] {
+      --bg: #f4f2ec;
+      --bg-elevated: #ffffff;
+      --bg-soft: #f3f4f6;
+      --border-subtle: rgba(148, 163, 184, 0.55);
+      --accent: #1f2937;
+      --accent-soft: rgba(31, 41, 55, 0.06);
+      --accent-strong: #111827;
+      --danger: #b91c1c;
+      --danger-soft: rgba(239, 68, 68, 0.08);
+      --ink: #111827;
+      --muted: #6b7280;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(129, 140, 248, 0.20), transparent 60%),
+        radial-gradient(circle at top right, rgba(45, 212, 191, 0.12), transparent 55%),
+        #020617;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px 12px;
+    }
+
+    .shell {
+      max-width: 1180px;
+      width: 100%;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at top, rgba(148, 163, 184, 0.16), transparent 55%) border-box,
+        radial-gradient(circle at bottom, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 1)) padding-box;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      box-shadow: var(--shadow-soft);
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(28px) saturate(140%);
+    }
+
+    @media (max-width: 920px) {
+      body {
+        padding: 16px 8px;
+      }
+      .shell {
+        grid-template-columns: minmax(0, 1fr);
+        border-radius: 22px;
+      }
+      .shell__meta {
+        display: none;
+      }
+    }
+
+    .shell__main {
+      padding: 22px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    @media (min-width: 960px) {
+      .shell__main {
+        padding: 26px 26px 20px;
+      }
+    }
+
+    .shell__meta {
+      padding: 24px 24px 22px 0;
+      display: flex;
+      align-items: stretch;
+      justify-content: flex-end;
+    }
+
+    /* Header */
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .main-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.35), transparent 55%),
+                  radial-gradient(circle at 100% 100%, rgba(129, 140, 248, 0.25), transparent 55%),
+                  #020617;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      display: grid;
+      place-items: center;
+      box-shadow: var(--shadow-chip);
+    }
+
+    .app-logo span {
+      font-size: 18px;
+    }
+
+    .app-title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-title-main {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .app-title-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .main-header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .badge-outline {
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-soft);
+    }
+
+    .badge-outline span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.26);
+    }
+
+    .badge-chip {
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-soft);
+    }
+
+    .badge-chip span.icon {
+      font-size: 13px;
+    }
+
+    /* Controls row */
+    .controls-row {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .control-label {
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .control-select {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-soft);
+      color: var(--ink);
+      padding: 6px 26px 6px 11px;
+      font-size: 12px;
+      outline: none;
+      min-width: 120px;
+      appearance: none;
+      background-image:
+        linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+        linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+      background-position:
+        calc(100% - 16px) 10px,
+        calc(100% - 11px) 10px;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      transition: border-color 0.16s var(--ease), box-shadow 0.16s var(--ease), transform 0.08s;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .btn-sm {
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease), background 0.12s var(--ease), opacity 0.12s;
+      white-space: nowrap;
+      background: var(--bg-soft);
+      color: var(--ink);
+      border: 1px solid rgba(148, 163, 184, 0.6);
+    }
+
+    .btn-sm span.icon {
+      font-size: 12px;
+    }
+
+    .btn-sm:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.78);
+    }
+
+    .btn-sm:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.7);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #020617;
+      border-color: rgba(56, 189, 248, 0.85);
+      box-shadow: 0 12px 36px rgba(56, 189, 248, 0.65);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 18px 46px rgba(56, 189, 248, 0.75);
+    }
+
+    /* Table area */
+    .table-shell {
+      margin-top: 14px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.98));
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.9);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 540px;
+    }
+
+    .table-header-row {
+      padding: 10px 14px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .table-header-row .title {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .table-header-row .title-main {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .table-header-row .title-sub {
+      font-size: 11px;
+    }
+
+    .badge-counter {
+      border-radius: 999px;
+      padding: 2px 9px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--bg-soft);
+      font-size: 11px;
+    }
+
+    .badge-counter span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .table-scroll {
+      flex: 1;
+      overflow: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+    }
+
+    .table-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .table-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .table-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    thead {
+      background: radial-gradient(circle at top, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 1));
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    th, td {
+      padding: 7px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(30, 41, 59, 0.95);
+      white-space: nowrap;
+    }
+
+    th {
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: 11px;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr {
+      background: var(--bg-soft);
+      transition: background 0.12s var(--ease), transform 0.06s;
+    }
+
+    tbody tr:nth-child(2n) {
+      background: var(--bg-soft);
+    }
+
+    tbody tr:hover {
+      background: var(--bg-soft);
+      transform: translateY(-0.5px);
+    }
+
+    td .sub {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .role-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: var(--bg-soft);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .role-pill span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: var(--accent);
+    }
+
+    .actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .chip-status {
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--bg-soft);
+    }
+
+    .chip-status.pending {
+      border-color: rgba(250, 204, 21, 0.9);
+      color: #facc15;
+      background: rgba(113,63,18,0.35);
+    }
+
+    .chip-status.approved {
+      border-color: rgba(34, 197, 94, 0.9);
+      color: #bbf7d0;
+      background: rgba(6, 78, 59, 0.55);
+    }
+
+    .chip-status.rejected {
+      border-color: rgba(248, 113, 113, 0.9);
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.6);
+    }
+
+    .btn-table {
+      border-radius: 999px;
+      border: none;
+      outline: none;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 5px 9px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.12s var(--ease), box-shadow 0.12s var(--ease), background 0.12s var(--ease), opacity 0.12s;
+      white-space: nowrap;
+    }
+
+    .btn-approve {
+      background: rgba(22, 163, 74, 0.95);
+      color: #dcfce7;
+      border: 1px solid rgba(74, 222, 128, 0.9);
+      box-shadow: 0 10px 28px rgba(22, 163, 74, 0.8);
+    }
+
+    .btn-approve:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 38px rgba(22, 163, 74, 0.9);
+    }
+
+    .btn-reject {
+      background: rgba(127, 29, 29, 0.95);
+      color: #fee2e2;
+      border: 1px solid rgba(248, 113, 113, 0.9);
+      box-shadow: 0 10px 28px rgba(127, 29, 29, 0.8);
+    }
+
+    .btn-reject:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 38px rgba(127, 29, 29, 0.9);
+    }
+
+    .empty-state {
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .empty-state strong {
+      color: var(--ink);
+    }
+
+    /* Status bar */
+    .status-bar {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px dashed rgba(148, 163, 184, 0.5);
+      background: var(--bg-soft);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      min-height: 32px;
+    }
+
+    .status-bar span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.9);
+    }
+
+    .status-bar[data-status="ok"] span.dot {
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.3);
+    }
+
+    .status-bar[data-status="error"] span.dot {
+      background: #ef4444;
+      box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.32);
+    }
+
+    .status-bar[data-status="busy"] span.dot {
+      background: #facc15;
+      box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.3);
+    }
+
+    .status-text-strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .status-highlight {
+      color: var(--accent);
+    }
+
+    .status-error {
+      color: #fecaca;
+    }
+
+    .footer-bar {
+      margin-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .footer-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+
+    /* === Light theme overrides for full-page flip (admin) === */
+    [data-theme="light"] body {
+      background:
+        radial-gradient(circle at top left, rgba(15, 23, 42, 0.02), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(15, 23, 42, 0.03), transparent 55%),
+        var(--bg-soft);
+    }
+
+    [data-theme="light"] .shell {
+      background:
+        radial-gradient(circle at top, rgba(148, 163, 184, 0.18), transparent 55%) border-box,
+        linear-gradient(135deg, #ffffff, #f3f4f6) padding-box;
+      border-color: rgba(148, 163, 184, 0.45);
+      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.16);
+    }
+
+    [data-theme="light"] .table-shell {
+      background: #ffffff;
+      border-color: rgba(148, 163, 184, 0.45);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+    }
+
+    [data-theme="light"] thead {
+      background: #f9fafb;
+    }
+
+    [data-theme="light"] tbody tr {
+      background: #ffffff;
+    }
+
+    [data-theme="light"] tbody tr:nth-child(2n) {
+      background: #f9fafb;
+    }
+
+    [data-theme="light"] .status-bar {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(148, 163, 184, 0.6);
+    }
+
+    [data-theme="light"] .badge-outline,
+    [data-theme="light"] .badge-chip,
+    [data-theme="light"] .badge-counter {
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(148, 163, 184, 0.6);
+      color: var(--muted);
+    }
+
+    /* === OAP admin side panel overrides === */
+    body {
+      background: transparent !important;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: stretch;
+      justify-content: stretch;
+      padding: 0;
+    }
+
+    .shell {
+      width: 100%;
+      height: 100vh;
+      border-radius: 24px 0 0 24px;
+      background: var(--bg-elevated);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      backdrop-filter: blur(20px) saturate(140%);
+    }
+
+    .shell__meta {
+      display: none !important;
+    }
+
+    .main-header-right {
+      display: none !important;
+    }
+
+    .app-title-sub {
+      display: none !important;
+    }
+
+    .footer-bar {
+      display: none !important;
+    }
+
+    [data-theme="dark"] .shell {
+      background: #050816;
+    }
+
+    [data-theme="light"] .shell {
+      background: #F2ECE3;
+    }
+  </style>
+<script src="/auth.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <main class="shell__main">
+      <header class="main-header">
+        <div class="main-header-left">
+          <div class="app-logo">
+            <span>NX</span>
+          </div>
+          <div class="app-title">
+            <div class="app-title-main">OAP joining admin</div>
+          </div>
+        </div>
+        <div class="main-header-right">
+          <div class="badge-outline">
+            <span class="dot"></span>
+            <span>Supervisor console</span>
+          </div>
+          <div class="badge-chip">
+            <span class="icon">🧩</span>
+            <span>Supabase RPC + REST</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="controls-row">
+        <div class="control-group">
+          <span class="control-label">Status</span>
+          <select id="statusFilterSelect" class="control-select">
+            <option value="pending">Pending only</option>
+            <option value="all">All statuses</option>
+          </select>
+        </div>
+        <div class="spacer"></div>
+        <button id="refreshBtn" class="btn-sm btn-primary" type="button">
+          <span class="icon">↻</span>
+          <span>Refresh list</span>
+        </button>
+      </div>
+
+      <section class="table-shell">
+        <div class="table-header-row">
+          <div class="title">
+            <div class="title-main">Join requests</div>
+          </div>
+          <div class="badge-counter">
+            <span class="dot"></span>
+            <span id="counterLabel">0 requests</span>
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Employee</th>
+                <th>Requested role</th>
+                <th>Tenant</th>
+                <th>Requested at</th>
+                <th>Status</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTbody">
+              <tr class="empty-row">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <strong>No requests loaded yet.</strong><br />
+                    Click <strong>Refresh list</strong> to load requests.
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="status-bar" id="statusBar" data-status="idle">
+        <span class="dot"></span>
+        <span id="statusText">Ready.</span>
+      </div>
+      <div class="footer-links">
+        <span>Back to:</span>
+        <a href="index.html">Home</a>
+        <span>·</span>
+        <a href="joining.html">Employee joining</a>
+        <span>·</span>
+        <a href="AI.html">AI assistant</a>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const root = document.documentElement;
+      const KEY = 'pref-theme';
+
+      function applyTheme(theme) {
+        if (!theme) return;
+        root.setAttribute('data-theme', theme);
+      }
+
+      const saved = localStorage.getItem(KEY);
+      const initial =
+        saved ||
+        (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark');
+      applyTheme(initial);
+
+      window.addEventListener('storage', function (e) {
+        if (e.key === KEY) {
+          applyTheme(e.newValue);
+        }
+      });
+    })();
+  </script>
+
+  <script src="nxs_config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+// === OAP Joining Admin — secured with Supabase Auth ===
+const SUPABASE_URL = window.NXS_SUPABASE_URL;
+const SUPABASE_ANON_KEY = window.NXS_SUPABASE_ANON_KEY;
+const OAP_EMAIL_SECRET = window.NXS_EMAIL_SECRET || '';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function getSessionJwt() {
+  const { data, error } = await sb.auth.getSession();
+  if (error || !data || !data.session) {
+    throw new Error('Not authenticated');
+  }
+  return data.session.access_token;
+}
+
+async function getCurrentUserProfile() {
+  const { data: userData, error: userError } = await sb.auth.getUser();
+  if (userError || !userData || !userData.user) {
+    throw new Error('Not authenticated');
+  }
+  const user = userData.user;
+  const { data: profile, error: profileError } = await sb
+    .from('users')
+    .select('role, employee_id, full_name')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error('[OAP Admin] profile error', profileError);
+    throw new Error('Failed to load profile');
+  }
+
+  const role = (profile && profile.role) || '';
+  const allowed = ['admin', 'manager', 'supervisor'];
+  if (!allowed.includes(role)) {
+    throw new Error('forbidden');
+  }
+
+  return { user, profile };
+}
+
+function ensureSupabaseConfigured() {
+  if (!SUPABASE_URL) {
+    throw new Error(
+      '[OAP Admin] SUPABASE_URL is not configured. Set window.NXS_SUPABASE_URL in nxs_config.js.'
+    );
+  }
+  if (!SUPABASE_ANON_KEY) {
+    throw new Error(
+      '[OAP Admin] SUPABASE_ANON_KEY is not configured. Set window.NXS_SUPABASE_ANON_KEY in nxs_config.js.'
+    );
+  }
+}
+
+async function apiFetch(path, options = {}) {
+  ensureSupabaseConfigured();
+
+  const headers = options.headers ? { ...options.headers } : {};
+  const jwt = await getSessionJwt();
+
+  headers['apikey'] = SUPABASE_ANON_KEY;
+  headers['Authorization'] = `Bearer ${jwt}`;
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
+
+  const base = SUPABASE_URL.replace(/\/$/, '');
+  const res = await fetch(base + path, {
+    ...options,
+    headers,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error('API error ' + res.status + ': ' + text);
+  }
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// === UI helpers ===
+const statusBar = document.getElementById('statusBar');
+const statusText = document.getElementById('statusText');
+const counterLabel = document.getElementById('counterLabel');
+const statusFilterSelect = document.getElementById('statusFilterSelect');
+const tbody = document.getElementById('requestsTbody');
+
+function setStatus(kind, message) {
+  statusBar.dataset.status = kind;
+  if (kind === 'ok') {
+    statusText.innerHTML =
+      '<span class="status-text-strong">Success:</span> ' + message;
+  } else if (kind === 'error') {
+    statusText.innerHTML =
+      '<span class="status-error">Error:</span> ' + message;
+  } else if (kind === 'busy') {
+    statusText.innerHTML =
+      '<span class="status-highlight">Working…</span> ' + message;
+  } else {
+    statusText.textContent = message;
+  }
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '-';
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    const date = d.toLocaleDateString(undefined, {
+      year: '2-digit',
+      month: 'short',
+      day: '2-digit',
+    });
+    const time = d.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return date + ' · ' + time;
+  } catch (e) {
+    return iso;
+  }
+}
+
+function renderRequests(rows) {
+  tbody.innerHTML = '';
+  if (!rows || !rows.length) {
+    counterLabel.textContent = '0';
+    setStatus('idle', 'No join requests found for this filter.');
+    return;
+  }
+
+  counterLabel.textContent = String(rows.length);
+
+  rows.forEach((row) => {
+    const tr = document.createElement('tr');
+    tr.dataset.requestId = row.join_request_id;
+
+    const status = row.status || 'pending';
+    let statusClass = 'neutral';
+    if (status === 'approved') statusClass = 'approved';
+    else if (status === 'rejected') statusClass = 'rejected';
+
+    tr.innerHTML = `
+      <td>${row.join_request_id}</td>
+      <td>${row.employee_id || '-'}</td>
+      <td>${row.requested_role || '-'}</td>
+      <td>${formatDateTime(row.created_at)}</td>
+      <td>${status}</td>
+      <td>
+        <span class="chip-status ${statusClass}">${status}</span>
+      </td>
+      <td style="text-align:right;">
+        <div class="actions-cell">
+          <button class="btn-table btn-approve" type="button" data-action="approve">
+            <span>Approve</span>
+          </button>
+          <button class="btn-table btn-reject" type="button" data-action="reject">
+            <span>Reject</span>
+          </button>
+        </div>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadRequests() {
+  const tenantId = 1;
+  const showStatus = statusFilterSelect.value || 'pending';
+
+  try {
+    setStatus('busy', 'Loading join_requests from OAP…');
+
+    let query = `/rest/v1/join_requests?tenant_id=eq.${tenantId}&select=*`;
+    if (showStatus === 'pending') {
+      query += '&status=eq.pending';
+    }
+    query += '&order=join_request_id.desc';
+
+    const rows = await apiFetch(query, { method: 'GET' });
+    renderRequests(rows);
+    setStatus('ok', 'Join requests loaded successfully.');
+  } catch (err) {
+    console.error(err);
+    setStatus('error', err.message || 'Failed to load join requests.');
+  }
+}
+
+function getRowFromEvent(e) {
+  const tr = e.target.closest('tr[data-request-id]');
+  if (!tr) return null;
+  const id = parseInt(tr.dataset.requestId, 10) || null;
+  return { tr, id };
+}
+
+async function approveRequest(joinRequestId) {
+  const tenantId = 1;
+
+  try {
+    setStatus('busy', 'Approving join request…');
+
+    await apiFetch('/rest/v1/rpc/nxs_join_approve', {
+      method: 'POST',
+      body: JSON.stringify({
+        join_request_id: joinRequestId,
+        tenant_id: tenantId,
+        secret: OAP_EMAIL_SECRET,
+      }),
+    });
+
+    setStatus(
+      'ok',
+      'Request #' + joinRequestId + ' approved and queued for email.'
+    );
+    await loadRequests();
+  } catch (err) {
+    console.error(err);
+    setStatus(
+      'error',
+      err.message || 'Failed to approve join request.'
+    );
+  }
+}
+
+async function rejectRequest(joinRequestId) {
+  const tenantId = 1;
+  const reason = window.prompt(
+    'Optional: Provide a short reason for rejection (visible to the requester):'
+  );
+
+  try {
+    setStatus('busy', 'Rejecting join request…');
+
+    // Update join_requests status
+    await apiFetch('/rest/v1/join_requests', {
+      method: 'PATCH',
+      body: JSON.stringify({
+        status: 'rejected',
+        reject_reason: reason || null,
+      }),
+      headers: {
+        Prefer: 'return=representation',
+        'Content-Profile': 'public',
+      },
+    });
+
+    // Try to send reject email via outbox
+    // (Email Worker + DB functions will process it)
+    const rows = await apiFetch(
+      `/rest/v1/join_requests?join_request_id=eq.${joinRequestId}&select=*`,
+      { method: 'GET' }
+    );
+
+    const row = Array.isArray(rows) && rows[0] ? rows[0] : null;
+    const emailTo = row && row.email_to;
+
+    if (emailTo) {
+      const fullName = row.full_name || row.username || '';
+      const bodyLines = [
+        fullName ? `Hi ${fullName},` : 'Hi,',
+        '',
+        'Your OAP access request was rejected.',
+      ];
+      if (reason) {
+        bodyLines.push('');
+        bodyLines.push('Reason: ' + reason);
+      }
+      bodyLines.push('');
+      bodyLines.push('— OAP Access');
+
+      try {
+        await apiFetch('/rest/v1/oap_email_outbox', {
+          method: 'POST',
+          headers: { Prefer: 'return=representation' },
+          body: JSON.stringify({
+            tenant_id: row.tenant_id || 1,
+            employee_id: row.employee_id || null,
+            email_to: emailTo,
+            subject: 'OAP — Your access request was rejected',
+            body: bodyLines.join('\n'),
+            message_type: 'join_reject',
+            status: 'pending',
+          }),
+        });
+      } catch (outboxErr) {
+        console.error('Failed to insert reject email into outbox', outboxErr);
+      }
+    }
+
+    setStatus(
+      'ok',
+      'Request #' + joinRequestId + ' rejected and email queued (if possible).'
+    );
+    await loadRequests();
+  } catch (err) {
+    console.error(err);
+    setStatus(
+      'error',
+      err.message || 'Failed to reject join request.'
+    );
+  }
+}
+
+function bindEvents() {
+  const refreshBtn = document.getElementById('refreshBtn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      loadRequests();
+    });
+  }
+
+  if (statusFilterSelect) {
+    statusFilterSelect.addEventListener('change', () => {
+      loadRequests();
+    });
+  }
+
+  tbody.addEventListener('click', (e) => {
+    const rowInfo = getRowFromEvent(e);
+    if (!rowInfo) return;
+    const { id } = rowInfo;
+    if (!id) return;
+
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    if (action === 'approve') {
+      approveRequest(id);
+    } else if (action === 'reject') {
+      rejectRequest(id);
+    }
+  });
+}
+
+async function requireAdminAccess() {
+  try {
+    const { profile } = await getCurrentUserProfile();
+    const nameEl = document.getElementById('adminName');
+    if (nameEl && profile) {
+      const label =
+        profile.full_name ||
+        (profile.employee_id ? 'ID ' + profile.employee_id : '');
+      if (label) {
+        nameEl.textContent = label;
+      }
+    }
+  } catch (err) {
+    console.error('[OAP Admin] access error', err);
+    if (err.message === 'forbidden') {
+      document.body.innerHTML =
+        '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#020617;color:#e5e7eb;font-family:system-ui;">' +
+        '<div style="padding:24px 28px;border-radius:18px;background:rgba(15,23,42,0.96);box-shadow:0 20px 60px rgba(15,23,42,0.85);max-width:460px;text-align:center;">' +
+        '<h1 style="font-size:20px;margin:0 0 12px;">Access restricted</h1>' +
+        '<p style="margin:0 0 16px;font-size:14px;opacity:.9;">You are signed in, but do not have permission to use the joining admin console.</p>' +
+        '<a href="index.html" style="display:inline-block;margin-top:4px;font-size:14px;color:#38bdf8;text-decoration:none;">Back to OAP home</a>' +
+        '</div>' +
+        '</div>';
+    } else {
+      window.location.href = 'Login.html';
+    }
+    throw err;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await requireAdminAccess();
+    bindEvents();
+    setStatus('idle', 'Click Refresh to load pending join requests.');
+  } catch (e) {
+    // handled in requireAdminAccess
+  }
+});
+  </script>
+</body>
+</html>
