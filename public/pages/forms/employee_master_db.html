@@ -1,284 +1,452 @@
-<!doctype html>
-<html lang="ar" dir="rtl">
+<!DOCTYPE html>
+<html lang="en-GB" dir="ltr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>قرار المدير – تحقيق الغياب</title>
-  <style>
-    body{margin:0;background:#0b1220;color:#e5e7eb;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-    .wrap{max-width:720px;margin:32px auto;padding:0 14px}
-    .card{background:linear-gradient(180deg,rgba(30,41,59,.9),rgba(15,23,42,.9));
-      border:1px solid rgba(148,163,184,.18);border-radius:16px;padding:20px 18px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    h1{margin:0 0 10px;font-size:18px}
-    p{margin:8px 0;font-size:14px;line-height:1.7}
-    .small{font-size:12px;color:#9ca3af;margin-top:12px}
-    #state{margin-bottom:8px}
-    .ok,.err{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;background:rgba(148,163,184,.12);color:#cbd5f5}
-    .ok{color:#22c55e}
-    .err{color:#f97373}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Employee Delay</title>
+
+<!-- Boot: الثيم موحد مع index.html -->
+<script>
+(function(){
+  try{
+    var KEY = 'theme';
+    var LEGACIES = ['pref-theme','sgs_theme','tcc_theme'];
+
+    function resolveSystem(){
+      return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
+    function readTheme(){
+      var t = localStorage.getItem(KEY);
+      if(!t){
+        for(var i=0;i<LEGACIES.length && !t;i++) {
+          t = localStorage.getItem(LEGACIES[i]);
+        }
+      }
+      return t || 'light';
+    }
+
+    function applyTheme(v){
+      var t = v || readTheme();
+      if(t === 'system') t = resolveSystem();
+      document.documentElement.setAttribute('data-theme', t);
+    }
+
+    applyTheme();
+
+    window.addEventListener('storage', function(e){
+      if(e.key === KEY || LEGACIES.indexOf(e.key) !== -1){
+        applyTheme(e.newValue);
+      }
+    });
+  }catch(err){}
+})();
+</script>
+
+<style>
+:root{
+  --bg:#F6F4F1; --card:#FAFAFA; --text:#0F1220; --muted:#6B7280;
+  --brand:#22D3A6; --accent:#6D28D9; --ring:#E8E8E8;
+  --shadow:0 10px 30px rgba(2,8,23,.12); --radius:22px;
+}
+
+/* Dark theme */
+[data-theme="dark"]{
+  --bg:#0B0B0C;
+  --card:#111213;
+  --text:#E5E7EB;
+  --muted:#94A3B8;
+  --brand:#22D3A6;
+  --accent:#8B5CF6;
+  --ring:#2A2B2C;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+
+body{
+  margin:0;
+  background:
+    radial-gradient(1200px 800px at 85% -10%, color-mix(in oklab, var(--brand) 20%, transparent), transparent 60%),
+    radial-gradient(1000px 700px at -10% 100%, color-mix(in oklab, var(--brand) 20%, transparent), transparent 55%),
+    var(--bg);
+  color:var(--text);
+  font:14px/1.5 "Segoe UI",Inter,Roboto,system-ui,-apple-system,sans-serif;
+}
+
+.container{max-width:1120px;margin:32px auto;padding:0 16px}
+.header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.header .actions{display:flex;gap:8px;align-items:center}
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--ring);
+  background:var(--card);
+  color:var(--text);
+  padding:9px 14px;
+  border-radius:12px;
+  cursor:pointer;
+  text-decoration:none;
+  font-size:13px;
+  transition:
+    background-color .15s ease,
+    box-shadow .15s ease,
+    transform .12s ease;
+}
+.btn-primary{
+  background:var(--brand);
+  color:#fff;
+  border-color:transparent;
+}
+.btn-ghost{
+  background:transparent;
+}
+.btn:hover{
+  background-color:rgba(15,23,42,0.06);
+  box-shadow:0 2px 6px rgba(15,23,42,0.18);
+  transform:translateY(-1px);
+}
+.btn:active{
+  transform:translateY(0);
+  box-shadow:none;
+}
+
+.panel{
+  background:var(--card);
+  border:1px solid var(--ring);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar-actions{display:flex;gap:8px;align-items:center}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form .full{grid-column:1/-1}
+label{display:block;color:var(--muted);font-size:12px;margin:7px 0 6px}
+input,select,textarea{
+  width:100%; padding:10px 12px; border-radius:12px;
+  border:1px solid var(--ring); outline:none;
+  background:var(--card); color:var(--text);
+}
+textarea{min-height:90px; resize:vertical}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.3px}
+
+input:focus, select:focus, textarea:focus{
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
+}
+
+.toast{
+  position:fixed; right:16px; bottom:16px; background:#111827; color:#F9FAFB;
+  padding:12px 14px; border-radius:12px; box-shadow:var(--shadow); display:none;
+}
+.toast.ok{background:linear-gradient(135deg,#16A34A,#22D3A6)}
+.toast.err{background:linear-gradient(135deg,#EF4444,#F14668)}
+
+#formTitle{font-weight:700;font-size:16px}
+#formDesc{color:var(--muted);font-size:12px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>قرار مدير الإدارة بشأن تحقيق الغياب</h1>
-      <p id="state">جاري التحقق من الرابط…</p>
-      <p id="msg">نقوم الآن بمعالجة طلبك.</p>
-      <p class="small">سيتم تحديث هذه الصفحة بعد تنفيذ الإجراء.</p>
+<div class="container">
+  <div class="header">
+    <div class="title" id="pageTitle">📋 Employee Master</div>
+    <div class="actions">
+      <a href="Navigation panel.html" class="btn btn-ghost" title="Back" aria-label="Back">⟵ Back</a>
+      <a href="index.html" class="btn btn-ghost" title="Home" aria-label="Home">🏠</a>
     </div>
   </div>
+  <div class="panel">
+    <div class="toolbar">
+      <div>
+        <div id="formTitle"></div>
+        <div id="formDesc"></div>
+      </div>
+      <div class="toolbar-actions">
+        <button id="clearBtn" class="btn btn-ghost" type="button">Clear</button>
+        <button id="submitBtn" class="btn btn-primary" type="button">Submit</button>
+      </div>
+    </div>
+    <form id="dynForm" class="form" autocomplete="off"></form>
+  </div>
+</div>
+<div id="toast" class="toast">Saved</div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+<script>
+// ===== Supabase config =====
+const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
 
-    const SUPABASE_URL = "https://inuqlhkoaoeiycefvjyj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImludXFsaGtvYW9laXljZWZ2anlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTUxODEsImV4cCI6MjA3ODY5MTE4MX0.DCAY9rN0noaBoE_T-6eDsb_79szK91af989f9TqjEow";
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ===== Helpers =====
+const DATE_FMT = 'DD-MM-YYYY';
+const TIME_FMT = 'HH:mm';
 
-    const msgEl   = document.getElementById("msg");
-    const stateEl = document.getElementById("state");
+function normalizeDigits(s){
+  if(s == null) return s;
+  const map = {
+    '٠':'0','١':'1','٢':'2','٣':'3','٤':'4',
+    '٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'
+  };
+  return String(s).replace(/[٠-٩]/g, ch => map[ch] ?? ch);
+}
 
-    function state(type, text) {
-      stateEl.className = type === "ok" ? "ok" : "err";
-      stateEl.textContent = text;
-    }
+function toDDMMYYYY(s){
+  s = normalizeDigits(s);
+  if(!s) return '';
+  if(/^\d{2}-\d{2}-\d{4}$/.test(s)) return s;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
+    const y = s.slice(0,4), m = s.slice(5,7), d = s.slice(8,10);
+    return d + '-' + m + '-' + y;
+  }
+  return s;
+}
 
-    function makeToken() {
-      if (crypto && "randomUUID" in crypto) return crypto.randomUUID();
-      return Math.random().toString(36).slice(2) + Date.now().toString(36);
-    }
+function to24h(t){
+  t = normalizeDigits(t);
+  const m = String(t||'').match(/(\d{1,2}):(\d{2})/);
+  if(!m) return '';
+  let hh = Math.max(0, Math.min(23, parseInt(m[1],10) || 0));
+  let mm = Math.max(0, Math.min(59, parseInt(m[2],10) || 0));
+  return String(hh).padStart(2,'0') + ':' + String(mm).padStart(2,'0');
+}
 
-    // ✅ الحل النهائي: نقرأ من # ثم من ? (حتى لا تظهر صفحة الفحص)
-    function getParams() {
-      const url = new URL(window.location.href);
-      const hashParams = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
-      const action = (hashParams.get("action") || url.searchParams.get("action") || "").trim();
-      const invId  = (hashParams.get("inv_id") || url.searchParams.get("inv_id") || "").trim();
-      return { action, invId };
-    }
+function getTodayISO(){
+  const today = new Date();
+  const y = today.getFullYear();
+  const m = String(today.getMonth()+1).padStart(2,'0');
+  const d = String(today.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + d;
+}
 
-    function normalizeAction(a) {
-      const x = (a || "").toLowerCase().trim();
-      // ✅ نقبل أكثر من اسم حتى لا ينهار النظام لو تغيّر الرابط
-      if (["approve","ok","accept"].includes(x)) return "approve";
-      if (["close","reject","deny"].includes(x)) return "close";
-      if (["hr","escalate","escalate_hr","hr_escalation","hr-escalation"].includes(x)) return "hr";
-      if (["close_case","closecase","case_close","close-file","closefile","final_close"].includes(x)) return "close_case";
-      return x;
-    }
+function getTodayLabel(){
+  const today = new Date();
+  return today.toLocaleDateString('en-GB', {
+    day:'2-digit',
+    month:'long',
+    year:'numeric'
+  });
+}
 
-    async function rpc(fn, args) {
-      const { data, error } = await supabase.rpc(fn, args);
-      if (error) throw error;
-      return data;
-    }
-
-    async function start() {
-      const { action: rawAction, invId } = getParams();
-      const action = normalizeAction(rawAction);
-
-      if (!action || !invId) {
-        state("err", "رابط غير صالح");
-        msgEl.textContent = "تأكد أن الرابط يحتوي action و inv_id.";
-        return;
-      }
-
-      // ✅ (1) إجراءات HR / إغلاق ملف التحقيق (تعمل على absence_investigation)
-      if (action === "hr" || action === "close_case") {
-        const { data: inv, error: invErr } = await supabase
-          .from("absence_investigation")
-          .select(`id,"Employee ID","Employee Name",absence_date,status,employee_reply_text,manager_email,employee_email`)
-          .eq("id", invId)
-          .maybeSingle();
-
-        if (invErr || !inv) {
-          state("err", "تعذر تحميل بيانات التحقيق.");
-          return;
-        }
-
-        const currentStatus = (inv.status ?? "").toString();
-
-        // منع التكرار
-        if (action === "hr" && (currentStatus === "hr_escalated" || currentStatus === "closed")) {
-          state("ok", "تم تنفيذ الإجراء مسبقاً.");
-          msgEl.textContent = `الموظف: ${inv["Employee Name"]} (${inv["Employee ID"]}) – تاريخ الغياب: ${inv.absence_date}`;
-          return;
-        }
-        if (action === "close_case" && currentStatus === "closed") {
-          state("ok", "تم إغلاق الملف مسبقاً.");
-          msgEl.textContent = `الموظف: ${inv["Employee Name"]} (${inv["Employee ID"]}) – تاريخ الغياب: ${inv.absence_date}`;
-          return;
-        }
-
-        try {
-          if (action === "hr") {
-            // ✅ المطلوب: استدعاء RPC واحد فقط (بدون أي تحديث مباشر للجداول من الواجهة)
-            await supabase.rpc("oap_hr_escalate_absence_investigation", { p_inv_id: invId });
-
-            state("ok", "تم رفع ملف التحقيق للشؤون القانونية وإرسال البريد بنجاح.");
-            msgEl.textContent = `الموظف: ${inv["Employee Name"]} (${inv["Employee ID"]}) – تاريخ الغياب: ${inv.absence_date}`;
-            return;
-          }
-
-          if (action === "close_case") {
-            const { error: stErr } = await supabase
-              .from("absence_investigation")
-              .update({ status: "closed", updated_at: new Date().toISOString() })
-              .eq("id", invId);
-            if (stErr) throw stErr;
-
-            await rpc("enqueue_absence_close_case_email", { p_inv_id: invId });
-
-            state("ok", "تم إغلاق ملف التحقيق وإرسال إشعار الإغلاق.");
-            msgEl.textContent = `الموظف: ${inv["Employee Name"]} (${inv["Employee ID"]}) – تاريخ الغياب: ${inv.absence_date}`;
-            return;
-          }
-        } catch (e) {
-          console.error(e);
-          state("err", "تعذر تنفيذ الإجراء. تحقق من صلاحيات الـ RPC/السياسات.");
-          return;
-        }
-      }
-
-      // ✅ (2) إجراءات موافقة/رفض المدير (تعمل على employee_absence)
-      const { data: row, error } = await supabase
-        .from("employee_absence")
-        .select("*")
-        .eq("InvestigationID", invId)
-        .maybeSingle();
-
-      if (error || !row) {
-        state("err", "خطأ في جلب بيانات الغياب");
-        return;
-      }
-
-      const employeeId    = row["Employee ID"];
-      const employeeName  = row["Employee Name"];
-      const absenceDate   = row["Date"];
-      const currentStatus = row["Investigation status"];
-
-      if (action === "approve" && currentStatus === "sent_to_employee") {
-        state("ok", "تمت معالجة هذا التحقيق مسبقًا، لن يتم إرسال إشعار مكرر للموظف.");
-        msgEl.textContent = `الموظف: ${employeeName} (${employeeId}) – تاريخ الغياب: ${absenceDate}`;
-        return;
-      }
-
-      let newStatus, consent;
-      if (action === "approve") {
-        newStatus = "sent_to_employee";
-        consent   = "approved";
-      } else if (action === "close") {
-        newStatus = "closed_without_investigation";
-        consent   = "rejected";
-      } else {
-        state("err", "إجراء غير معروف");
-        msgEl.textContent = `action=${rawAction}`;
-        return;
-      }
-
-      const { error: upErr } = await supabase
-        .from("employee_absence")
-        .update({
-          "Investigation status": newStatus,
-          "Consent to send investigation": consent,
-          "Last Update": new Date().toISOString()
-        })
-        .eq("InvestigationID", invId);
-
-      if (upErr) {
-        state("err", "مشكلة أثناء تحديث الغياب");
-        return;
-      }
-
-      if (action === "approve") {
-        const { data: invRow, error: invErr } = await supabase
-          .from("absence_investigation")
-          .select("employee_email, employee_action_token")
-          .eq("id", invId)
-          .maybeSingle();
-
-        if (invErr || !invRow || !invRow.employee_email) {
-          state("err", "تمت الموافقة لكن لم يتم العثور على بريد الموظف في سجل التحقيق");
-          return;
-        }
-
-        let employeeToken = invRow.employee_action_token;
-        if (!employeeToken) {
-          employeeToken = makeToken();
-          await supabase
-            .from("absence_investigation")
-            .update({ employee_action_token: employeeToken })
-            .eq("id", invId);
-        }
-
-        // منع الإزدواج
-        const { data: exists } = await supabase
-          .from("oap_email_outbox")
-          .select("id")
-          .eq("inv_id", invId)
-          .eq("type", "absence_investigation_employee_v2")
-          .maybeSingle();
-
-        if (exists) {
-          state("ok", "تمت الموافقة مسبقًا، ولن يتم إرسال إشعار مكرر للموظف.");
-          msgEl.textContent = `الموظف: ${employeeName} (${employeeId}) – تاريخ الغياب: ${absenceDate}`;
-          return;
-        }
-
-        const replyUrl =
-          "https://oap-kas.com/absence_investigation_reply.html?inv_id=" +
-          encodeURIComponent(invId) +
-          "&token=" +
-          encodeURIComponent(employeeToken);
-
-        const empEmail = invRow.employee_email;
-        const subject  = `إشعار تحقيق غياب – ${employeeName} (${employeeId})`;
-        const preview  = `تحقيق غياب بتاريخ ${absenceDate}`;
-
-        const bodyHtml = `
-          <div dir="rtl" style="font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;">
-            <p>عزيزي الموظف ${employeeName} (${employeeId}),</p>
-            <p>تم فتح تحقيق بخصوص سجل الغياب بتاريخ <strong>${absenceDate}</strong>.</p>
-            <p>الرجاء الضغط على الزر التالي لتعبئة نموذج التحقيق:</p>
-            <p>
-              <a href="${replyUrl}"
-                style="padding:10px 14px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;">
-                فتح نموذج التحقيق
-              </a>
-            </p>
-          </div>
-        `;
-
-        const { error: emErr } = await supabase
-          .from("oap_email_outbox")
-          .insert({
-            inv_id: invId,
-            to: empEmail,
-            subject,
-            body_html: bodyHtml,
-            body_preview: preview,
-            type: "absence_investigation_employee_v2",
-            role: "system",
-            sent_at: null
-          });
-
-        if (emErr) {
-          state("err", "تمت الموافقة لكن حدثت مشكلة في إنشاء بريد الموظف");
-          return;
-        }
-
-        state("ok", "تمت الموافقة وتم جدولة بريد التحقيق للموظف بنجاح ✔️");
-      } else {
-        state("ok", "تم إغلاق ملف الغياب بدون تحقيق ✔️");
-      }
-
-      msgEl.textContent = `الموظف: ${employeeName} (${employeeId}) – تاريخ الغياب: ${absenceDate}`;
-    }
-
-    start().catch((e) => {
-      console.error(e);
-      state("err", "حدث خطأ غير متوقع أثناء تنفيذ العملية.");
+function attachMasks(root){
+  root.querySelectorAll('input[data-mask="time"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,4);
+      if(v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2);
+      el.value = v;
     });
-  </script>
+    el.addEventListener('blur', () => {
+      if(/^(\d{1,2}):(\d{2})$/.test(el.value)) el.value = to24h(el.value);
+    });
+  });
+  root.querySelectorAll('input[data-mask="date"]').forEach(el => {
+    el.addEventListener('input', () => {
+      let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,8);
+      if(v.length >= 5) v = v.slice(0,2) + '-' + v.slice(2,4) + '-' + v.slice(4);
+      else if(v.length >= 3) v = v.slice(0,2) + '-' + v.slice(2);
+      el.value = v;
+    });
+  });
+}
+
+function showToast(msg, isError){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (isError ? 'err' : 'ok');
+  el.style.display = 'block';
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => {
+    el.style.display = 'none';
+  }, 2800);
+}
+
+// ===== Supabase request =====
+async function insertEmployeeDelay(record){
+  const res = await fetch(SUPABASE_URL + '/rest/v1/employee_master_db', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+      'Prefer': 'return=representation'
+    },
+    body: JSON.stringify(record)
+  });
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(text || ('HTTP ' + res.status));
+  }
+  return await res.json();
+}
+
+// ===== Dynamic form =====
+const COLUMN_MAP = {
+  RecordDate: 'Record Date',
+  EmployeeID: 'Employee ID',
+  EmployeeName: 'Employee Name',
+  Gender: 'Gender',
+  Nationality: 'Nationality',
+  HiringDate: 'Hiring Date',
+  JobTitle: 'Job Title',
+  ActualRole: 'Actual Role',
+  Grade: 'Grade',
+  Department: 'Department',
+  PreviousDepartment: 'Previous Department',
+  CurrentDepartment: 'Current Department',
+  EmploymentActionType: 'Employment Action Type',
+  ActionEffectiveDate: 'Action Effective Date',
+  ExitReason: 'Exit Reason',
+  Note: 'Note'
+};
+
+function boot(formDef){
+  document.title = formDef.title;
+  document.getElementById('pageTitle').textContent = '📋 ' + formDef.title;
+  document.getElementById('formTitle').textContent = formDef.title;
+  document.getElementById('formDesc').textContent = formDef.description || '';
+
+  const dyn = document.getElementById('dynForm');
+  dyn.innerHTML = '';
+
+  formDef.fields.forEach(f => {
+    const w = document.createElement('div');
+    if(f.type === 'textarea') w.className = 'full';
+    const id = formDef.id + '_' + f.name;
+    const reqAttr = f.required ? 'required' : '';
+    let c = '';
+
+    if(f.type === 'select'){
+      c = `<select id="${id}" ${reqAttr}>${(f.options||[]).map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
+    } else if(f.type === 'textarea'){
+      c = `<textarea id="${id}" ${reqAttr}></textarea>`;
+    } else if(f.type === 'time'){
+      c = `<input id="${id}" type="text" class="mono" data-mask="time" inputmode="numeric" maxlength="5" placeholder="${TIME_FMT}" ${reqAttr}/>`;
+    } else if(f.type === 'date'){
+      if(f.name === 'Date'){
+        const label = getTodayLabel();
+        c = `<input id="${id}" type="text" class="mono" value="${label}" readonly aria-readonly="true"/>`;
+      } else {
+        c = `<input id="${id}" type="text" class="mono" data-mask="date" inputmode="numeric" maxlength="10" placeholder="${DATE_FMT}" ${reqAttr}/>`;
+      }
+    } else if(f.type === 'number'){
+      c = `<input id="${id}" type="number" step="any" ${reqAttr}/>`;
+    } else {
+      c = `<input id="${id}" type="text" ${reqAttr}/>`;
+    }
+
+    w.innerHTML = `<label for="${id}">${f.label || f.name}${f.required ? ' *' : ''}</label>` + c;
+    dyn.appendChild(w);
+  });
+
+  attachMasks(dyn);
+
+  document.getElementById('clearBtn').onclick = () => {
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      if(f.name === 'Date'){
+        el.value = getTodayLabel();
+      } else if(f.type === 'select'){
+        el.selectedIndex = 0;
+      } else {
+        el.value = '';
+      }
+      el.style.borderColor = 'var(--ring)';
+    });
+  };
+
+  document.getElementById('submitBtn').onclick = async () => {
+    const payload = {};
+    let ok = true;
+    const todayISO = getTodayISO();
+    const nowISO = new Date().toISOString();
+
+    formDef.fields.forEach(f => {
+      const el = document.getElementById(formDef.id + '_' + f.name);
+      if(!el) return;
+      let v = (el.value || '').trim();
+      v = normalizeDigits(v);
+
+      if(f.name === 'Date'){
+        v = todayISO; // تاريخ اليوم فقط
+      } else if(f.type === 'date'){
+        v = toDDMMYYYY(v);
+      } else if(f.type === 'time'){
+        v = to24h(v);
+      }
+
+      if(f.required && !v){
+        el.style.borderColor = 'crimson';
+        ok = false;
+      } else {
+        el.style.borderColor = 'var(--ring)';
+      }
+
+      const columnName = COLUMN_MAP[f.name];
+      if(columnName){
+        if(f.name === 'EmployeeID' && v){
+          const n = parseInt(v, 10);
+          payload[columnName] = Number.isFinite(n) ? n : null;
+        } else if(f.name === 'Date'){
+          payload[columnName] = v; // YYYY-MM-DD
+        } else {
+          payload[columnName] = v || null;
+        }
+      }
+    });
+
+    if(!ok){
+      showToast('الرجاء تعبئة الحقول المطلوبة بشكل صحيح', true);
+      return;
+    }
+
+    // Title + meta
+    const title = Date.now();
+    payload['Title'] = title;
+    payload['Item Type'] = 'Form';
+    payload['Path'] = '/employee_master_db';
+    payload['Last Update'] = nowISO;
+
+    try{
+      await insertEmployeeDelay(payload);
+      showToast('تم الحفظ بنجاح ✓', false);
+      document.getElementById('clearBtn').click();
+    }catch(err){
+      console.error(err);
+      showToast('خطأ في الحفظ: ' + (err.message || 'Failed'), true);
+    }
+  };
+}
+
+// ===== Form Definition =====
+const FORM_DEF = {
+  id: 'employee_master',
+  title: 'Employee Master',
+  description: 'Core employee master record',
+  fields: [
+    {name:'RecordDate',label:'Record Date',type:'date',required:false},
+    {name:'EmployeeID',label:'Employee ID',type:'text',required:true},
+    {name:'EmployeeName',label:'Employee Name',type:'text',required:true},
+    {name:'Gender',label:'Gender',type:'select',options:['Male','Female'],required:false},
+    {name:'Nationality',label:'Nationality',type:'text'},
+    {name:'HiringDate',label:'Hiring Date',type:'date'},
+    {name:'JobTitle',label:'Job Title',type:'text'},
+    {name:'ActualRole',label:'Actual Role',type:'text'},
+    {name:'Grade',label:'Grade',type:'text'},
+    {name:'Department',label:'Department',type:'text'},
+    {name:'PreviousDepartment',label:'Previous Department',type:'text'},
+    {name:'CurrentDepartment',label:'Current Department',type:'text'},
+    {name:'EmploymentActionType',label:'Employment Action Type',type:'text'},
+    {name:'ActionEffectiveDate',label:'Action Effective Date',type:'date'},
+    {name:'ExitReason',label:'Exit Reason',type:'text'},
+    {name:'Note',label:'Note',type:'textarea',class:'full'}
+  ]
+};
+
+boot(FORM_DEF);
+</script>
 </body>
 </html>
